@@ -2,7 +2,7 @@
 Vagrant.configure("2") do |config|
   config.vm.box = "generic/ubuntu1804"
   config.vm.box_check_update = false
-  config.vm.hostname = "gt-linalg"
+  config.vm.hostname = "ila"
   config.vm.synced_folder "../", "/base", type: "9p", accessmode: "squash"
   config.vm.network "forwarded_port", guest: 80, host: 8081
 
