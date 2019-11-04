@@ -1,0 +1,251 @@
+# -*- python -*-
+
+import os
+import re
+
+from shutil import move
+from subprocess import Popen, PIPE, check_output, check_call
+
+from mako.template import Template
+from mako.lookup import TemplateLookup
+from mako.runtime import Context
+
+
+Import('env')
+env = env.Clone()
+
+env['CACHE_DIR'] = env.Entry('$STAGING_DIR/build-demos').get_abspath()
+
+cache_dir = lambda sd='': os.path.join(env['CACHE_DIR'], sd)
+
+
+mako_re = re.compile(r'<%inherit\s+file=[\'"](.*)[\'"]/>', re.M)
+
+def mako_scan(node, env, path):
+    contents = node.get_text_contents()
+    basepath = os.path.dirname(str(node))
+    return env.File(list(os.path.join(basepath, fn)
+                         for fn in mako_re.findall(contents)))
+
+env.Append(SCANNERS=Scanner(function=mako_scan, skeys=['.mako']))
+
+# Har har
+def coffee_filter(text):
+    proc = Popen(['coffee', '--no-header', '-scb'],
+                 stdin=PIPE, stdout=PIPE, universal_newlines=True)
+
+    out, _ = proc.communicate(text.encode('utf-8'))
+    if proc.returncode > 0:
+        raise Exception("Can't compile coffeescript")
+    return out.decode('utf-8')
+
+VERSIONS = {} # Cache
+def version_filter(fname):
+    fname2 = cache_dir(fname)
+    if fname in VERSIONS:
+        vers = VERSIONS[fname]
+    else:
+        commit = check_output(
+            ['git', 'hash-object', fname2])
+        vers = commit.decode()[:6]
+        VERSIONS[fname] = vers
+    return "{}?vers={}".format(fname, vers)
+
+def build_mako(target, source, env, for_signature=None):
+    lookup = TemplateLookup(directories=['.'],
+                            output_encoding='utf-8',
+                            input_encoding='utf-8')
+    template = Template(filename=str(source[0]), lookup=lookup,
+                        output_encoding='utf-8',
+                        input_encoding='utf-8',
+                        module_directory='/tmp/mako_modules')
+    with open(str(target[0]), 'wb') as output:
+        output.write(
+            template
+            .render_unicode(coffee=coffee_filter, vers=version_filter)
+            .encode('utf-8'))
+
+def build_coffee(target, source, env, for_signature=None):
+    source = str(source[0])
+    target = str(target[0])
+    check_call(['coffee', '--no-header', '-c', source])
+    generated = source.replace('.coffee', '.js')
+    if generated != target:
+        move(generated, target)
+
+
+env['BUILDERS']['Mako'] = Builder(
+    action=Action(build_mako, 'Compiling $TARGET'),
+    suffix='.html', src_suffix='.mako')
+env['BUILDERS']['Coffee'] = Builder(
+    action=Action(build_coffee, 'Compiling $TARGET'),
+    suffix='.js', src_suffix='.coffee')
+
+
+libs = {}
+for src in Split('''
+                 demo2
+                 dynamics
+                 animstate
+                 rrinter
+                 rrmat
+                 cover
+                 '''):
+    libs[src] = env.Coffee('$STAGING_DIR/demos/js/' + src, 'lib/' + src)
+
+to_copy = []
+to_minify = []
+
+dynamics_js = env.Command('$CACHE_DIR/js/dynamics.js',
+                          '$STAGING_DIR/demos/js/dynamics.js',
+                          Copy('$TARGET', '$SOURCE'))
+to_minify.append(dynamics_js)
+
+# Create bundles
+
+demo_css = \
+    env.CatCSS('$CACHE_DIR/css/demo',
+               ['css/demo', 'vendor/katex', '#/mathbox/build/mathbox'])
+demo_js = \
+    env.CatJS('$CACHE_DIR/js/demo',
+              [libs['demo2']] +
+              Split('''
+              #/mathbox/build/mathbox-bundle
+              vendor/katex
+              vendor/domready
+              vendor/dat.gui.js
+              vendor/screenfull
+              vendor/roots
+              vendor/expreval
+              vendor/compat
+              '''))
+to_minify.append(demo_css)
+to_minify.append(demo_js)
+
+cover_js = \
+    env.CatJS('$CACHE_DIR/js/cover',
+              [libs['dynamics'],
+               '#/mathbox/build/mathbox-bundle',
+               'vendor/domready',
+               libs['cover']])
+cover_css = \
+    env.CatCSS('$CACHE_DIR/css/cover',
+               ['css/cover', '#/mathbox/build/mathbox'])
+
+slideshow_js = \
+    env.CatJS('$CACHE_DIR/js/slideshow',
+              [libs['animstate'], libs['rrmat']] +
+              Split('''
+              #/mathbox/build/mathbox-bundle
+              vendor/katex
+              vendor/domready
+              vendor/expreval
+              vendor/compat
+              '''))
+slideshow_css = \
+    env.CatCSS('$CACHE_DIR/css/slideshow',
+               Split('''
+               vendor/katex
+               #/mathbox/build/mathbox
+               css/rrmat
+               css/slideshow
+               '''))
+to_minify.append(slideshow_css)
+to_minify.append(slideshow_js)
+
+rrinter_js = \
+    env.CatJS('$CACHE_DIR/js/rrinter',
+              [libs['animstate'], libs['rrmat'], libs['rrinter']] +
+              Split('''
+              #/mathbox/build/mathbox-bundle
+              vendor/katex
+              vendor/domready
+              vendor/expreval
+              vendor/compat
+              '''))
+rrinter_css = \
+    env.CatCSS('$CACHE_DIR/css/rrinter',
+               Split('''
+               vendor/katex
+               #/mathbox/build/mathbox
+               css/rrmat
+               css/slideshow
+               css/rrinter
+               '''))
+to_minify.append(rrinter_css)
+to_minify.append(rrinter_js)
+
+rabbits_js = \
+    env.CatJS('$CACHE_DIR/js/rabbits',
+              ['#/vendor/jquery.min.js',
+               'vendor/bootstrap.js',
+               'vendor/plotly.js'])
+rabbits_css = \
+    env.CatCSS('$CACHE_DIR/css/rabbits', ['vendor/bootstrap.css'])
+to_minify.append(rabbits_css)
+to_minify.append(rabbits_js)
+
+env.Depends('base2.mako', [demo_js, demo_css])
+env.Depends('base_slideshow.mako', [slideshow_js, slideshow_css])
+
+demos = {}
+
+for src in Split('''
+                 Axequalsb
+                 bestfit
+                 bestfit-implicit
+                 compose2d
+                 compose3d
+                 dynamics
+                 dynamics2
+                 eigenspace
+                 leastsquares
+                 parametric1
+                 parametric1h
+                 parametric2
+                 plane
+                 planes
+                 point
+                 projection
+                 similarity
+                 spans
+                 steps
+                 twobytwo
+                 vector-add
+                 vector
+                 vector-mul
+                 vector-sub
+                 rowred1
+                 rowred2
+                 rrinter
+                 '''):
+    demos[src] = env.Mako('$CACHE_DIR/' + src, src)
+    env.Depends(demos[src], [demo_css, demo_js])
+    to_copy.append(demos[src])
+
+env.Depends(demos['rrinter'], [rrinter_js, rrinter_css])
+env.Depends([demos['dynamics'], demos['dynamics2']], dynamics_js)
+
+
+# Copy everything over to the install dir
+env.Command('$BUILD_DIR/demos/css/fonts', 'vendor/fonts',
+            Copy("$TARGET", "$SOURCE"))
+env.Command('$BUILD_DIR/demos/img', 'img',
+            Copy("$TARGET", "$SOURCE"))
+env.Command('$BUILD_DIR/cover.html', 'cover.html',
+            Copy("$TARGET", "$SOURCE"))
+env.Command('$BUILD_DIR/demos/rabbits.html', 'rabbits.html',
+            Copy("$TARGET", "$SOURCE"))
+
+env.Command('$BUILD_DIR/js/cover.js', cover_js,
+            Copy("$TARGET", "$SOURCE"))
+env.Command('$BUILD_DIR/css/cover.css', cover_css,
+            Copy("$TARGET", "$SOURCE"))
+
+root = env.Dir('$CACHE_DIR')
+for node in Flatten(to_copy):
+    env.Command('$BUILD_DIR/demos/' + node.get_path(root), node,
+                Copy("$TARGET", "$SOURCE"))
+
+for node in Flatten(to_minify):
+    env.Minify('$BUILD_DIR/demos/' + node.get_path(root), node)

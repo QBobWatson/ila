@@ -1,0 +1,576 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--********************************************************************
+Copyright 2017 Georgia Institute of Technology
+
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version 1.3 or
+any later version published by the Free Software Foundation.  A copy of
+the license is included in gfdl.xml.
+*********************************************************************-->
+
+<section xml:id="systems-of-eqns">
+  <title>Systems of Linear Equations</title>
+
+  <objectives>
+    <ol>
+      <li>Understand the definition of <m>\R^n</m>, and what it means to use <m>\R^n</m> to label points on a geometric object.</li>
+      <li><em>Pictures:</em> solutions of systems of linear equations, parameterized solution sets.</li>
+      <li><em>Vocabulary words:</em> <term>consistent</term>, <term>inconsistent</term>, <term>solution set</term>.</li>
+    </ol>
+  </objectives>
+
+  <introduction>
+    <p>During the first half of this textbook, we will be primarily concerned with understanding the solutions of systems of linear equations.</p>
+
+    <definition>
+      <idx><h>Linear equation</h><h>definition of</h></idx>
+      <statement>
+        <p>An equation in the unknowns <m>x,y,z,\ldots</m> is called <term>linear</term> if both sides of the equation are a sum of (constant) multiples of <m>x,y,z,\ldots</m>, plus an optional constant.</p>
+      </statement>
+    </definition>
+
+    <p>For instance,
+    <me>
+      \begin{split}
+      3x + 4y &amp;= 2z \\
+      -x - z &amp;= 100
+      \end{split}
+    </me>
+    are linear equations, but
+    <me>
+      \begin{split}
+      3x + yz &amp;= 3 \\
+      \sin(x) - \cos(y) &amp;= 2
+      \end{split}
+    </me>
+    are not.</p>
+
+    <p>We will usually move the unknowns to the left side of the equation, and move the constants to the right.
+    </p>
+
+    <p>A <term>system</term> of linear equations is a collection of several linear equations, like
+      <men xml:id="systems-eqns-example">
+        \syseq{x + 2y + 3z = 6;
+        2x - 3y + 2z = 14;
+        3x + y - z = -2\rlap.
+      }</men>
+      <idx><h>Linear equation</h><h>system of</h><see>System of linear equations</see></idx>
+      <idx><h>System of linear equations</h><h>definition of</h></idx>
+    </p>
+
+    <definition xml:id="systems-eqns-soln-sets">
+      <title>Solution sets</title>
+      <statement>
+        <p>
+          <ul>
+            <li>A <term>solution</term> of a system of equations is a list of numbers <m>x, y, z, \ldots</m> that make all of the equations true simultaneously.</li>
+            <li>The <term>solution set</term> of a system of equations is the collection of all solutions.</li>
+            <li><term>Solving</term> the system means finding all solutions with formulas involving some number of parameters.</li>
+          </ul>
+          <idx><h>System of linear equations</h><h>solution of</h></idx>
+          <idx><h>Solution</h><see>System of linear equations</see></idx>
+          <idx><h>Solution set</h><h>definition of</h></idx>
+        </p>
+      </statement>
+    </definition>
+
+    <p>
+      A system of linear equations need not have a solution.  For example, there do not exist numbers <m>x</m> and <m>y</m> making the following two equations true simultaneously:
+      <me>
+        \syseq{x + 2y = 3 ; x + 2y = -3\rlap.}
+      </me>
+      In this case, the solution set is <em>empty</em>.  As this is a rather important property of a system of equations, it has its own name.
+    </p>
+
+    <definition>
+      <idx><h>System of linear equations</h><h>inconsistent</h></idx>
+      <idx><h>System of linear equations</h><h>consistent</h></idx>
+      <idx><h>Consistent</h><see>System of linear equations</see></idx>
+      <idx><h>Inconsistent</h><see>System of linear equations</see></idx>
+      <statement>
+        <p>A system of equations is called <term>inconsistent</term> if it has no solutions.  It is called <term>consistent</term> otherwise.</p>
+      </statement>
+    </definition>
+
+    <p>A solution of a system of equations in <m>n</m> variables is a list of <m>n</m> numbers.  For example, <m>(x,y,z) = (1,-2,3)</m> is a solution of <xref ref="systems-eqns-example"/>.  As we will be studying solutions of systems of equations throughout this text, now is a good time to fix our notions regarding lists of numbers.</p>
+
+  </introduction>
+
+  <subsection xml:id="subsection-Rn">
+    <title>Line, Plane, Space, Etc.</title>
+
+    <p>
+      <notation><usage>0</usage><description>The number zero</description></notation>
+      We use <m>\R</m>
+      <idx><h>Real numbers <m>\R</m></h></idx>
+      <notation><usage>\R</usage><description>The real numbers</description></notation>
+      to denote the set of all real numbers, i.e., the number
+      line.  This contains numbers like <m>0, \frac 32, -\pi, 104, \ldots</m>
+    </p>
+
+    <definition>
+      <idx><h>Real <m>n</m>-space</h></idx>
+      <idx><h>Real <m>n</m>-space</h><h>point of</h></idx>
+      <notation>
+        <usage>\R^n</usage>
+        <description>Real <m>n</m>-space</description>
+      </notation>
+      <statement>
+        <p>Let <m>n</m> be a positive whole number.  We define
+        <me>\R^n = \text{all ordered $n$-tuples of real numbers }(x_1,x_2,x_3,\ldots,x_n).</me>
+        An <m>n</m>-tuple of real numbers is called a <term>point</term> of <m>\R^n</m>.
+        </p>
+      </statement>
+    </definition>
+
+    <p>In other words, <m>\R^n</m> is just the set of all (ordered) lists of <m>n</m> real numbers.  We will draw pictures of <m>\R^n</m> in a moment, but keep in mind that <em>this is the definition</em>.  For example, <m>(0, \frac 32, -\pi)</m> and <m>(1,-2,3)</m> are points of <m>\R^3</m>.</p>
+
+    <specialcase>
+      <title>The number line</title>
+      <idx><h>Real numbers <m>\R</m></h></idx>
+      <idx><h>Line</h><h>number line</h></idx>
+      <p>When <m>n=1</m>, we just get <m>\R</m> back: <m>\R^1=\R</m>.  Geometrically, this is the number line.
+      <latex-code>
+    \begin{tikzpicture}
+      \draw [&lt;-&gt;, thick] (-3.5,0) -- (3.5,0);
+      \foreach \x in {-3,...,3}
+         \draw[thin] (\x,-.1) -- (\x,0.1) node[anchor=south] {$\x$};
+    \end{tikzpicture}
+      </latex-code>
+      </p>
+
+    </specialcase>
+
+    <specialcase>
+      <title>The Euclidean plane</title>
+      <idx><h>Plane</h><h><m>xy</m>-plane</h></idx>
+      <p>When <m>n=2</m>, we can think of <m>\R^2</m> as the <m>xy</m>-plane.  We can do so because every point on the plane can be represented by an ordered pair of real numbers, namely, its <m>x</m>- and <m>y</m>-coordinates.
+      <latex-code>
+        <![CDATA[
+    \begin{tikzpicture}[every node/.append style={whitebg, thin border},
+        every label/.append style={text=seq-blue}, scale=1]
+      \draw[help lines] (-4, -4) grid (4, 4);
+      \draw[->, thick] (-4,0) -- (4,0);
+      \draw[->, thick] (0,-4) -- (0,4);
+      \point[seq-blue, "{$(1,2)$}" above right] at (1,2);
+      \point[seq-blue, "{$(0,-3)$}" above right] at (0,-3);
+    \end{tikzpicture}
+            ]]>
+      </latex-code>
+      </p>
+    </specialcase>
+
+    <specialcase>
+      <title>3-Space</title>
+      <idx><h>Space</h><h><m>\R^3</m></h></idx>
+      <p>When <m>n=3</m>, we can think of <m>\R^3</m> as the <em>space</em> we (appear to) live in.  We can do so because every point in space can be represented by an ordered triple of real numebrs, namely, its <m>x</m>-, <m>y</m>-, and <m>z</m>-coordinates.
+      <latex-code><![CDATA[
+    \begin{tikzpicture}[myxyz, scale=.75,
+        every label/.append style={text=seq-blue}]
+      \begin{scope}[transformxy]
+        \draw[help lines] (-4, -4) grid (4, 4);
+      \end{scope}
+      \draw[->, thick] (-4,0,0) -- (4,0,0);
+      \draw[->, thick] (0,-4,0) -- (0,4,0);
+      \draw[->, thick] (0,0,0) -- (0,0,4);
+      \draw[thick] (0,0,-4) -- (0,0,-2);
+      \draw[thick,gray] (0,0,-2) -- (0,0,0);
+      \draw[thin, densely dotted] (1,-1,3) -- (1,-1,0);
+      \point[seq-blue, "${(1,-1,3)}$" above] at (1,-1,3);
+      \draw[thin, densely dotted] (-2,2,2) -- (-2,2,0);
+      \point[seq-blue, "${(-2,2,2)}$" above] at (-2,2,2);
+    \end{tikzpicture}
+            ]]>
+      </latex-code>
+      </p>
+    </specialcase>
+
+    <example hide-type="true">
+      <title>Interactive: Points in 3-Space</title>
+      <figure>
+        <caption>A point in 3-space, and its coordinates.  Click and drag the point, or move the sliders.</caption>
+        <mathbox source="demos/point.html" height="400px"/>
+      </figure>
+    </example>
+
+    <p>So what is <m>\R^4</m>?  or <m>\R^5</m>?  or <m>\R^n</m>?
+    These are harder to visualize, so you have to go back to the definition: <m>\R^n</m> is the set of all ordered <m>n</m>-tuples of real numbers <m>(x_1,x_2,x_3,\ldots,x_n)</m>.</p>
+
+    <p>They are still <q>geometric</q> spaces, in the sense that our intuition for <m>\R^2</m> and <m>\R^3</m> often extends to <m>\R^n</m>.</p>
+
+    <p>We will make definitions and state theorems that apply to any <m>\R^n</m>, but we will only draw pictures for <m>\R^2</m> and <m>\R^3</m>.</p>
+
+    <p>The power of using these spaces is the ability to <em>label</em> various objects of interest, such as geometric objects and solutions of systems of equations, by the points of <m>\R^n</m>.</p>
+
+    <example>
+      <title>Color Space</title>
+      <idx><h>Space</h><h>color space</h></idx>
+      <idx><h>Color space</h></idx>
+      <p>All colors you can see can be described by three quantities: the amount of red, green, and blue light in that color.  (Humans are <url href="https://en.wikipedia.org/wiki/Trichromacy">trichromatic</url>.)  Therefore, we can use the points of <m>\R^3</m> to <em>label</em> all colors: for instance, the point <m>(.2, .4, .9)</m> labels the color with <m>20\%</m> red, <m>40\%</m> green, and <m>90\%</m> blue intensity.
+      <latex-code><![CDATA[
+\begin{tikzpicture}[x={(1cm,0cm)}, y={(-.5cm,-.3cm)}, z={(0cm,1cm)}, scale=1,
+    every node/.append style={transform shape}]
+  \def\divisions{10}
+
+  \def\colorsquare{
+    \foreach \x in {0,...,\divisions} {
+      \pgfmathtruncatemacro{\px}{\x*100/\divisions}
+      \colorlet{B}[HTML]{BR!\px!BL}
+      \colorlet{T}[HTML]{TR!\px!TL}
+      \foreach \y in {0,...,\divisions} {
+        \pgfmathtruncatemacro{\py}{\y*100/\divisions}
+        \fill[T!\py!B, resetxy]
+          ({(\x+.025)/(\divisions+1)},{(\y+.025)/(\divisions+1)})
+          rectangle
+          ({(\x+.975)/(\divisions+1)},{(\y+.975)/(\divisions+1)});
+      }
+    }
+  }
+
+  \begin{scope}[scale=5]
+    \transformxy[1]
+    \definecolor{BL}{HTML}{0000FF}
+    \definecolor{BR}{HTML}{FF00FF}
+    \definecolor{TL}{HTML}{00FFFF}
+    \definecolor{TR}{HTML}{FFFFFF}
+    \colorsquare
+  \end{scope}
+
+  \begin{scope}[scale=5]
+    \transformxz[1]
+    \definecolor{BL}{HTML}{00FF00}
+    \definecolor{BR}{HTML}{FFFF00}
+    \definecolor{TL}{HTML}{00FFFF}
+    \definecolor{TR}{HTML}{FFFFFF}
+    \colorsquare
+    \draw[->, thick, resetxy] (0,-.1) -- (1,-.1)
+      node[midway,below,scale=.2] {red};
+    \draw[->, thick, resetxy] (-.1,0) -- (-.1,1)
+      node[midway,above,scale=.2,rotate=90] {blue};
+  \end{scope}
+
+  \begin{scope}[scale=5]
+    \transformyz[1]
+    \definecolor{BL}{HTML}{FF0000}
+    \definecolor{BR}{HTML}{FFFF00}
+    \definecolor{TL}{HTML}{FF00FF}
+    \definecolor{TR}{HTML}{FFFFFF}
+    \draw[->, thick, resetxy] (-.1,-.1) -- (.9,-.1)
+      node[midway,below,scale=.2,xscale=-1] {green};
+    \colorsquare
+  \end{scope}
+
+\end{tikzpicture}
+]]>
+      </latex-code>
+      </p>
+    </example>
+
+    <example xml:id="systems-eqns-R4">
+      <title>Traffic Flow</title>
+      <p>In the <xref ref="overview" text="title">Overview</xref>, we could have used <m>\R^4</m> to <em>label</em> the amount of traffic <m>(x,y,z,w)</m> passing through four streets.  In other words, if there are <m>10,5,3,11</m> cars per hour passing through roads <m>x,y,z,w</m>, respectively, then this can be recorded by the point <m>(10,5,3,11)</m> in <m>\R^4</m>.  This is useful from a psychological standpoint: instead of having four numbers, we are now dealing with just <em>one</em> piece of data.
+      <latex-code>
+      <![CDATA[
+\tikzset{
+  mid arrow/.style={
+    postaction={
+      decoration={
+        markings,
+        mark=at position #1 with {\arrow{Stealth[scale=1.25]}},
+      },
+      decorate
+    },
+  },
+  rmid arrow/.style={
+    postaction={
+      decoration={
+        markings,
+        mark=at position #1 with {\arrowreversed{Stealth[scale=1.25]}},
+      },
+      decorate
+    }
+  },
+  mid arrow/.default={0.5},
+  rmid arrow/.default={0.5},
+}
+
+  \begin{tikzpicture}[scale=1, thick,
+      every node/.style={inner sep=3pt, label distance=1mm}]
+    \point[scale=1.5] (A) at (-1,1);
+    \point[scale=1.5] (B) at (1,1);
+    \point[scale=1.5] (C) at (1,-1);
+    \point[scale=1.5] (D) at (-1,-1);
+    \draw[mid arrow] (A.center) to["$x$"] (B.center);
+    \draw[mid arrow] (B.center) to["$y$"] (C.center);
+    \draw[mid arrow] (C.center) to["$z$"] (D.center);
+    \draw[mid arrow] (D.center) to["$w$"] (A.center);
+    \draw[rmid arrow=.3] (A.center) to +(-1,0);
+    \draw[mid arrow=.7] (A.center) to +(0,1);
+    \draw[mid arrow=.7] (B.center) to +(1,0);
+    \draw[rmid arrow=.3] (B.center) to +(0,1);
+    \draw[rmid arrow=.3] (C.center) to +(1,0);
+    \draw[mid arrow=.7] (C.center) to +(0,-1);
+    \draw[mid arrow=.7] (D.center) to +(-1,0);
+    \draw[rmid arrow=.3] (D.center) to +(0,-1);
+  \end{tikzpicture}
+            ]]>
+      </latex-code>
+      </p>
+    </example>
+
+    <example>
+      <title>QR Codes</title>
+      <idx><h>QR codes</h></idx>
+      <p>
+        A <url href="https://en.wikipedia.org/wiki/QR_code">QR code</url> is a method of storing data in a grid of black and white squares in a way that computers can easily read.  A typical QR code is a <m>29 \times 29</m> grid.  Reading each line left-to-right and reading the lines top-to-bottom (like you read a book) we can think of such a QR code as a sequence of <m>29 \times 29 = 841</m> digits, each digit being 1 (for white) or 0 (for black).  In such a way, the entire QR code can be regarded as a point in <m>\R^{841}</m>.  As in the previous <xref ref="systems-eqns-R4"/>, it is very useful from a psychological perspective to view a QR code as a <em>single</em> piece of data in this way.
+</p>
+      <figure>
+        <caption>The QR code for this textbook is a <m>29\times29</m> array of black/white squares.</caption>
+        <image source="images/qrcode.png" width="50%"/>
+      </figure>
+    </example>
+
+    <p>In the above examples, it was useful from a psychological perspective to replace a list of four numbers (representing traffic flow) or of 841 numbers (representing a QR code) by a single piece of data: a point in some <m>\R^n</m>.  This is a powerful concept;   starting in <xref ref="spans"/>, we will almost exclusively record solutions of systems of linear equations in this way.</p>
+  </subsection>
+
+
+  <subsection xml:id="systems-eqns-pictures">
+    <title>Pictures of Solution Sets</title>
+    <idx><h>Solution set</h><h>picture of</h></idx>
+
+    <p>Before discussing how to solve a system of linear equations below, it is helpful to see some pictures of what these solution sets look like geometrically.</p>
+
+    <specialcase hide-type="true" xml:id="systems-eqns-picture-line">
+      <title>One Equation in Two Variables</title>
+
+      <p>
+        Consider the linear equation <m>x+y=1</m>.  We can rewrite this as <m>y = 1-x</m>, which defines a line in the plane: the slope is <m>-1</m>, and the <m>x</m>-intercept is <m>1</m>.
+        <latex-code>
+          <![CDATA[
+  \begin{tikzpicture}
+    \draw[grid lines] (-2,-2) grid (2,2);
+    \draw[->] (-2,0) -- (2,0);
+    \draw[->] (0,-2) -- (0,2);
+    \draw[{Stealth}-{Stealth}, seq-violet, thick] (-1,2) -- (2,-1);
+  \end{tikzpicture}
+          ]]>
+        </latex-code>
+      </p>
+    </specialcase>
+
+    <definition xml:id="defn-lines">
+      <title>Lines</title>
+      <idx><h>Line</h><h>geometric definition of</h></idx>
+      <statement>
+        <p>For our purposes, a <term>line</term> is a ray that is <em>straight</em> and <em>infinite</em> in both directions.</p>
+      </statement>
+    </definition>
+
+    <specialcase hide-type="true" xml:id="systems-eqns-picture-plane">
+      <title>One Equation in Three Variables</title>
+
+      <p>
+        Consider the linear equation <m>x+y+z=1</m>.  This is the <term>implicit equation</term> for a plane in space.
+        <latex-code>
+          <![CDATA[
+  \begin{tikzpicture}[myxyz, scale=0.75]
+    \draw[densely dotted] (0,0,0) -- (1,0,0);
+    \draw[densely dotted] (0,0,0) -- (0,1,0);
+    \draw[densely dotted] (0,0,0) -- (0,0,1);
+    \begin{scope}[x={(-1,0,1)}, y={(0,-1,1)}, transformxy=1]
+      \fill[help lines, seq-violet!50, fill opacity=.7] (-2.5, -2.5) rectangle (2, 2);
+      \draw[help lines, seq-violet!50] (-2.5, -2.5) grid (2, 2);
+    \end{scope}
+    \draw[->] (1,0,0) -- (3,0,0) node[below left] {$x$};
+    \draw[->] (0,1,0) -- (0,3,0) node[right] {$y$};
+    \draw[->] (0,0,1) -- (0,0,3) node[above] {$z$};
+  \end{tikzpicture}
+          ]]>
+        </latex-code>
+      </p>
+    </specialcase>
+
+    <definition>
+      <title>Planes</title>
+      <idx><h>Plane</h><h>geometric definition of</h></idx>
+      <statement>
+        <p>A <term>plane</term> is a flat sheet that is infinite in all directions.
+        </p>
+      </statement>
+    </definition>
+
+    <remark>
+      <p>
+        The equation <m>x+y+z+w=1</m> defines a <q><m>3</m>-plane</q> in <m>4</m>-space, and more generally, a single linear equation in <m>n</m> variables defines an <q><m>(n-1)</m>-plane</q> in <m>n</m>-space.  We will make these statements precise in <xref ref="dimension"/>.
+      </p>
+    </remark>
+
+    <specialcase hide-type="true" xml:id="systems-eqns-picture-2lines">
+      <title>Two Equations in Two Variables</title>
+
+      <p>
+        Now consider the system of two linear equations
+        <me>\def\r{\color{seq-violet}}\def\b{\color{seq-green}}
+        \syseq{\r x \r- \r3y \r= \r-3; \b2x \b+ \b y \b= \b8\rlap.}</me>
+        Each equation individually defines a line in the plane, pictured below.
+        <latex-code>
+          <![CDATA[
+  \begin{tikzpicture}[scale=.2]
+    \draw[grid lines] (-20,-20) rectangle (20,20);
+    \clip (-20,-20) rectangle (20,20);
+    \draw[->] (-20,0) -- (20,0);
+    \draw[->] (0,-20) -- (0,20);
+    \draw[seq-violet, thick] (-20,-20/3+1) -- (20,20/3+1);
+    \draw[seq-green, thick] (-20,40+8) -- (20,-40+8);
+    \point at (3,2);
+  \end{tikzpicture}
+          ]]>
+        </latex-code>
+        A solution to the <em>system</em> of both equations is a pair of numbers <m>(x,y)</m> that makes both equations true at once.  In other words, it as a point that lies on both lines simultaneously.  We can see in the picture above that there is only one point where the lines intersect: therefore, this system has exactly one solution.  (This solution is <m>(3,2)</m>, as the reader can verify.)
+      </p>
+
+      <p>
+        Usually, two lines in the plane will intersect in one point, but of course this is not always the case.  Consider now the system of equations
+        <me>\def\r{\color{seq-violet}}\def\b{\color{seq-green}}
+        \syseq{\r x \r- \r3y \r= \r-3; \b x \b- \b3y \b= \b3\rlap.}</me>
+        These define <em>parallel</em> lines in the plane.
+        <latex-code>
+          <![CDATA[
+  \begin{tikzpicture}[scale=.2]
+    \draw[grid lines] (-20,-20) rectangle (20,20);
+    \clip (-20,-20) rectangle (20,20);
+    \draw[->] (-20,0) -- (20,0);
+    \draw[->] (0,-20) -- (0,20);
+    \draw[seq-violet, thick] (-20,-20/3+1) -- (20,20/3+1);
+    \draw[seq-green, thick] (-20,-20/3-1) -- (20,20/3-1);
+  \end{tikzpicture}
+          ]]>
+        </latex-code>
+        The fact that that the lines do not intersect means that the system of equations has no solution.  Of course, this is easy to see algebraically: if <m>x-3y=-3</m>, then it is cannot also be the case that <m>x-3y=3</m>.
+      </p>
+
+      <p>
+        There is one more possibility.  Consider the system of equations
+        <me>\def\r{\color{seq-violet}}\def\b{\color{seq-green}}
+        \syseq{\r x \r- \r3y \r= \r-3; \b2x \b- \b6y \b= \b-6\rlap.}</me>
+        The second equation is a multiple of the first, so these equations define the <em>same</em> line in the plane.
+        <latex-code>
+          <![CDATA[
+  \begin{tikzpicture}[scale=.2]
+    \draw[grid lines] (-20,-20) rectangle (20,20);
+    \clip (-20,-20) rectangle (20,20);
+    \draw[->] (-20,0) -- (20,0);
+    \draw[->] (0,-20) -- (0,20);
+    \draw[seq-green, double=seq-violet!50, double distance=1pt, thick] (-20,-20/3+1) -- (20,20/3+1);
+  \end{tikzpicture}
+          ]]>
+        </latex-code>
+        In this case, there are infinitely many solutions of the system of equations.
+      </p>
+    </specialcase>
+
+    <specialcase hide-type="true" xml:id="systems-eqns-two-planes">
+      <title>Two Equations in Three Variables</title>
+
+      <p>
+        Consider the system of two linear equations
+        <me>\def\r{\color{seq-violet}}\def\b{\color{seq-green}}
+        \syseq{\r x \r+ \r y \r+ \r z \r= \r1; \b x \+ \. \b- \b z \b= \b0\rlap.}</me>
+        Each equation individually defines a plane in space.  The solutions of the system of both equations are the points that lie on both planes.  We can see in the picture below that the planes intersect in a line.  In particular, this system has infinitely many solutions.
+      </p>
+
+      <figure>
+        <caption>The planes defined by the equations <m>\color{seq-violet}x+y+z=1</m> and <m>\color{seq-green}x-z=0</m> intersect in the red line, which is the solution set of the system of both equations.</caption>
+        <mathbox source="demos/planes.html" height="400px"/>
+      </figure>
+    </specialcase>
+
+    <remark>
+      <p>
+        In general, the solutions of a system of equations in <m>n</m> variables is the intersection of <q><m>(n-1)</m>-planes</q> in <m>n</m>-space.  This is always some kind of linear space, as we will discuss in <xref ref="solution-sets"/>.
+      </p>
+    </remark>
+
+  </subsection>
+
+
+  <subsection>
+    <title>Parametric Description of Solution Sets</title>
+    <idx><h>Implicit equation</h></idx>
+    <idx><h>Parametric form</h></idx>
+
+    <p>
+      According to this <xref ref="systems-eqns-soln-sets"/>, solving a system of equations means writing down all solutions in terms of some number of parameters.  We will give a systematic way of doing so in <xref ref="parametric-form"/>; for now we give parametric descriptions in the examples of the previous <xref ref="systems-eqns-pictures"/>.
+    </p>
+
+    <specialcase hide-type="true">
+      <title>Lines</title>
+      <idx><h>Line</h><h>parametric form of</h></idx>
+
+      <p>
+        Consider the linear equation <m>x+y=1</m> of this <xref ref="systems-eqns-picture-line"/>.  In this context, we call <m>x+y=1</m> an <term>implicit equation</term> of the line.  We can write the same line in <term>parametric form</term> as follows:
+        <me>(x, y) = (t,\, 1-t) \sptxt{for any} t \in \R.</me>
+        This means that every point on the line has the form <m>(t,\, 1-t)</m> for some real number <m>t</m>.  In this case, we call <m>t</m> a <term>parameter</term>, as it <em>parameterizes</em> the points on the line.
+        <latex-code>
+          <![CDATA[
+  \begin{tikzpicture}[every label/.style={font=\small, thin border}]
+    \draw[grid lines] (-3,-3) grid (3,3);
+    \draw[->] (-3,0) -- (3,0);
+    \draw[->] (0,-3) -- (0,3);
+    \draw[{Stealth}-{Stealth}, seq-violet, thick] (-2,3) -- (3,-2);
+    \point["$t=0$" above right] at (0,1);
+    \point["$t=1$" above right] at (1,0);
+    \point["$t=-1$" below left] at (-1,2);
+  \end{tikzpicture}
+          ]]>
+        </latex-code>
+      </p>
+
+      <p>
+        Now consider the system of two linear equations
+        <me>\def\r{\color{seq-violet}}\def\b{\color{seq-green}}
+        \syseq{\r x \r+ \r y \r+ \r z \r= \r1; \b x \+ \. \b- \b z \b= \b0}</me>
+        of this <xref ref="systems-eqns-two-planes"/>.  These collectively form the <term>implicit equations</term> for a line in <m>\R^3</m>.  (At least two equations are needed to define a line in space.)  This line also has a <term>parametric form</term> with one <term>parameter</term> <m>t</m>:
+        <me>
+          (x,\, y,\, z) = (t,\, 1-2t,\, t).
+        </me>
+      </p>
+
+      <figure>
+        <caption>The planes defined by the equations <m>\color{seq-violet}x+y+z=1</m> and <m>\color{seq-green}x-z=0</m> intersect in the yellow line, which is parameterized by <m>(x,y,z) = (t,1-2t,t)</m>.  Move the slider to change the parameterized point.</caption>
+        <mathbox source="demos/parametric2.html" height="400px"/>
+      </figure>
+
+      <p>
+        Note that in each case, the parameter <m>t</m> allows us to use <m>\R</m> to <em>label</em> the points on the line.  However, neither line is the same as the number line <m>\R</m>: indeed, every point on the first line has two coordinates, like the point <m>(0,1)</m>, and every point on the second line has three coordinates, like <m>(0,1,0)</m>.
+      </p>
+    </specialcase>
+
+    <specialcase hide-type="true">
+      <title>Planes</title>
+      <idx><h>Plane</h><h>parametric form of</h></idx>
+
+      <p>
+        Consider the linear equation <m>x+y+z=1</m> of this <xref ref="systems-eqns-picture-plane"/>.  This is an <term>implicit equation</term> of a plane in space.  This plane has an equation in <term>parametric form</term>: we can write every point on the plane as
+        <me>(x,\, y,\, z) = (1-t-w,\, t,\, w) \sptxt{for any} t,w\in\R.</me>
+        In this case, we need two <term>parameters</term> <m>t</m> and <m>w</m> to describe all points on the plane.
+      </p>
+
+      <figure>
+        <caption>The plane in <m>\R^3</m> defined by the equation <m>x+y+z=1</m>.  This plane is parameterized by two numbers <m>t,w</m>; move the sliders to change the parameterized point.</caption>
+        <mathbox source="demos/plane.html?coeffs=t,w&amp;range=5" height="400px"/>
+      </figure>
+
+      <p>
+        Note that the parameters <m>t,w</m> allow us to use <m>\R^2</m> to <em>label</em> the points on the plane.  However, this plane is <em>not</em> the same as the plane <m>\R^2</m>: indeed, every point on this plane has three coordinates, like the point <m>(0,0,1)</m>.
+      </p>
+    </specialcase>
+
+    <p>
+      When there is a unique solution, as in this <xref ref="systems-eqns-picture-2lines"/>, it is not necessary to use parameters to describe the solution set.
+    </p>
+
+  </subsection>
+
+</section>

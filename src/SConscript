@@ -1,0 +1,107 @@
+# -*- python -*-
+
+import os
+
+from subprocess import check_output
+
+Import('env build_dir staging_dir')
+
+# Create versioning hashes
+def create_hash_dict(target, source, env):
+    env['SUBST_DICT'] =  {
+        '@GIT_HASH@' : 'abcdefghikj', # check_output(['git', 'rev-parse', 'HEAD']),
+        '@GIT_HASH_SHORT@' : 'abcdef', # check_output(['git', 'rev-parse', 'HEAD'])[:6],
+        '@ILA_JS@' : check_output(['git', 'hash-object',
+                                   build_dir('js/ila.js')]).strip()[:6],
+        '@ILA_CSS@' : check_output(['git', 'hash-object',
+                                    build_dir('css/ila.css')]).strip()[:6],
+        '@COVER_JS@' : check_output(['git', 'hash-object',
+                                     build_dir('js/cover.js')]).strip()[:6],
+    }
+
+git_hash_xml = env.Substfile('xsl/git-hash.xsl.in')
+env.Depends(git_hash_xml, ['$BUILD_DIR/js/ila.js',
+                           '$BUILD_DIR/css/ila.css',
+                           '$BUILD_DIR/js/cover.js'])
+env.AddPreAction(git_hash_xml, create_hash_dict)
+
+# Create output html files
+xml_sources = Glob('*.xml') + Glob('xsl/*.xml') \
+    + Glob('figure-images/*') + Glob('latex/*')
+
+versioned_xml = \
+    env.Command('$STAGING_DIR/${VARIANT}.xml',
+                ['xsl/versioning.xsl', 'ila.xml'],
+                'xsltproc -o $TARGET --xinclude ' \
+                '    --stringparam version $VARIANT $SOURCES')
+env.Depends(versioned_xml, xml_sources)
+
+if env['VARIANT'] == 'default':
+    env['PDF_FILE'] = 'ila.pdf'
+else:
+    env['PDF_FILE'] = 'ila-%s.pdf' % env['VARIANT']
+
+# Put it in /tmp because a ramdisk is much faster in a vm
+env['OUTPUT_HTML'] = '/tmp/output-html'
+output_html = \
+    env.Command('build-html',
+                ['xsl/mathbook-html.xsl', versioned_xml],
+                Action('xsltproc -o $OUTPUT_HTML/ --xinclude ' \
+                       '    --stringparam pdf.online $PDF_FILE $SOURCES',
+                       'Generating html files...'))
+env.Pseudo(output_html)
+env.AddPreAction(output_html, ['rm -rf $OUTPUT_HTML', 'mkdir $OUTPUT_HTML'])
+
+xmllint \
+    = env.Command('verify-xml', ['#/mathbook/build/pretext.rng', versioned_xml],
+                  Action('xmllint --xinclude --noout --relaxng $SOURCES',
+                         'Verifying xml...'))
+env.Depends(output_html, xmllint)
+env.Pseudo(xmllint)
+
+# Now run pretex
+env['PREAMBLE'] = '$OUTPUT_HTML/preamble.tex'
+env['PRETEX_CACHE'] = '$STAGING_DIR/pretex-cache'
+env['PRETEX_STYLE'] = '$BASE_DIR/src/latex'
+env['PRETEX_IMGS'] = '$BASE_DIR/src/figure-images'
+pretex = \
+    env.Command('$BUILD_DIR/index2.html',
+                output_html,
+                Action('$PRETEX --chunk-size $CHUNKSIZE' \
+                       '        --preamble   $PREAMBLE' \
+                       '        --cache-dir  $PRETEX_CACHE' \
+                       '        --style-path $PRETEX_STYLE' \
+                       '        --img-dir    $PRETEX_IMGS' \
+                       '        --output-dir $OUTPUT_HTML' \
+                       '        --build-dir  $BUILD_DIR',
+                       'Running pretex (be patient)...'))
+
+# env.Command('$BUILD_DIR/index.html', pretex,
+#             Copy('$TARGET', '$SOURCE'))
+# env.Command('$BUILD_DIR/figure-images', pretex,
+#             ['mkdir $TARGET', 'cp $PRETEX_CACHE/*.png $TARGET'])
+
+# Build pdf
+if env['BUILD_PDF'] or env['PRODUCTION']:
+    env['LATEX_DIR'] = os.path.join(env['STAGING_DIR'], 'build-pdf')
+    env['ENV']['TEXINPUTS'] = ".:" + env['LATEX_DIR'] + "/style:"
+    index_tex = \
+        env.Command('$LATEX_DIR/index.tex',
+                    ['xsl/mathbook-latex.xsl', versioned_xml],
+                    Action('xsltproc -o $LATEX_DIR/ --xinclude $SOURCES',
+                           'Generating master LaTeX file'))
+    env.AddPreAction(index_tex,
+                     ['rm -rf $LATEX_DIR',
+                      'mkdir -p $LATEX_DIR',
+                      'cp -r $BASE_DIR/src/latex $LATEX_DIR/style',
+                      'cp -r $BASE_DIR/src/figure-images $LATEX_DIR/figure-images',
+                      'cp -r $BASE_DIR/static/images $LATEX_DIR/images'])
+    latex_cmd = 'cd $LATEX_DIR && pdflatex -interaction=nonstopmode "\\input{index}"'
+    index_pdf = \
+        env.Command('$LATEX_DIR/index.pdf',
+                    index_tex,
+                    Action([latex_cmd, latex_cmd, latex_cmd],
+                           'Compiling PDF version'))
+    env.Command('$BUILD_DIR/$PDF_FILE', index_pdf,
+                Copy('$TARGET', '$SOURCE'))
+

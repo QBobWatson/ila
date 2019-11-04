@@ -1,0 +1,12 @@
+[submodule "mathbook-assets"]
+	path = mathbook-assets
+	url = git@github.com:QBobWatson/mathbook-assets
+	branch = ila
+[submodule "mathbook"]
+	path = mathbook
+	url = git@github.com:QBobWatson/mathbook
+	branch = ila
+[submodule "mathbox"]
+	path = mathbox
+	url = git@github.com:QBobWatson/mathbox
+	branch = jdr

@@ -1,0 +1,226 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--********************************************************************
+Copyright 2017 Georgia Institute of Technology
+
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version 1.3 or
+any later version published by the Free Software Foundation.  A copy of
+the license is included in gfdl.xml.
+*********************************************************************-->
+
+<appendix xml:id="complex-numbers">
+  <title>Complex Numbers</title>
+
+  <!-- <objectives> -->
+  <!--   <ol> -->
+  <!--     <li>Become comfortable doing arithmetic with complex numbers.</li> -->
+  <!--     <li><em>Vocabulary words:</em> <term>imaginary number</term>, <term>complex number</term>, <term>complex conjugate</term>.</li> -->
+  <!--   </ol> -->
+  <!-- </objectives> -->
+
+  <p>
+    In this Appendix we give a brief review of the arithmetic and basic properties of the complex numbers.
+  </p>
+
+    <p>
+      As motivation, notice that the rotation matrix
+      <me>A = \mat{0 -1; 1 0}</me>
+      has characteristic polynomial <m>f(\lambda) = \lambda^2 + 1</m>.  A zero of this function is a square root of <m>-1</m>.  If we want this polynomial to have a root, then we have to use a larger number system: we need to declare by <em>fiat</em> that there exists a square root of <m>-1</m>.
+    </p>
+
+    <definition>
+      <idx><h>Complex numbers</h><h>definition of</h></idx>
+      <idx><h>Imaginary number</h><see>Complex numbers</see></idx>
+      <notation><usage>\C</usage><description>The complex numbers</description></notation>
+      <statement>
+        <p>
+          <ol>
+            <li>
+              The <term>imaginary number</term> <m>i</m> is defined to satisfy the equation <m>i^2 = -1</m>.
+            </li>
+            <li>
+              A <term>complex number</term> is a number of the form <m>a+bi</m>, where <m>a,b</m> are real numbers.
+            </li>
+          </ol>
+          The set of all complex numbers is denoted <m>\C</m>.
+        </p>
+      </statement>
+    </definition>
+
+    <p>
+      The real numbers are just the complex numbers of the form <m>a + 0i</m>, so that <m>\R</m> is contained in <m>\C</m>.
+    </p>
+
+    <p>
+      We can identify <m>\C</m> with <m>\R^2</m> by <m>a+bi \longleftrightarrow {a\choose b}</m>. So when we draw a picture of <m>\C</m>, we draw the plane:
+      <latex-code>
+        <![CDATA[
+\begin{tikzpicture}[whitebg nodes, thin border nodes]
+  \draw[grid lines] (-2,-2) grid (2,2);
+  \draw[thick, ->] (-2,0) -- (2,0);
+  \draw[<-, overlay] (-2.05,0) -- (-2.5,0) node[left] {real axis};
+  \draw[thick, ->] (0,-2) -- (0,2);
+  \draw[<-, overlay] (-.05,-1.5) -- ++(-2.5,0) node[left] {imaginary axis};
+  \point["$1$" above] at (1,0);
+  \point["$i$" left] at (0,1);
+  \point at (0,0);
+  \point["$1-i$" below] at (1,-1);
+\end{tikzpicture}
+        ]]>
+      </latex-code>
+    </p>
+
+    <note hide-type="true">
+      <title>Arithmetic of Complex Numbers</title>
+      <idx><h>Complex numbers</h><h>arithmetic of</h></idx>
+      <p>
+        We can perform all of the usual arithmetic operations on complex numbers: add, subtract, multiply, divide, absolute value.  There is also an important new operation called complex conjugation.
+        <ul>
+          <li>
+            <em>Addition</em> is performed componentwise:
+            <me>
+              (a + bi) + (c + di) = (a + c) + (b + d)i.
+            </me>
+          </li>
+          <li>
+            <em>Multiplication</em> is performed using distributivity and <m>i^2=-1</m>:
+            <me>
+              (a+bi)(c+di) = ac + adi + bci + bdi^2 = (ac-bd) + (ad+bc)i.
+            </me>
+          </li>
+          <li>
+            <idx><h>Complex numbers</h><h>conjugation</h></idx>
+            <idx><h>Complex conjugation</h><see>Complex numbers</see></idx>
+            <notation><usage>\bar z</usage><description>Complex conjugate</description></notation>
+            <em>Complex conjugation</em> replaces <m>i</m> with <m>-i</m>, and is denoted with a bar:
+            <me>
+              \bar{a+bi} = a - bi.
+            </me>
+            The number <m>\bar{a+bi}</m> is called the <term>complex conjugate</term> of <m>a+bi</m>.  One checks that for any two complex numbers <m>z,w</m>, we have
+            <me>
+              \bar{z+w} = \bar z + \bar w \sptxt{and} \bar{zw} = \bar z\cdot\bar w.
+            </me>
+            Also, <m>(a+bi)(a-bi) = a^2 + b^2</m>, so <m>z\bar z</m> is a nonnegative <em>real</em> number for any complex number <m>z</m>.
+          </li>
+          <li>
+            <idx><h>Complex numbers</h><h>absolute value</h></idx>
+            The <em>absolute value</em> of a complex number <m>z</m> is the real number <m>|z| = \sqrt{z\bar z}</m>:
+            <me>
+              |a+bi| = \sqrt{a^2 + b^2}.
+            </me>
+            One chacks that <m>|zw| = |z|\cdot|w|.</m>
+          </li>
+          <li>
+            <em>Division</em> by a nonzero real number proceeds componentwise:
+            <me>\frac{a+bi}c = \frac ac + \frac bci.</me>
+          </li>
+          <li>
+            <em>Division</em> by a nonzero complex number requires multiplying the numerator and denominator by the complex conjugate of the denominator:
+            <me>\frac zw = \frac{z\bar w}{w\bar w} = \frac{z\bar w}{|w|^2}.</me>
+            For example,
+            <me>\frac{1+i}{1-i} = \frac{(1+i)^2}{1^2+(-1)^2} = \frac{1+2i+i^2}2 = i.</me>
+          </li>
+          <li>
+            <idx><h>Complex numbers</h><h>real and imaginary parts of</h></idx>
+            <idx><h>Real part</h><see>Complex numbers</see></idx>
+            <idx><h>Imaginary part</h><see>Complex numbers</see></idx>
+            <notation><usage>\Re(z)</usage><description>Real part of a complex number</description></notation>
+            <notation><usage>\Im(z)</usage><description>Imaginary part of a complex number</description></notation>
+            The <em>real</em> and <em>imaginary</em> parts of a complex number are
+            <me>\Re(a+bi) = a \qquad \Im(a+bi) =  b.</me>
+          </li>
+        </ul>
+      </p>
+    </note>
+
+    <p>
+      The point of introducing complex numbers is to find roots of polynomials.  It turns out that introducing <m>i</m> is sufficent to find the roots of any polynomial.
+    </p>
+
+    <theorem type-name="Fundamental Theorem of Algebra" xml:id="fund-thm-alg">
+      <idx><h>Fundamental theorem of algebra</h></idx>
+      <idx><h>Polynomial</h><h>complex roots</h></idx>
+      <statement>
+        <p>
+          Every polynomial of degree <m>n</m> has exactly <m>n</m> (real and) complex roots, counted with multiplicity.
+        </p>
+        <p>
+          Equivalently, if <m>f(x) = x^n + a_{n-1}x^{n-1} + \cdots + a_1x + a_0</m> is a polynomial of degree <m>n</m>, then <m>f</m> factors as
+          <me>
+            f(x) = (x-\lambda_1)(x-\lambda_2)\cdots(x-\lambda_n)
+          </me>
+          for (not necessarily distinct) complex numbers <m>\lambda_1,\lambda_2,\ldots,\lambda_n</m>.
+        </p>
+      </statement>
+    </theorem>
+
+    <specialcase hide-type="true">
+      <title>Degree-2 Polynomials</title>
+      <idx><h>Quadratic formula</h></idx>
+      <idx><h>Polynomial</h><h>quadratic</h></idx>
+      <p>
+        The quadratic formula gives the roots of a degree-2 polynomial, real or complex:
+        <me>
+          f(x) = x^2 + bx + c \implies x = \frac{-b \pm \sqrt{b^2 - 4c}}2.
+        </me>
+      </p>
+      <p>
+        For example, if <m>f(x) = x^2 - \sqrt 2x + 1</m>, then
+        <me>
+          x = \frac{\sqrt 2\pm\sqrt{-2}}2 = \frac{\sqrt 2}2(1\pm i)
+          = \frac{1\pm i}{\sqrt 2}.
+        </me>
+        Note that if <m>b,c</m> are real numbers, then the two roots are complex conjugates.
+      </p>
+    </specialcase>
+
+    <p>
+      A complex number <m>z</m> is real if and only if <m>z = \bar z</m>.  This leads to the following observation.
+    </p>
+
+    <bluebox type-name="Note" xml:id="cplx-nums-root-pairs">
+      <idx><h>Polynomial</h><h>conjugate roots</h></idx>
+      <p>
+        If <m>f</m> is a polynomial with real coefficients, and if <m>\lambda</m> is a complex root of <m>f</m>, then so is <m>\bar\lambda</m>:
+        <me>
+          \begin{split}
+          0 = \bar{f(\lambda)}
+    \amp= \bar{\lambda^n + a_{n-1}\lambda^{n-1}+\cdots+a_1\lambda+a_0} \\
+    \amp= \bar\lambda{}^n + a_{n-1}\bar\lambda{}^{n-1}+\cdots+a_1\bar\lambda+a_0
+    = f\bigl(\bar\lambda\bigr).
+    \end{split}
+        </me>
+        Therefore, complex roots of real polynomials come in <em>conjugate pairs</em>.
+      </p>
+    </bluebox>
+
+    <specialcase hide-type="true">
+      <title>Degree-3 Polynomials</title>
+      <idx><h>Polynomial</h><h>cubic</h></idx>
+      <p>
+        A real cubic polynomial has either three real roots, or one real root and a conjugate pair of complex roots.
+      </p>
+      <p>
+        For example, <m>f(x) = x^3-x = x(x-1)(x+1)</m> has three real roots; its graph looks like this:
+        <latex-code>
+          <![CDATA[
+\begin{tikzpicture}[domain=-1.5:1.5,smooth]
+  \draw (-2,0) -- (2,0);
+  \draw[color=seq-red, <->] plot (\x,\x^3-\x);
+\end{tikzpicture}
+          ]]>
+        </latex-code>
+        On the other hand, the polynomial <me>g(x) = x^3-5x^2+x-5 = (x-5)(x^2+1) = (x-5)(x+i)(x-i)</me> has one real root at <m>5</m> and a conjugate pair of complex roots <m>\pm i</m>.  Its graph looks like this:
+        <latex-code>
+          <![CDATA[
+\begin{tikzpicture}[domain=-.5:.5,smooth,xscale=-4,yscale=3]
+  \draw (-.5,-4.7) -- (.5,-4.7);
+  \draw[color=seq-red, <->] plot (\x,\x^3-5*\x^2+\x-5);
+\end{tikzpicture}
+          ]]>
+        </latex-code>
+      </p>
+    </specialcase>
+
+  </appendix>

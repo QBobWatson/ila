@@ -1,0 +1,333 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--********************************************************************
+Copyright 2017 Georgia Institute of Technology
+
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version 1.3 or
+any later version published by the Free Software Foundation.  A copy of
+the license is included in gfdl.xml.
+*********************************************************************-->
+
+<section xml:id="rank-thm" number="9">
+  <title>The Rank Theorem</title>
+
+  <objectives>
+    <ol>
+      <li>Learn to understand and use the rank theorem.</li>
+      <li><em>Picture:</em> the rank theorem.</li>
+      <li><em>Theorem:</em> rank theorem.</li>
+      <li><em>Vocabulary words:</em> <term>rank</term>, <term>nullity</term>.</li>
+    </ol>
+  </objectives>
+
+  <p>
+    In this section we present the rank theorem, which is the culmination of all of the work we have done so far.
+  </p>
+
+    <p>
+      The reader may have observed a relationship between the column space and the null space of a matrix.  In this <xref ref="subspaces-col-nul-1"/>, the column space and the null space of a <m>3\times 2</m> matrix are both lines, in <m>\R^2</m> and <m>\R^3</m>, respectively:
+          <latex-code>
+\begin{tikzpicture}[myxyz, scale=.8]
+\begin{scope}[resetxy]
+  \draw[grid lines] (-3,-3) grid (3,3);
+  \draw[seq4] (-3,3) -- (3,-3);
+  \point at (0,0);
+  \node[seq4,fill=white, inner sep=1pt] at (-.7,2) {$\Nul(A)$};
+\end{scope}
+
+\begin{scope}[xshift=9cm]
+  \path[clip, resetxy] (-6,-4) rectangle (6,4);
+
+  \def\v{(1, 1, 1)}
+  \node[coordinate] (X) at \v {};
+
+  \draw[seq4] (0,0,0) -- ($-6*(X)$);
+  \draw (0,0,-3) -- (0,0,0);
+
+  \begin{scope}[transformxy]
+    \fill[white, nearly opaque] (-3, -3) rectangle (3, 3);
+    \draw[grid lines] (-3, -3) grid (3, 3);
+    \draw[->] (-3,0) -- (3,0);
+    \draw[->] (0,-3) -- (0,3);
+  \end{scope}
+
+  \draw[seq4] (0,0,0) -- node[right, pos=.7] {$\Col(A)$} ($6*(X)$);
+  \draw[->] (0,0,0) -- (0,0,3);
+
+  \point at (0,0,0);
+\end{scope}
+
+  \node[fill=white, resetxy] at (5, 2) {$A = \mat{1 1; 1 1; 1 1}$};
+
+\end{tikzpicture}
+          </latex-code>
+          In this <xref ref="solnsets-eg-plane2"/>, the null space of the <m>2\times 3</m> matrix <m>\bigl(\begin{smallmatrix}1&amp;-1&amp;2\\-2&amp;2&amp;-4\end{smallmatrix}\bigr)</m> is a plane in <m>\R^3</m>, and the column space the line in <m>\R^2</m> spanned by <m>{1\choose-2}</m>:
+        <latex-code>
+              <![CDATA[
+\begin{tikzpicture}[myxyz, scale=.8]
+\begin{scope}[xshift=9cm, resetxy]
+  \draw[grid lines] (-3,-3) grid (3,3);
+  \draw[seq4] (-1.5,3) -- (1.5,-3);
+  \point at (0,0);
+  \node[seq4,fill=white, inner sep=1pt] at (-.7,2) {$\Col(A)$};
+\end{scope}
+
+\begin{scope}
+  \path[clip, resetxy] (-6,-4) rectangle (6,4);
+
+  \def\v{(1, 1, 0)}
+  \def\w{(-2, 0, 1)}
+
+  \node[coordinate] (X) at \v {};
+  \node[coordinate] (Y) at \w {};
+
+  \draw (0,0,-3) -- (0,0,0);
+
+  \begin{scope}[x=(X), y=(Y), transformxy]
+    \path[clip] (-5, 0) -- (-5, -5) -- (5, -5) -- (5, 0) -- cycle;
+    \fill[seq4!30, nearly opaque] (-3,-2) rectangle (3,2);
+    \draw[step=1cm, seq4, very thin] (-3,-2) grid (3,2);
+  \end{scope}
+
+  \begin{scope}[transformxy]
+    \fill[white, nearly opaque] (-3, -3) rectangle (3, 3);
+    \draw[grid lines] (-3, -3) grid (3, 3);
+    \draw[->] (-3,0) -- (3,0);
+    \draw[->] (0,-3) -- (0,3);
+  \end{scope}
+
+  \begin{scope}[x=(X), y=(Y), transformxy]
+    \path[clip] (-5, 0) -- (-5, 5) -- (5, 5) -- (5, 0) -- cycle;
+    \fill[seq4!30, nearly opaque] (-3,-2) rectangle (3,2);
+    \draw[step=1cm, seq4, very thin] (-3,-2) grid (3,2);
+  \end{scope}
+
+  \draw[->] (0,0,0) -- (0,0,3);
+
+  \node[seq4, anchor=south east] at (-3,-2.5,.5) {$\Nul(A)$};
+
+  \point at (0,0,0);
+\end{scope}
+
+  \node[fill=white, resetxy] at (5, -2) {$A = \mat{1 -1 2; -2 2 -4}$};
+
+\end{tikzpicture}
+              ]]>
+        </latex-code>
+        In this <xref ref="solnsets-line-plane"/>, the null space of a <m>3\times 3</m> matrix is a line in <m>\R^3</m>, and the column space is a plane in <m>\R^3</m>:
+        <latex-code>
+              <![CDATA[
+\begin{tikzpicture}[myxyz, scale=.8]
+\begin{scope}[xshift=9cm]
+  \path[clip, resetxy] (-6,-4) rectangle (6,4);
+
+  \draw (0,0,-3) -- (0,0,0);
+
+  \def\v{(1, 0, 1)}
+  \def\w{(-1/2, 1, 1/2)}
+
+  \node[coordinate] (X) at \v {};
+  \node[coordinate] (Y) at \w {};
+
+  \begin{scope}[x=(X), y=(Y), transformxy]
+    \path[clip] (-5/2, 5) -- (-5, 5) -- (-5, -5) -- (5/2, -5) -- cycle;
+    \fill[seq4!30, nearly opaque] (-2,-2) rectangle (2,2);
+    \draw[step=1cm, seq4, very thin] (-2,-2) grid (2,2);
+  \end{scope}
+
+  \begin{scope}[transformxy]
+    \fill[white, nearly opaque] (-3, -3) rectangle (3, 3);
+    \draw[grid lines] (-3, -3) grid (3, 3);
+    \draw[->] (-3,0) -- (3,0);
+    \draw[->] (0,-3) -- (0,3);
+  \end{scope}
+
+  \begin{scope}[x=(X), y=(Y), transformxy]
+    \path[clip] (-5/2, 5) -- (5, 5) -- (5, -5) -- (5/2, -5) -- cycle;
+    \fill[seq4!30, nearly opaque] (-2,-2) rectangle (2,2);
+    \draw[step=1cm, seq4, very thin] (-2,-2) grid (2,2);
+  \end{scope}
+
+  \draw[->] (0,0,0) -- (0,0,3);
+
+  \node[seq4, anchor=south east] at (-3,-2.5,0) {$\Col(A)$};
+
+  \point at (0,0,0);
+\end{scope}
+
+\begin{scope}
+  \path[clip, resetxy] (-6,-4) rectangle (6,4);
+
+  \def\v{(1, -1, 1)}
+  \node[coordinate] (X) at \v {};
+
+  \draw[seq4] (0,0,0) -- ($-3*(X)$);
+  \draw (0,0,-3) -- (0,0,0);
+
+  \begin{scope}[transformxy]
+    \fill[white, nearly opaque] (-3, -3) rectangle (3, 3);
+    \draw[grid lines] (-3, -3) grid (3, 3);
+    \draw[->] (-3,0) -- (3,0);
+    \draw[->] (0,-3) -- (0,3);
+  \end{scope}
+
+  \draw[seq4] (0,0,0) -- node[above] {$\Nul(A)$} ($3*(X)$);
+  \draw[->] (0,0,0) -- (0,0,3);
+
+  \point at (0,0,0);
+\end{scope}
+
+  \node[fill=white, resetxy] at (3, -2) {$A = \mat{1 0 -1; 0 1 1; 1 1 0}$};
+
+\end{tikzpicture}
+              ]]>
+        </latex-code>
+        In all examples, the dimension of the column space plus the dimension of the null space is equal to the number of <em>columns</em> of the matrix.  This is the content of the rank theorem.
+    </p>
+
+  <definition>
+    <idx><h>Matrix</h><h>rank of</h><see>Rank</see></idx>
+    <idx><h>Column space</h><h>and rank</h><see>Rank</see></idx>
+    <idx><h>Rank</h></idx>
+    <idx><h>Matrix</h><h>nullity of</h><see>Nullity</see></idx>
+    <idx><h>Nullity</h></idx>
+    <idx><h>Dimension</h><h>of a column space</h></idx>
+    <idx><h>Dimension</h><h>of a null space</h></idx>
+    <notation><usage>\rank(A)</usage><description>The rank of a matrix</description></notation>
+    <notation><usage>\nullity(A)</usage><description>The nullity of a matrix</description></notation>
+    <statement>
+      <p>
+        The <term>rank</term> of a matrix <m>A</m>, written <m>\rank(A)</m>, is the dimension of the column space <m>\Col(A)</m>.
+      </p>
+      <p>
+        The <term>nullity</term> of a matrix <m>A</m>, written <m>\nullity(A)</m>, is the dimension of the null space <m>\Nul(A)</m>.
+      </p>
+    </statement>
+  </definition>
+
+	<p>
+	The rank of a matrix <m>A</m> gives us important information about the solutions to <m>Ax=b</m>.  Recall from this <xref ref="matrixeq-spans-consistency"/> that <m>Ax=b</m> is consistent exactly when <m>b</m> is in the span of the columns of <m>A</m>, in other words when <m>b</m> is in the column space of <m>A</m>.  Thus, <m>\rank(A)</m> is the dimension of the set of <m>b</m> with the property that <m>Ax=b</m> is consistent.
+	</p>
+
+    <p>
+      We know that the rank of <m>A</m> is equal to the number of <xref ref="defn-pivot-pos" text="title">pivot columns</xref> (see this <xref ref="dimension-basis-colspace"/>), and the nullity of <m>A</m> is equal to the number of free variables (see this <xref ref="dimension-basis-nulspace"/>), which is the number of columns without pivots.  To summarize:
+      <md>
+        <mrow>\rank(A) = \dim\Col(A) &amp;= \text{the number of columns with pivots}</mrow>
+        <mrow>\nullity(A) = \dim\Nul(A) &amp;= \text{the number of free variables}</mrow>
+        <mrow>&amp;= \text{the number of columns without pivots}</mrow>
+      </md>
+      Clearly
+      <me>
+        \text{\#(columns with pivots)} + \text{\#(columns without pivots)}
+        = \text{\#(columns)},
+      </me>
+      so we have proved the following theorem.
+    </p>
+
+    <theorem type-name="Rank Theorem" xml:id="rank-theorem">
+      <idx><h>Rank</h><h>rank theorem</h></idx>
+      <idx><h>Nullity</h><h>rank theorem</h></idx>
+      <statement>
+        <p>
+          If <m>A</m> is a matrix with <m>n</m> columns, then
+          <me>\rank(A) + \nullity(A) = n.</me>
+        </p>
+      </statement>
+    </theorem>
+
+    <p>
+      In other words, for any consistent system of linear equations,
+      <me>\text{(dim of column span)} + \text{(dim of solution set)} =
+      \text{(number of variables)}.</me>
+	</p>
+
+	<p>
+	 The rank theorem theorem is really the culmination of this chapter, as it gives a strong relationship between the null space of a matrix (the solution set of <m>Ax=0</m>) with the column space (the set of vectors <m>b</m> making <m>Ax=b</m> consistent), our two primary objects of interest.  The more freedom we have in choosing <m>x</m> the less freedom we have in choosing <m>b</m> and vice versa.  
+    </p>
+
+    <example>
+      <title>Rank and nullity</title>
+	<p>
+	Here is a concrete example of the rank theorem and the interplay between the degrees of freedom we have in choosing <m>x</m> and <m>b</m> in a matrix equation <m>Ax=b</m>.</p><p>Consider the matrices <me>A = \mat{1 0 0; 0 1 0; 0 0 0} \quad \text{and} \quad B = \mat{0 0 0; 0 0 0; 0 0 1}.</me> If we multiply a vector <m>(x,y,z)</m> in <m>\R^3</m> by <m>A</m> and <m>B</m> we obtain the vectors <m>Ax = (x,y,0)</m> and <m>Bx = (0,0,z)</m>.  So we can think of multiplication by <m>A</m> as giving the latitude and longitude of a point in <m>\R^3</m> and we can think of multiplication by <m>B</m> as giving the height of a point in <m>\R^3</m>.  The rank of <m>A</m> is 2 and the nullity is 1.  Similarly, the rank of <m>B</m> is 1 and the nullity is 2.  
+	</p>
+	<p>These facts have natural interpretations.  For the matrix <m>A</m>: the set of all latitudes and longitudes in <m>\R^3</m> is a plane, and the set of points with the same latitude and longitude in <m>\R^3</m> is a line; and for the matrix <m>B</m>: the set of all heights in <m>\R^3</m> is a line, and the set of points at a given height in <m>\R^3</m> is a plane.  As the rank theorem tells us, we <q>trade off</q> having more choices for <m>x</m> for having more choices for <m>b</m>, and vice versa.
+	</p>
+	</example>
+
+	<p>
+	The rank theorem is a prime example of how we use the theory of linear algebra to say something qualitative about a system of equations without ever solving it.  This is, in essence, the power of the subject.
+	</p>
+
+    <example>
+      <title>The rank is 2 and the nullity is 2</title>
+      <p>
+        Consider the following matrix and its reduced row echelon form:
+        <latex-code>
+            <![CDATA[
+\begin{tikzpicture}
+  \tikzset{
+    my matrix/.style={
+      matrix, math matrix,
+      column sep={2.2em,between origins},
+      every node/.append style={anchor=base east}},
+  }
+  \node (symb) {$A=\;\;\null$};
+  \path (symb.east) node[my matrix, right] (A) {
+    1  \&  2 \& 0 \& -1 \\
+    -2 \& -3 \& 4 \&  5 \\
+    2  \&  4 \& 0 \& -2 \\
+  } (A.east) ++(2cm,0) node {$\xrightarrow{\text{RREF}}$}
+    ++(2cm, 0) node[my matrix, right] (B) {
+    1 \& 0 \& \llap{$-$}8 \& \llap{$-$}7 \\
+    0 \& 1 \&  4 \&  3 \\
+    0 \& 0 \&  0 \&  0 \\
+  };
+  \node[fit=(A-1-1) (A-3-1), draw=seq-blue, rounded corners] (box1) {};
+  \node[fit=(A-1-2) (A-3-2), draw=seq-blue, rounded corners] (box2) {};
+  \path ($(box1.south)!.5!(box2.south)$) ++(0,-1cm)
+      node[seq-blue, font=\small,anchor=base] (orig) {basis of $\Col(A)$};
+  \draw[->,seq-blue, shorten >=1pt] (orig.north) to[out=90,in=-90] (box1.south);
+  \draw[->,seq-blue, shorten >=1pt] (orig.north) to[out=90,in=-90] (box2.south);
+  \node[fit=(B-1-3) (B-3-3), draw=seq-green, rounded corners]    (box3) {};
+  \node[fit=(B-1-4) (B-3-4), draw=seq-green, rounded corners] (box4) {};
+  \path ($(box3.south)!.5!(box4.south)$) ++(0,-1cm)
+      node[seq-green, font=\small,anchor=base] (free) {free variables};
+  \draw[->,seq-green, shorten >=1pt] (free.north) to[out=90,in=-90] (box3.south);
+  \draw[->,seq-green, shorten >=1pt] (free.north) to[out=90,in=-90] (box4.south);
+\end{tikzpicture}
+            ]]>
+        </latex-code>
+        A basis for <m>\Col(A)</m> is given by the pivot columns:
+        <me>\left\{\vec{1 -2 2},\;\vec{2 -3 4}\right\},</me>
+        so <m>\rank(A) = \dim\Col(A) = 2</m>.
+      </p>
+      <p>
+        Since there are two free variables <m>x_3,x_4</m>, the null space of <m>A</m> has two vectors (see this <xref ref="dimension-basis-nulspace"/>):
+        <me>\left\{\vec{8 -4 1 0},\;\vec{7 -3 0 1}\right\},</me>
+        so <m>\nullity(A) = 2</m>.
+      </p>
+
+      <p>
+        In this case, the rank theorem says that <m>2 + 2 = 4</m>, where 4 is the number of columns.
+      </p>
+    </example>
+
+    <example hide-type="true">
+      <title>Interactive: Rank is 1, nullity is 2</title>
+      <figure>
+        <caption>This <m>3\times 3</m> matrix has rank 1 and nullity 2.  The violet plane on the left is the null space, and the violet line on the right is the column space.</caption>
+        <mathbox source="demos/Axequalsb.html?captions=rankthm" height="500px"/>
+      </figure>
+    </example>
+
+    <example hide-type="true">
+      <title>Interactive: Rank is 2, nullity is 1</title>
+      <figure>
+        <caption>This <m>3\times 3</m> matrix has rank 2 and nullity 1.  The violet line on the left is the null space, and the violet plane on the right is the column space.</caption>
+        <mathbox source="demos/Axequalsb.html?mat=1,-1,2:-1,2,4&amp;captions=rankthm" height="500px"/>
+      </figure>
+    </example>
+
+
+</section>

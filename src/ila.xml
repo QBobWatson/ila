@@ -1,0 +1,447 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--********************************************************************
+Copyright 2017 Georgia Institute of Technology
+
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version 1.3
+or any later version published by the Free Software Foundation;
+with no Invariant Sections, no Front-Cover Texts, and no Back-Cover Texts.
+A copy of the license is included in the section entitled "GNU
+Free Documentation License"
+*********************************************************************-->
+
+<!-- USE XINCLUDE SWITCH ON XSLTPROC -->
+
+<mathbook xmlns:xi="http://www.w3.org/2001/XInclude" xml:lang="en-US">
+
+  <!-- ISBN, website, other metadata -->
+  <xi:include href="./bookinfo.xml" />
+
+  <book xml:id="index">
+
+    <restrict-version versions="default">
+      <title>Interactive Linear Algebra</title>
+    </restrict-version>
+    <restrict-version versions="1553">
+      <title>Interactive Linear Algebra [1553]</title>
+    </restrict-version>
+
+    <!-- Title Page, Preface, etc. -->
+    <xi:include href="./frontmatter.xml" />
+
+    <!-- Chapters -->
+    <chapter xml:id="chap-algebra">
+      <title>Systems of Linear Equations: Algebra</title>
+
+      <introduction>
+        <note type-name="Primary Goal">
+          <p>Solve a system of linear equations algebraically in parametric form.</p>
+        </note>
+
+        <p>
+          This chapter is devoted to the algebraic study of systems of linear equations and their solutions.  We will learn a systematic way of solving equations of the form
+        <me>
+          \syseq{
+    3x_1 + 4x_2 + 10x_3 + 19x_4 - 2x_5 - 3x_6 = 141;
+    7x_1 + 2x_2 - 13x_3 - 7x_4 + 21x_5 + 8x_6 = 2567;
+    -x_1 + 9x_2 + \frac 32x_3 + x_4 + 14x_5 + 27x_6 = 26;
+    \frac 12x_1 + 4x_2 + 10x_3 + 11x_4 + 2x_5 + x_6 = -15\rlap.
+  }
+        </me>
+        </p>
+
+        <p>
+          In <xref ref="systems-of-eqns"/>, we will introduce <em>systems of linear equations</em>, the class of equations whose study forms the subject of linear algebra.  In <xref ref="row-reduction"/>, will present a procedure, called <em>row reduction</em>, for finding all solutions of a system of linear equations.  In <xref ref="parametric-form"/>, you will see hnow to express all solutions of a system of linear equations in a unique way using the <em>parametric form</em> of the general solution.
+        </p>
+      </introduction>
+
+      <xi:include href="./systems-eqns.xml" />
+      <xi:include href="./row-reduction.xml" />
+      <xi:include href="./parametric-form.xml" />
+	<!--  <xi:include href="./ch2exercises.xml" /> -->
+    </chapter>
+
+    <chapter xml:id="chap-geometry">
+      <title>Systems of Linear Equations: Geometry</title>
+
+      <introduction>
+        <note type-name="Primary Goals">
+          <p>We have already discussed systems of linear equations and how this is related to matrices.  In this chapter we will learn how to write a system of linear equations succinctly as a matrix equation, which looks like <m>Ax=b</m>, where <m>A</m> is an <m>m \times n</m> matrix, <m>b</m> is a vector in <m>\R^m</m> and <m>x</m> is a variable vector in <m>\R^n</m>.  As we will see, this is a powerful perspective.  We will study two related questions:
+            <ol>
+              <li>What is the set of solutions to <m>Ax=b</m>?</li>
+              <li>What is the set of <m>b</m> so that <m>Ax=b</m> is consistent?</li>
+            </ol>
+	The first question is the kind you are used to from your first algebra class: what is the set of solutions to <m>x^2-1=0</m>.  The second is also something you could have studied in your previous algebra classes: for which <m>b</m> does <m>x^2=b</m> have a solution?  This question is more subtle at first glance, but you can solve it in the same way as the first question, with the quadratic formula.
+          </p>
+        </note>
+
+        <p>
+          In order to answer the two questions listed above, we will use geometry.  This will be analogous to how you used parabolas in order to understand the solutions to a quadratic equation in one variable.  Specifically, this chapter is devoted to the geometric study of two objects:
+          <ol>
+            <li>the solution set of a matrix equation <m>Ax=b</m>, and</li>
+            <li>the set of all <m>b</m> that makes a particular system consistent.</li>
+          </ol>
+          The second object will be called the column space of <m>A</m>.  The two objects are related in a beautiful way by the rank theorem in <xref ref="rank-thm"/>.
+        </p>
+
+	<p>
+	Instead of parabolas and hyperbolas, our geometric objects are subspaces, such as lines and planes.  Our geometric objects will be something like 13-dimensional planes in <m>\R^{27}</m>, etc.  It is amazing that we can say anything substantive about objects that we cannot directly visualize.  
+	</p>
+
+        <p>
+          We will develop a large amount of vocabulary that we will use to describe the above objects: vectors (<xref ref="vectors"/>), spans (<xref ref="spans"/>), linear independence (<xref ref="linear-independence"/>), subspaces (<xref ref="subspaces"/>), dimension (<xref ref="dimension"/>),
+<restrict-version versions="1554 default">
+  coordinate systems (<xref ref="bases-as-coord-systems"/>),
+</restrict-version>
+          etc.  We will use these concepts to give a precise geometric description of the solution set of any system of equations (<xref ref="solution-sets"/>).  We will also learn how to express systems of equations more simply using matrix equations (<xref ref="matrix-equations"/>).
+        </p>
+      </introduction>
+
+      <xi:include href="./vectors.xml" />
+      <xi:include href="./spans.xml" />
+      <xi:include href="./matrixeq.xml" />
+      <xi:include href="./solnsets.xml" />
+      <xi:include href="./linindep.xml" />
+      <xi:include href="./subspaces.xml" />
+      <xi:include href="./dimension.xml" />
+      <xi:include href="./b-coordinates.xml" />
+      <xi:include href="./rank-thm.xml" />
+    </chapter>
+
+    <chapter xml:id="chap-matrices">
+      <title>Linear Transformations and Matrix Algebra</title>
+
+      <introduction>
+        <note type-name="Primary Goal">
+          <p>
+            Learn about linear transformations and their relationship to matrices.
+          </p>
+        </note>
+
+        <p>
+          In practice, one is often lead to ask questions about the geometry of a <em>transformation</em>: a function that takes an input and produces an output.  This kind of question can be answered by linear algebra if the transformation can be expressed by a matrix.
+        </p>
+
+        <specialcase>
+          <p>
+            Suppose you are building a robot arm with three joints that can move its hand around a plane, as in the following picture.
+            <latex-code>
+\usetikzlibrary{ipe}
+\usetikzlibrary{angles}
+\tikzstyle{ipe stylesheet} = [
+  ipe import,
+  even odd rule,
+  line join=round,
+  line cap=butt,
+  ipe pen normal/.style={line width=0.4},
+  ipe pen heavier/.style={line width=0.8},
+  ipe pen fat/.style={line width=1.2},
+  ipe pen ultrafat/.style={line width=2},
+  ipe pen normal,
+  ipe mark normal/.style={ipe mark scale=3},
+  ipe mark large/.style={ipe mark scale=5},
+  ipe mark small/.style={ipe mark scale=2},
+  ipe mark tiny/.style={ipe mark scale=1.1},
+  ipe mark normal,
+  /pgf/arrow keys/.cd,
+  ipe arrow normal/.style={scale=7},
+  ipe arrow large/.style={scale=10},
+  ipe arrow small/.style={scale=5},
+  ipe arrow tiny/.style={scale=3},
+  ipe arrow normal,
+  /tikz/.cd,
+  ipe arrows, % update arrows
+  &lt;->/.tip = ipe normal,
+  ipe dash normal/.style={dash pattern=},
+  ipe dash dashed/.style={dash pattern=on 4bp off 4bp},
+  ipe dash dotted/.style={dash pattern=on 1bp off 3bp},
+  ipe dash dash dotted/.style={dash pattern=on 4bp off 2bp on 1bp off 2bp},
+  ipe dash dash dot dotted/.style={dash pattern=on 4bp off 2bp on 1bp off 2bp on 1bp off 2bp},
+  ipe dash normal,
+  ipe node/.append style={font=\normalsize},
+  ipe stretch normal/.style={ipe node stretch=1},
+  ipe stretch normal,
+  ipe opacity 10/.style={opacity=0.1},
+  ipe opacity 30/.style={opacity=0.3},
+  ipe opacity 50/.style={opacity=0.5},
+  ipe opacity 75/.style={opacity=0.75},
+  ipe opacity opaque/.style={opacity=1},
+  ipe opacity opaque,
+]
+\begin{tikzpicture}[ipe stylesheet, scale=.7]
+  \draw[fill=white!80!black]
+    (100, 528) -- (196, 656) -- (220, 656) -- (124, 528) -- cycle;
+  \draw[fill=white!80!black]
+    (208, 664) -- (320, 712) -- (320, 696) -- (208, 648) -- cycle;
+  \begin{scope}[shift={(321.91, 715.847)}, rotate=-9.1623]
+  \draw[fill=white!90!black]
+    (0, 0)
+     -- (48, 12)
+     -- (96, 0)
+     -- (96, -4)
+     -- (20, -4)
+     -- (20, -20)
+     -- (96, -20)
+     -- (96, -24)
+     -- (48, -36)
+     -- (0, -24) -- cycle;
+  \draw[fill=red] (96, -12) circle[radius=1mm]
+     node[right=2mm, red] {$\vec{x y} = f(\theta,\phi,\psi)$};
+  \end{scope}
+  \filldraw[fill=white]
+    (208, 656) circle[radius=16];
+  \filldraw[fill=white]
+    (320, 704) circle[radius=16];
+  \filldraw[fill=white]
+    (112, 528) circle[radius=24];
+  \filldraw[white!20!black]
+    (112, 528) circle[radius=4]
+    (208, 656) circle[radius=4]
+    (320, 704) circle[radius=4];
+  \coordinate (c1) at (112, 528);
+  \coordinate (c2) at (208, 656);
+  \coordinate (c3) at (320, 704);
+  \coordinate (x1) at ($(c1) + (2cm,0)$);
+  \coordinate (x3) at ($(c3) + (2cm,0)$);
+
+  \draw (c1) -- (x1);
+  \draw (c1) -- ($(c1)!2cm!(c2)$);
+  \pic[draw, "$\theta$", angle radius=1cm, angle eccentricity=.8] {angle=x1--c1--c2};
+
+  \draw (c2) -- ($(c2)!2cm!(c1)$);
+  \draw (c2) -- ($(c2)!2cm!(c3)$);
+  \pic[draw, "$\phi$", angle radius=1cm, angle eccentricity=.8] {angle=c1--c2--c3};
+
+  \coordinate (x3p) at ($(c3)!2cm!-9.1623:(x3)$);
+  \draw (c3) -- ($(c3)!2cm!(c2)$);
+  \draw (c3) -- (x3p);
+  \pic[draw, "$\psi$", angle radius=1cm, angle eccentricity=.8] {angle=c2--c3--x3p};
+
+\end{tikzpicture}
+            </latex-code>
+            Define a transformation <m>f</m> as follows: <m>f(\theta,\phi,\psi)</m> is the <m>(x,y)</m> position of the hand when the joints are rotated by angles <m>\theta, \phi, \psi</m>, respectively.  The output of <m>f</m> tells you where the hand will be on the plane when the joints are set at the given input angles.
+          </p>
+          <p>
+            Unfortunately, this kind of function does not come from a matrix, so one cannot use linear algebra to answer questions about this function.  In fact, these functions are rather complicated; their study is the subject of <url href="https://en.wikipedia.org/wiki/Inverse_kinematics">inverse kinematics</url>.
+          </p>
+        </specialcase>
+
+        <p>
+          In this chapter, we will be concerned with the relationship between matrices and transformations.  In <xref ref="matrix-transformations"/>, we will consider the equation <m>b = Ax</m> as a function with independent variable <m>x</m> and dependent variable <m>b</m>, and we draw pictures accordingly.  We spend some time studying transformations in the abstract, and asking questions about a transformation, like whether it is one-to-one and/or onto (<xref ref="one-to-one-onto"/>).  In <xref ref="linear-transformations"/> we will answer the question: <q>when exactly can a transformation be expressed by a matrix?</q>  We then present matrix multiplication as a special case of composition of transformations (<xref ref="matrix-multiplication"/>).  This leads to the study of <em>matrix algebra</em>: that is, to what extent one can do arithmetic with matrices in the place of numbers.  With this in place, we learn to solve matrix equations by <em>dividing</em> by a matrix in <xref ref="matrix-inverses"/>.
+        </p>
+      </introduction>
+
+      <xi:include href="./matrix-trans.xml" />
+      <xi:include href="./one-one-onto.xml" />
+      <xi:include href="./linear-trans.xml" />
+      <xi:include href="./matrix-mult.xml" />
+      <xi:include href="./matrix-inv.xml" />
+      <xi:include href="./invertible-matrix-thm.xml" />
+    </chapter>
+
+    <chapter xml:id="chap-determinant">
+      <title>Determinants</title>
+      <introduction>
+        <p>
+          We begin by recalling the overall structure of this book:
+          <ol>
+            <li>Solve the matrix equation <m>Ax=b</m>.</li>
+            <li>Solve the matrix equation <m>Ax=\lambda x</m>, where <m>\lambda</m> is a number.</li>
+            <li>Approximately solve the matrix equation <m>Ax=b</m>.</li>
+          </ol>
+          At this point we have said all that we will say about the first part.  This chapter belongs to the second.
+        </p>
+
+        <note type-name="Primary Goal">
+          <p>
+            Learn about determinants: their computation and their properties.
+          </p>
+        </note>
+
+        <p>
+          The <em>determinant</em> of a square matrix <m>A</m> is a number <m>\det(A)</m>.  This incredible quantity is one of the most important invariants of a matrix; as such, it forms the basis of most advanced computations involving matrices.
+        </p>
+
+        <p>
+          In <xref ref="determinants-definitions-properties"/>, we will define the determinant in terms of its behavior with respect to row operations.  The determinant satisfies many wonderful properties: for instance, <m>\det(A) \neq 0</m> if and only if <m>A</m> is invertible.  We will discuss some of these properties in <xref ref="determinants-definitions-properties"/> as well.
+          In <xref ref="determinants-cofactors"/>, we will give a recursive formula for the determinant of a matrix.  This formula is very useful, for instance, when taking the determinant of a matrix with unknown entries; this will be important in <xref ref="chap-eigenvalues"/>.
+          Finally, in <xref ref="determinants-volumes"/>, we will relate determinants to volumes.  This gives a geometric interpretation for determinants, and explains why the determinant is defined the way it is.  This interpretation of determinants is a crucial ingredient in the change-of-variables formula in multivariable calculus.
+        </p>
+
+      </introduction>
+      <xi:include href="./determinant-definitions-properties.xml" />
+      <xi:include href="./determinant-cofactors.xml" />
+      <xi:include href="./determinant-volume.xml" />
+
+    </chapter>
+
+    <chapter xml:id="chap-eigenvalues">
+      <title>Eigenvalues and Eigenvectors</title>
+
+      <introduction>
+        <note type-name="Primary Goal">
+          <p>
+            Solve the matrix equation <m>Ax=\lambda x.</m>
+          </p>
+        </note>
+
+        <p>
+          This chapter constitutes the core of any first course on linear algebra: eigenvalues and eigenvectors play a crucial role in most real-world applications of the subject.
+        </p>
+
+        <specialcase>
+          <p>
+            In a population of rabbits,
+            <ol>
+              <li>half of the newborn rabbits survive their first year;</li>
+              <li>of those, half survive their second year;</li>
+              <li>the maximum life span is three years;</li>
+              <li>rabbits produce 0, 6, 8 baby rabbits in their first, second, and third years, respectively.</li>
+            </ol>
+            What is the <em>asymptotic</em> behavior of this system?  What will the rabbit population look like in 100 years?
+          </p>
+          <figure>
+            <caption>Left: the population of rabbits in a given year.  Right: the proportions of rabbits in that year.  Choose any values you like for the starting population, and click <q>Advance 1 year</q> several times.  What do you notice about the long-term behavior of the ratios?  This phenomenon turns out to be due to eigenvectors.</caption>
+            <mathbox source="demos/rabbits/book_demo.html" height="300px"/>
+          </figure>
+        </specialcase>
+
+        <p>
+          In <xref ref="eigenvectors"/>, we will define eigenvalues and eigenvectors, and show how to compute the latter; in <xref ref="characteristic-polynomial"/> we will learn to compute the former.
+<restrict-version versions="1554 default">
+          In <xref ref="similarity"/> we introduce the notion of <em>similar</em> matrices, and demonstrate that similar matrices do indeed behave similarly.  In <xref ref="diagonalization"/> we study matrices that are similar to diagonal matrices and in <xref ref="complex-eigenvalues"/> we study matrices that are similar to rotation-scaling matrices, thus gaining a solid geometric understanding of large classes of matrices. Finally, we spend <xref ref="stochastic-matrices"/> presenting a common kind of application of eigenvalues and eigenvectors to real-world problems, including searching the Internet using Google<rsq/>s PageRank algorithm.
+</restrict-version>
+<restrict-version versions="1553">
+  In <xref ref="diagonalization"/> we will use eigenvalues and eigenvectors to determine when a matrix is <q>similar</q> to a diagonal matrix, and we will see that the algebra and geometry of such a matrix is much simpler to understand.
+Finally, we spend <xref ref="stochastic-matrices"/> presenting a common kind of application of eigenvalues and eigenvectors to real-world problems, including searching the Internet using Google<rsq/>s PageRank algorithm.
+</restrict-version>
+        </p>
+      </introduction>
+
+      <xi:include href="./eigenvectors.xml" />
+      <xi:include href="./charpoly.xml" />
+      <xi:include href="./similarity.xml" />
+      <xi:include href="./diagonalization.xml" />
+      <xi:include href="./cplx-eigenvals.xml" />
+      <xi:include href="./stochastic.xml" />
+
+    </chapter>
+
+    <chapter xml:id="chap-orthogonality">
+      <title>Orthogonality</title>
+
+      <introduction>
+        <p>
+          Let us recall one last time the structure of this book:
+          <ol>
+            <li>Solve the matrix equation <m>Ax=b</m>.</li>
+            <li>Solve the matrix equation <m>Ax=\lambda x</m>, where <m>\lambda</m> is a number.</li>
+            <li>Approximately solve the matrix equation <m>Ax=b</m>.</li>
+          </ol>
+          We have now come to the third part.
+        </p>
+
+        <note type-name="Primary Goal">
+          <p>
+            Approximately solve the matrix equation <m>Ax=b.</m>
+          </p>
+        </note>
+
+        <p>
+          Finding approximate solutions of equations generally requires computing the closest vector on a subspace to a given vector.  This becomes an <em>orthogonality</em> problem: one needs to know which vectors are perpendicular to the subspace.
+          <latex-code>
+\begin{tikzpicture}[myxyz, thin border nodes]
+  \coordinate (u) at (0,1,0);
+  \coordinate (v) at (1.1,0,-.2);
+  \coordinate (uxv) at (.2,0,1.1);
+  \coordinate (x) at ($-1.1*(u)+(v)+1.5*(uxv)$);
+  \begin{scope}[x=(u),y=(v),transformxy]
+    \fill[seq-violet!30] (-2,-2) rectangle (2,2);
+    \draw[seq-violet, help lines] (-2,-2) grid (2,2);
+  \end{scope}
+  \point[seq-blue, "closest point" {below,text=seq-blue}] (y) at ($-1.1*(u)+1*(v)$);
+  \coordinate (yu) at ($(y)+(u)$);
+  \coordinate (yv) at ($(y)+(v)$);
+  \pic[draw, right angle len=3mm] {right angle=(x)--(y)--(yu)};
+  \pic[draw, right angle len=3mm] {right angle=(x)--(y)--(yv)};
+  \point[seq-red, "$x$" {above,text=seq-red}] (xx) at (x);
+  \draw[vector, thin] (y) -- (xx);
+  \point at (0,0,0);
+\end{tikzpicture}
+          </latex-code>
+        </p>
+
+        <p>
+          First we will define orthogonality and learn to find orthogonal complements of subspaces in <xref ref="dot-product"/> and <xref ref="orthogonal-complements"/>.  The core of this chapter is <xref ref="projections"/>, in which we discuss <em>the orthogonal projection</em> of a vector onto a subspace; this is a method of calculating the closest vector on a subspace to a given vector.
+<restrict-version versions="1554 default">
+          These calculations become easier in the presence of an orthogonal set, as we will see in <xref ref="orthogonal-sets"/>.
+</restrict-version>
+          In <xref ref="least-squares"/> we will present the least-squares method of approximately solving systems of equations, and we will give applications to data modeling.
+        </p>
+
+        <specialcase>
+          <p>
+            In data modeling, one often asks: <q>what line is my data supposed to lie on?</q>  This can be solved using a simple application of the least-squares method.
+            <latex-code>
+\begin{tikzpicture}[scale=.2]
+  \draw (0,25) rectangle (40,60);
+  \draw[help lines, step=5] (0,25) grid (40,60);
+  \clip (0,25) rectangle (40,60);
+  \point at (9,26);
+  \point at (13,32);
+  \point at (21,42);
+  \point at (30,53);
+  \point at (31,56);
+  \point at (31,55);
+  \point at (34,59);
+  \point at (25,50);
+  \point at (28,56);
+  \point at (20,44);
+  \point at (5,30);
+  \draw[thick, red] (0,19.39) -- (40,66.31);
+\end{tikzpicture}
+            </latex-code>
+          </p>
+        </specialcase>
+
+        <specialcase>
+          <p>
+            Gauss invented the method of least squares to find a best-fit ellipse:
+he correctly predicted the (elliptical) orbit of the asteroid Ceres as it passed behind
+the sun in 1801.
+<latex-code>
+\begin{tikzpicture}[thin border nodes, whitebg nodes]
+  \draw[grid lines] (-4,-3) grid (4,3);
+  \draw[->] (-4,0) -- (4,0);
+  \draw[->] (0,-3) -- (0,3);
+
+  \point at (0,2);
+  \point at (2,1);
+  \point at (1,-1);
+  \point at (-1,-2);
+  \point at (-3,1);
+  \point at (-1,1);
+
+  \draw[thick, seq-red] (-0.760768, -0.0153293)
+      ellipse[x radius=2.61837, y radius=1.84472, rotate=26.0068];
+%  \node[text=seq-red, font=\normalsize] at (0, -3.3)
+%    {$266 x^2 + 405 y^2 - 178 xy + 402 x - 123 y - 1374 = 0$};
+\end{tikzpicture}
+</latex-code>
+          </p>
+        </specialcase>
+      </introduction>
+
+      <xi:include href="./innerprod.xml" />
+      <xi:include href="./orthocomp.xml" />
+      <xi:include href="./projections.xml" />
+      <xi:include href="./orthosets.xml" />
+      <xi:include href="./leastsquares.xml" />
+
+    </chapter>
+
+    <xi:include href="./backmatter.xml" />
+  </book>
+
+</mathbook>

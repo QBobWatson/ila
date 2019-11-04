@@ -1,0 +1,151 @@
+/** page wide defs for knowls, the *[knowl] is a selector for
+ *  all elements, that have a knowl attribute set to any value */
+.knowl-content {
+  padding: 10px 10px 0 10px;
+  border-bottom-left-radius: 10px;
+  -moz-border-radius-bottomleft: 10px;
+}
+.knowl-content h1 {
+  margin: 0px 0px 10px 0px;
+}
+.knowl-content h2 {
+  margin: 0px 0px 5px 0px;
+}
+
+/* next defninition is needed to over-ride the default, which is the
+   default font size, which is 16pt */
+.knowl p {
+  margin-bottom: 0;
+  margin-top: 10px;
+}
+
+
+*[knowl] {
+  display: inline;
+  border-bottom: 1px dotted #00a;
+  color: #00a;
+  cursor: pointer;
+  border-radius: 0;
+  -webkit-border-radius: 0;
+  -moz-border-radius: 0;
+  margin: 3px 0 0 0;
+}
+*[knowl]:hover,
+*[knowl].active {
+  border-bottom: 1px solid #aaf;
+  background: #ddf;
+  color: #006;
+/* no point in these being different when hovering
+  padding: 0;
+  margin: 0 0 0 0;
+  border-top-left-radius: 3px;
+  -moz-border-radius-topleft: 3px;
+  border-top-right-radius: 3px;
+  -moz-border-radius-topright: 3px;
+*/
+}
+
+
+div > *[knowl], p > *[knowl] {
+  position: relative;
+}
+
+.knowl-error {
+   color: red;
+   border-bottom: 0;
+}
+.knowl-output {
+  background: #eef;
+  border-top: 10px solid #ddf;
+  border-left: 10px solid #ddf;
+  border-right: 10px solid #ddf;
+  border-bottom: 10px solid #ddf;
+  border-bottom-left-radius: 10px;
+  -moz-border-radius-bottomleft: 10px;
+  border-bottom-right-radius: 10px;
+  -moz-border-radius-bottomright: 10px;
+  display: none;
+  padding: 0px;
+  margin-top: 10px;
+  margin-bottom: 0px;
+  margin-right: 0px;
+}
+
+.knowl-output .knowl-output {
+    border-width: 6px;
+    background: white;
+    -webkit-border-radius: 4px;
+    -moz-border-radius: 4px;
+    -ms-border-radius: 4px;
+    -o-border-radius: 4px;
+    border-radius: 4px;
+    margin-bottom: 1.25em;
+}
+
+.knowl-output .knowl-output,
+.knowl-output .knowl-output.loading {
+ margin-left: 0;
+ margin-right: 0;
+}
+.knowl-output.loading {
+ color: grey;
+ font-style: italic;
+ font-size: small;
+}
+.knowl-output h1, .knowl-output h2 {
+  margin: 5px 0;
+}
+.knowl-output h1 {
+  color: #006;
+}
+.knowl-output h2 {
+  color: #006;
+}
+.knowl-output a { display: inline; }
+
+.knowl-footer {
+  position: relative;
+  bottom: -9px;
+  font-size: x-small;
+  background: #ddf;
+  color: grey;
+  padding: 0 0 0 12px;
+  margin:  -10px 0 0 0;
+}
+
+.knowl-output .knowl-output .knowl-footer {
+  bottom: -5px;
+  margin:  -5px 0 0 0;
+}
+
+.knowl-output + .knowl-output {
+    margin-top: 0;
+}
+
+.knowl-footer a {
+  color: #006;
+}
+.knowl-footer a:hover {
+  background: none;
+  color: #88f;
+}
+.knowl-footer:after {
+    content: "\2002";
+}
+
+.knowl-output.processing {
+  display:block!important;
+  height:0pt;
+  overflow:hidden;
+}
+
+/*
+.MathJax a .MathJax_knowl { 
+  color: #f33;
+}
+*/
+
+.MathJax a .MathJax_knowl:hover { 
+  background-color: #afa;
+}
+

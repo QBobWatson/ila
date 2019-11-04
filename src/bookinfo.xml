@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--********************************************************************
+Copyright 2017 Georgia Institute of Technology
+*********************************************************************-->
+
+<docinfo>
+
+  <brandlogo url="http://www.gatech.edu" source="images/gatech.gif" />
+
+  <!-- JDR: put everything in "macros" below. -->
+  <!-- <latex-preamble> -->
+  <!--   <package>color</package> -->
+  <!-- </latex-preamble> -->
+
+  <defaults>
+    <image-width>auto</image-width>
+  </defaults>
+
+  <cross-references text="type-hybrid">
+    <type match="example" text="phrase-hybrid"/>
+    <type match="specialcase" text="phrase-hybrid"/>
+    <type match="theorem" text="phrase-hybrid"/>
+    <type match="lemma" text="phrase-hybrid"/>
+    <type match="proposition" text="phrase-hybrid"/>
+    <type match="corollary" text="phrase-hybrid"/>
+    <type match="remark" text="phrase-hybrid"/>
+    <type match="definition" text="phrase-hybrid"/>
+    <type match="essential" text="phrase-hybrid"/>
+    <type match="note" text="phrase-hybrid"/>
+    <type match="warning" text="phrase-hybrid"/>
+    <type match="bluebox" text="phrase-hybrid"/>
+    <type match="algorithm" text="phrase-hybrid"/>
+    <type match="figure" text="phrase-hybrid"/>
+    <type match="observation" text="phrase-hybrid"/>
+    <type match="subsection" text="phrase-hybrid"/>
+    <type match="fact" text="phrase-hybrid"/>
+    <type match="section" text="type-global"/>
+  </cross-references>
+
+  <!-- LaTeX macros for this book go in macros.sty. -->
+  <macros>
+    \usepackage{macros}
+  </macros>
+
+  <!-- tikz package and libraries for images -->
+  <!-- <latex-image-preamble> -->
+  <!--   \usepackage{geometry} -->
+  <!--   \geometry{paperwidth=300mm, paperheight=300mm, -->
+  <!--     layoutwidth=300mm, layoutheight=300mm, -->
+  <!--     textwidth=300mm, textheight=300mm, ignoreall} -->
+  <!-- </latex-image-preamble> -->
+
+  <!-- <search> -->
+  <!--   <google> -->
+  <!--     <cx>003308934872512483719:xkt6y7nrxhk</cx> -->
+  <!--   </google> -->
+  <!-- </search> -->
+
+</docinfo>

@@ -1,0 +1,56 @@
+<?xml version="1.0"?>
+<!-- JDR: This file tells Emacs's nxml-mode where the schema files are.
+     It does not get compiled by Mathbook XML. -->
+<locatingRules xmlns="http://thaiopensource.com/ns/locating-rules/1.0">
+  <uri resource="determinant-motivation.xml" uri="../mathbook/schema/pretext.rnc"/>
+  <uri resource="EuclideanSpace.xml" uri="../mathbook/schema/pretext.rnc"/>
+  <uri resource="WhatIsLinAlg.xml" uri="../mathbook/schema/pretext.rnc"/>
+  <uri resource="determinant-cofactors.xml" uri="../mathbook/schema/pretext.rnc"/>
+  <uri resource="backmatter.xml" uri="../mathbook/schema/pretext.rnc"/>
+  <uri resource="b-coordinates.xml" uri="../mathbook/schema/pretext.rnc"/>
+  <uri resource="rank-thm.xml" uri="../mathbook/schema/pretext.rnc"/>
+  <uri resource="bookinfo.xml" uri="../mathbook/schema/pretext.rnc"/>
+  <uri resource="charpoly.xml" uri="../mathbook/schema/pretext.rnc"/>
+  <uri resource="cplx-eigenvals.xml" uri="../mathbook/schema/pretext.rnc"/>
+  <uri resource="cplx-nums.xml" uri="../mathbook/schema/pretext.rnc"/>
+  <uri resource="determinant-definitions-properties.xml" uri="../mathbook/schema/pretext.rnc"/>
+  <uri resource="determinant-volume.xml" uri="../mathbook/schema/pretext.rnc"/>
+  <uri resource="determinant-compute.xml" uri="../mathbook/schema/pretext.rnc"/>
+  <uri resource="determinant-defn.xml" uri="../mathbook/schema/pretext.rnc"/>
+  <uri resource="determinant-motivation-cofactors.xml" uri="../mathbook/schema/pretext.rnc"/>
+  <uri resource="diagonalization.xml" uri="../mathbook/schema/pretext.rnc"/>
+  <uri resource="dimension.xml" uri="../mathbook/schema/pretext.rnc"/>
+  <uri resource="eigenvectors.xml" uri="../mathbook/schema/pretext.rnc"/>
+  <uri resource="similarity.xml" uri="../mathbook/schema/pretext.rnc"/>
+  <uri resource="frontmatter.xml" uri="../mathbook/schema/pretext.rnc"/>
+  <uri resource="gfdl.xml" uri="../mathbook/schema/pretext.rnc"/>
+  <uri resource="gramschmidt.xml" uri="../mathbook/schema/pretext.rnc"/>
+  <uri resource="innerprod.xml" uri="../mathbook/schema/pretext.rnc"/>
+  <uri resource="leastsquares.xml" uri="../mathbook/schema/pretext.rnc"/>
+  <uri resource="linalg.xml" uri="../mathbook/schema/pretext.rnc"/>
+  <uri resource="linindep.xml" uri="../mathbook/schema/pretext.rnc"/>
+  <uri resource="lintransform.xml" uri="../mathbook/schema/pretext.rnc"/>
+  <uri resource="matrixalg.xml" uri="../mathbook/schema/pretext.rnc"/>
+  <uri resource="matrixeq.xml" uri="../mathbook/schema/pretext.rnc"/>
+  <uri resource="matrix-inv.xml" uri="../mathbook/schema/pretext.rnc"/>
+  <uri resource="invertible-matrix-thm.xml" uri="../mathbook/schema/pretext.rnc"/>
+  <uri resource="matrix-mult.xml" uri="../mathbook/schema/pretext.rnc"/>
+  <uri resource="matrix-trans.xml" uri="../mathbook/schema/pretext.rnc"/>
+  <uri resource="orthosets.xml" uri="../mathbook/schema/pretext.rnc"/>
+  <uri resource="orthocomp.xml" uri="../mathbook/schema/pretext.rnc"/>
+  <uri resource="projections.xml" uri="../mathbook/schema/pretext.rnc"/>
+  <uri resource="overview.xml" uri="../mathbook/schema/pretext.rnc"/>
+  <uri resource="rowreduction.xml" uri="../mathbook/schema/pretext.rnc"/>
+  <uri resource="solnsets.xml" uri="../mathbook/schema/pretext.rnc"/>
+  <uri resource="stochastic.xml" uri="../mathbook/schema/pretext.rnc"/>
+  <uri resource="subspaces.xml" uri="../mathbook/schema/pretext.rnc"/>
+  <uri resource="vectors.xml" uri="../mathbook/schema/pretext.rnc"/>
+  <uri resource="linear-trans.xml" uri="../mathbook/schema/pretext.rnc"/>
+  <uri resource="lines-and-planes.xml" uri="../mathbook/schema/pretext.rnc"/>
+  <uri resource="parametric-form.xml" uri="../mathbook/schema/pretext.rnc"/>
+  <uri resource="rank-nullity.xml" uri="../mathbook/schema/pretext.rnc"/>
+  <uri resource="row-reduction.xml" uri="../mathbook/schema/pretext.rnc"/>
+  <uri resource="spans.xml" uri="../mathbook/schema/pretext.rnc"/>
+  <uri resource="systems-eqns.xml" uri="../mathbook/schema/pretext.rnc"/>
+  <uri resource="one-one-onto.xml" uri="../mathbook/schema/pretext.rnc"/>
+</locatingRules>

@@ -1,0 +1,30 @@
+<?xml version='1.0'?>
+<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0"
+    xmlns:exsl="http://exslt.org/common"
+    extension-element-prefixes="exsl">
+  <xsl:template name="git-hash">
+    <xsl:text>@GIT_HASH@</xsl:text>
+  </xsl:template>
+  <xsl:template name="git-hash-short">
+    <xsl:text>@GIT_HASH_SHORT@</xsl:text>
+  </xsl:template>
+  <xsl:template name="versioned-file">
+    <xsl:param name="file"/>
+    <xsl:variable name="commit">
+      <xsl:choose>
+        <xsl:when test="$file='js/ila.js'">
+          <xsl:text>@ILA_JS@</xsl:text>
+        </xsl:when>
+        <xsl:when test="$file='css/ila.css'">
+          <xsl:text>@ILA_CSS@</xsl:text>
+        </xsl:when>
+        <xsl:when test="$file='js/cover.js'">
+          <xsl:text>@COVER_JS@</xsl:text>
+        </xsl:when>
+      </xsl:choose>
+    </xsl:variable>
+    <xsl:value-of select="$file"/>
+    <xsl:text>?vers=</xsl:text>
+    <xsl:value-of select="$commit"/>
+  </xsl:template>
+</xsl:stylesheet>

@@ -1,0 +1,115 @@
+
+\ProvidesPackage{macros}
+
+\usepackage{color}
+\usepackage{spalign}
+\usepackage{calc}
+
+\def\R{\mathbf R}
+\def\C{\mathbf C}
+\let\mathbb=\mathbf
+\spaligndelims()
+\let\oldvec=\vec
+\let\vec=\spalignvector
+\let\mat=\spalignmat
+\let\amat=\spalignaugmat
+\let\hmat=\spalignaugmathalf
+\let\syseq=\spalignsys
+\let\epsilon=\varepsilon
+
+\def\Span{\operatorname{Span}}
+\def\Nul{\operatorname{Nul}}
+\def\Col{\operatorname{Col}}
+\def\Row{\operatorname{Row}}
+\def\rank{\operatorname{rank}}
+\def\nullity{\operatorname{nullity}}
+\def\Id{\operatorname{Id}}
+\def\Tr{\operatorname{Tr}}
+\def\adj{\operatorname{adj}}
+\def\Re{\operatorname{Re}}
+\def\Im{\operatorname{Im}}
+\def\dist{\operatorname{dist}}
+\def\refl{\operatorname{ref}}
+\def\inv{^{-1}}
+\let\To=\longrightarrow
+\def\rref{\;\xrightarrow{\text{RREF}}\;}
+\def\matrow#1{\text{---}\,#1\,\text{---}}
+\def\vol{\operatorname{vol}}
+\def\sptxt#1{\quad\text{ #1 }\quad}
+\let\bar=\overline
+\let\hat=\widehat
+
+\def\cB{{\mathcal B}}
+
+\newcommand{\leading}[1]{\color{red}#1}
+\newcommand{\setof}[1]{\left\{#1\right\}}
+
+\definecolor{seq-red}{rgb}{0.8941,0.1020,0.1098}
+\definecolor{seq-blue}{rgb}{0.2157,0.4941,0.7216}
+\definecolor{seq-green}{rgb}{0.3020,0.6863,0.2902}
+\definecolor{seq-violet}{rgb}{0.5961,0.3059,0.6392}
+\definecolor{seq-orange}{rgb}{1.0000,0.4980,0.0000}
+\definecolor{seq-yellow}{rgb}{0.7000,0.7000,0.0000}
+\definecolor{seq-brown}{rgb}{0.6510,0.3373,0.1569}
+\definecolor{seq-pink}{rgb}{0.9686,0.5059,0.7490}
+
+\definecolor{seq1}{rgb}{0.8941,0.1020,0.1098}
+\definecolor{seq2}{rgb}{0.2157,0.4941,0.7216}
+\definecolor{seq3}{rgb}{0.3020,0.6863,0.2902}
+\definecolor{seq4}{rgb}{0.5961,0.3059,0.6392}
+\definecolor{seq5}{rgb}{1.0000,0.4980,0.0000}
+\definecolor{seq6}{rgb}{0.7000,0.7000,0.0000}
+\definecolor{seq7}{rgb}{0.6510,0.3373,0.1569}
+\definecolor{seq8}{rgb}{0.9686,0.5059,0.7490}
+
+\newenvironment{smm}{\left(\begin{smallmatrix}}
+                    {\end{smallmatrix}\right)}
+\newcommand*\smallmat[4]%
+  {\ensuremath{\begin{smm}#1&#2\\#3&#4\end{smm}}}
+
+\usepackage{tikz}
+\usetikzlibrary{backgrounds}
+\usetikzlibrary{arrows}
+\usetikzlibrary{snakes}
+\usetikzlibrary{matrix}
+\usetikzlibrary{positioning,fit}
+\usetikzlibrary{shapes,decorations,decorations.pathmorphing}
+\usetikzlibrary{decorations.markings}
+\usetikzlibrary{calc,arrows.meta,quotes}
+\usetikzlibrary{ipe}
+\usetikzlibrary{angles}
+\usetikzlibrary{datavisualization.formats.functions}
+\usetikzlibrary{math}
+\usepackage{jdr-tikz}
+\usepackage{spalign}
+
+    \tikzset{
+        whitebg/.style={fill=white},
+        whitebg nodes/.style={every node/.append style=whitebg,
+            every label/.append style=whitebg,
+            every pin/.append style=whitebg},
+        thin border/.style={inner sep=#1, outer sep=0pt},
+        thin border/.default=1pt,
+        thin border nodes/.style={every node/.append style={thin border=#1}},
+        thin border nodes/.default=1pt,
+        every pin edge/.style={<-,thin},
+        node is bbox/.style={inner sep=0pt, outer sep=0pt, line width=0pt},
+        every matrix/.style={ampersand replacement=\&},
+        math matrix/.style={matrix of math nodes,
+            left delimiter={(}, right delimiter={)},
+            inner sep=0pt, inner ysep=2pt, row sep=.4em, column sep=.6666em,
+            nodes={inner sep=0}},
+    }
+
+    \tikzset{
+        vector/.style={very thick, -{Stealth[length=3mm]}},
+        thick vector/.style={very thick, -Stealth},
+        point/.style={circle, fill=black, inner sep=0pt,
+                      minimum size=1.5mm, anchor=center},
+    }
+
+
+\newif\ifpdfvers
+\pdfversfalse
+
+\endinput
