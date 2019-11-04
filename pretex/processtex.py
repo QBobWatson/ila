@@ -571,9 +571,12 @@ class HTMLDoc:
             svg = cache[2]
             self._replace_elt(elt, svg)
         self._rewrite_common(style, fonts)
+        contents = html.tostring(
+            self.dom, include_meta_content_type=True, encoding='utf-8')
         with open(self.output_file, 'wb') as outf:
-            outf.write(html.tostring(
-                self.dom, include_meta_content_type=True, encoding='utf-8'))
+            outf.write(contents)
+        with open(self.html_cache, 'wb') as outf:
+            outf.write(contents)
 
     def copy_over(self):
         "Write html data directly to output file."
@@ -961,6 +964,7 @@ def main():
         log("Extracting code and running LaTeX...")
         done = set()
         for html in html_files:
+            basename = os.path.basename(html.html_file)
             if html.is_cached_html and not args.no_cache:
                 # The input html file is unchanged
                 done.add(html)
@@ -972,12 +976,12 @@ def main():
                 html.copy_over()
                 continue
             if html.is_cached_svg and not args.no_cache:
+                log("Using cached svgs for {}".format(basename))
                 done.add(html)
                 html.use_cached_svg()
                 continue
             else:
-                log("(Re)processing {}".format(
-                    os.path.basename(html.html_file)))
+                log("(Re)processing {}".format(basename))
                 html.latex()
         html_files = [h for h in html_files if h not in done]
         if not html_files:

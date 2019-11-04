@@ -1,5 +1,6 @@
 # -*- python -*-
 
+import atexit
 import os
 
 AddOption('--production',
@@ -101,3 +102,12 @@ env.SConscriptChdir(1)
 env.SConscript('demos/SConscript', exports='env build_dir staging_dir')
 env.SConscript('src/SConscript', exports='env build_dir staging_dir')
 
+def when_done():
+    from SCons.Script import GetBuildFailures
+    if not list(GetBuildFailures()):
+        print("")
+        print("Build successful!  Open or reload")
+        print("     http://localhost:8081/")
+        print("in your browser to see the result.")
+
+atexit.register(when_done)

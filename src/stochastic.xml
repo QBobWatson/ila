@@ -130,7 +130,7 @@ the license is included in gfdl.xml.
       </p>
       <figure>
         <caption>Left: the population of rabbits in a given year.  Right: the proportions of rabbits in that year.  Choose any values you like for the starting population, and click <q>Advance 1 year</q> several times.  Notice that the ratio <m>x_t:y_t:z_t</m> approaches <m>16:4:1</m>, and that all three quantities eventually double each year.</caption>
-        <mathbox source="demos/rabbits/book_demo.html" height="300px"/>
+        <mathbox source="demos/rabbits.html" height="300px"/>
       </figure>
     </example>
 

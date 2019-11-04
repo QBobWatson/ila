@@ -1,5 +1,8 @@
 
+import os
+
 from subprocess import check_output
+
 
 def cat_files(target, sources, delim=''):
     with open(target, 'wb') as outfobj:
@@ -27,6 +30,8 @@ def minify(target, source, env, for_signature=None):
         minimized = check_output([env['CLEANCSS'], '--skip-rebase', src])
     else:
         raise Exception("Don't know how to minify %s!" % src)
+    if not os.path.exists(os.path.dirname(target)):
+        os.makedirs(os.path.dirname(target))
     with open(target, 'wb') as fobj:
         fobj.write(minimized)
 
