@@ -8,6 +8,7 @@
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">
 
 <xsl:import href="../../mathbook/xsl/mathbook-latex.xsl" />
+<xsl:import href="theme.xsl" />
 
 <xsl:param name="latex.font.size" select="'12pt'" />
 
@@ -74,7 +75,7 @@
 \pdfverstrue
 </xsl:param>
 
-<xsl:param name="latex.online" select="'https://textbooks.math.gatech.edu/ila/'" />
+<xsl:param name="latex.online" select="$theme.online" />
 
 <!-- This is almost the same as <me>, except it doesn't wrap the result in an
      equation* environtment.  Also, in "bare" mode, commands can be executed in

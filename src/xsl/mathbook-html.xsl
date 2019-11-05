@@ -12,6 +12,7 @@
 
 <xsl:import href="../../mathbook/xsl/mathbook-html.xsl" />
 <xsl:import href="git-hash.xsl" />
+<xsl:import href="theme.xsl" />
 
 <!-- JDR: for caching -->
 <xsl:param name="debug.datedfiles">no</xsl:param>
@@ -53,7 +54,21 @@
     <!-- JDR: preprocessed inline pretex stylesheet is inserted here -->
     <style id="pretex-style"></style>
     <style id="pretex-fonts"></style>
-    <link rel="shortcut icon" href="images/gatech.gif"/>
+    <link rel="shortcut icon" href="images/logo.gif"/>
+</xsl:template>
+
+<!-- JDR: use theme.sponsor in brand logo -->
+<xsl:template name="brand-logo">
+    <xsl:choose>
+        <xsl:when test="/mathbook/docinfo/brandlogo">
+            <a id="logo-link" href="{$theme.sponsor}" target="_blank" rel="noopener">
+                <img src="{/mathbook/docinfo/brandlogo/@source}" alt="Logo image for document"/>
+            </a>
+        </xsl:when>
+        <xsl:otherwise>
+            <a id="logo-link" href="" />
+        </xsl:otherwise>
+    </xsl:choose>
 </xsl:template>
 
 <!-- Primary Navigation -->

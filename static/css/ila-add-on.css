@@ -44,7 +44,6 @@
 
 /* Overrides the overrides in mathbook-add-on.css */
 body, html body {
-    background: #545454;
     /* JDR: Bitstream Charter looks better at this size.  Don't change this in the Compass stylesheets though!  It can't actually handle a non-default base font size. */
     font-size: 18px;
 }
@@ -131,30 +130,6 @@ body, html body {
     margin-top: 0px;
 }
 
-article.theorem-like, article.objectives {
-    border-left: 2px solid #eeb211;
-}
-article.theorem-like:after, article.objectives:after {
-    border-bottom: 2px solid #eeb211;
-}
-article.example-like {
-    border-left: 2px solid #eeb211;
-}
-article.example-like:after {
-    border-bottom: 2px solid #eeb211;
-}
-article.definition-like {
-    border-left: 2px solid #eeb211;
-}
-article.definition-like:after {
-    border-bottom: 2px solid #eeb211;
-}
-article.remark-like {
-    border-left: 2px solid #eeb211;
-}
-article.remark-like:after {
-    border-bottom: 2px solid #eeb211;
-}
 .hidden-knowl-wrapper article.remark-like {
     border-left: none;
     padding-left: 0;
@@ -212,7 +187,6 @@ a > article.remark-like:after {
 }
 
 .mathbook-content section.hidden-subsection > header > h1:hover {
-  background: #fdf6e2;
   cursor: pointer;
 }
 
@@ -418,15 +392,9 @@ body, html body {
 }
 
 .pdf-version a {
-  color: #aaaaaa;
   font-family: "CharterBT";
   text-decoration: none;
 }
-
-.pdf-version a:hover {
-  color: #eeb211;
-}
-
 
 /* JDR: cover animation */
 

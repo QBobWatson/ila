@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="initial-scale=1, maximum-scale=1">
   <title><%block name="title">Demo</%block></title>
-  <link rel="shortcut icon" href="img/gatech.gif"/>
+  <link rel="shortcut icon" href="img/logo.gif"/>
 
   <%block name="css">
       <link rel="stylesheet" href="${"css/demo.css" | vers}">

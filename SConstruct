@@ -13,6 +13,12 @@ AddOption('--build-pdf',
           action='store_true',
           help='Build PDF file too')
 
+AddOption('--theme',
+          dest='theme',
+          type='string', nargs=1, action='store',
+          default='gt',
+          help='Choose the theme to use (gt or duke)')
+
 AddOption('--variant',
           dest='variant',
           type='string', nargs=1, action='store',
@@ -28,6 +34,7 @@ AddOption('--chunk-size',
 env = Environment(tools=['default', 'textfile', TOOL_ADD_CAT],
                   PRODUCTION=GetOption('production'),
                   VARIANT=GetOption('variant'),
+                  THEME=GetOption('theme'),
                   CHUNKSIZE=GetOption('chunksize'),
                   BUILD_PDF=GetOption('build_pdf'))
 
@@ -73,9 +80,10 @@ ila_js = env.CatJS('$STAGING_DIR/js/ila',
                    '''))
 ila_css = env.CatCSS('$STAGING_DIR/css/ila',
                      Split('''
-                     mathbook-assets/build/mathbook-gt
+                     mathbook-assets/build/mathbook-${THEME}
                      mathbook/css/mathbook-add-on
                      static/css/ila-add-on
+                     static/css/ila-add-on-${THEME}
                      vendor/knowlstyle
                      '''))
 to_minify.append(ila_js)
@@ -94,9 +102,15 @@ for font in fonts:
     env.Command('$BUILD_DIR/css/fonts/' + os.path.basename(str(font)), font,
                 Copy('$TARGET', '$SOURCE'))
 
-for fname in ['images', 'manifest.json', 'google9ccfcae89045309c.html']:
+for fname in ['manifest.json', 'google9ccfcae89045309c.html']:
     env.Command('$BUILD_DIR/' + fname, 'static/' + fname,
                 Copy('$TARGET', '$SOURCE'))
+
+images = \
+    env.Command('$BUILD_DIR/images', 'static/images',
+                Copy('$TARGET', '$SOURCE'))
+env.AddPostAction(images, 'cp $BASE_DIR/static/theme-$THEME/* $BUILD_DIR/images')
+
 
 env.SConscriptChdir(1)
 env.SConscript('demos/SConscript', exports='env build_dir staging_dir')

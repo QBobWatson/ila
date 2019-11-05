@@ -1,0 +1,43 @@
+
+/* JDR: I wish all the color theming happened in the scss files... */
+
+body, html body {
+    background: #545454;
+}
+
+article.theorem-like, article.objectives {
+    border-left: 2px solid #eeb211;
+}
+article.theorem-like:after, article.objectives:after {
+    border-bottom: 2px solid #eeb211;
+}
+article.example-like {
+    border-left: 2px solid #eeb211;
+}
+article.example-like:after {
+    border-bottom: 2px solid #eeb211;
+}
+article.definition-like {
+    border-left: 2px solid #eeb211;
+}
+article.definition-like:after {
+    border-bottom: 2px solid #eeb211;
+}
+article.remark-like {
+    border-left: 2px solid #eeb211;
+}
+article.remark-like:after {
+    border-bottom: 2px solid #eeb211;
+}
+
+.mathbook-content section.hidden-subsection > header > h1:hover {
+  background: #fdf6e2;
+}
+
+.pdf-version a {
+  color: #aaaaaa;
+}
+
+.pdf-version a:hover {
+  color: #eeb211;
+}

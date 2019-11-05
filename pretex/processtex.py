@@ -498,8 +498,6 @@ class HTMLDoc:
             cache.append(svg)
         with open(self.svg_cache, 'wb') as fobj:
             fobj.write(html.tostring(cache))
-        with open(self.html_cache, 'w', encoding='utf-8') as fobj:
-            fobj.write(self.html_data)
 
     def _replace_elt(self, elt, svg):
         "Replace an element with an svg, using a binding wrapper if necessary."
@@ -616,9 +614,12 @@ svg.pretex path {{
         font_style += self.path_classes.css(
             '.{} svg.pretex path'.format(base_class))
         self._rewrite_common(style, font_style)
+        content = html.tostring(
+            self.dom, include_meta_content_type=True, encoding='utf-8')
         with open(self.output_file, 'wb') as outf:
-            outf.write(html.tostring(
-                self.dom, include_meta_content_type=True, encoding='utf-8'))
+            outf.write(content)
+        with open(self.html_cache, 'wb') as outf:
+            outf.write(content)
         self.write_cache(style, font_style, cached_elts)
 
     def process_svgs(self):
