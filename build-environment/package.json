@@ -1,5 +1,5 @@
 {
-  "name": "gt-linalg",
+  "name": "ila",
   "version": "1.0.0",
   "description": "npm dependencies are only for local use when generating static files",
   "main": "index.js",

@@ -508,7 +508,7 @@
   <div class="feedback-link">
     <xsl:element name="a">
       <xsl:attribute name="href">
-        <xsl:text>https://github.com/QBobWatson/gt-linalg/issues/new?title=Feedback%20on%20</xsl:text>
+        <xsl:text>https://github.com/QBobWatson/ila/issues/new?title=Feedback%20on%20</xsl:text>
         <xsl:apply-templates select="." mode="internal-id" />
         <xsl:text>&amp;body=In%20reference%20to%20version%20</xsl:text>
         <xsl:call-template name="git-hash" />

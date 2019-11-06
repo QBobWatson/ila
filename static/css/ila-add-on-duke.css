@@ -6,32 +6,32 @@ body, html body {
 }
 
 article.theorem-like, article.objectives {
-    border-left: 2px solid #eeb211;
+    border-left: 2px solid #00539b;
 }
 article.theorem-like:after, article.objectives:after {
-    border-bottom: 2px solid #eeb211;
+    border-bottom: 2px solid #00539b;
 }
 article.example-like {
-    border-left: 2px solid #eeb211;
+    border-left: 2px solid #00539b;
 }
 article.example-like:after {
-    border-bottom: 2px solid #eeb211;
+    border-bottom: 2px solid #00539b;
 }
 article.definition-like {
-    border-left: 2px solid #eeb211;
+    border-left: 2px solid #00539b;
 }
 article.definition-like:after {
-    border-bottom: 2px solid #eeb211;
+    border-bottom: 2px solid #00539b;
 }
 article.remark-like {
-    border-left: 2px solid #eeb211;
+    border-left: 2px solid #00539b;
 }
 article.remark-like:after {
-    border-bottom: 2px solid #eeb211;
+    border-bottom: 2px solid #00539b;
 }
 
 .mathbook-content section.hidden-subsection > header > h1:hover {
-  background: #fdf6e2;
+  background: #e2eafd;
 }
 
 .pdf-version a {
@@ -39,9 +39,9 @@ article.remark-like:after {
 }
 
 .pdf-version a:hover {
-  color: #eeb211;
+  color: white;
 }
 
 .mathbook-content .bluebox {
-  border: 3px solid #aaaaff;
+  border: 3px solid #00539b;
 }

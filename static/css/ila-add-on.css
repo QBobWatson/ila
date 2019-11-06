@@ -153,7 +153,6 @@ a > article.remark-like:after {
 .mathbook-content .bluebox {
   padding: 1em;
   /*padding-bottom: 0;*/
-  border: 3px solid #aaaaff;
   border-radius: 8px;
   margin-bottom: 1.25em;
 }
