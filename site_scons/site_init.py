@@ -22,7 +22,7 @@ def cat_js(target, source, env, for_signature=None):
 def minify(target, source, env, for_signature=None):
     target = str(target[0])
     src = str(source[0])
-    if not env['PRODUCTION']:
+    if not env['MINIFY']:
         minimized = source[0].get_contents()
     elif src.endswith('.js'):
         minimized = check_output([env['UGLIFYJS'], '-m', '--', src])
@@ -46,5 +46,5 @@ def TOOL_ADD_CAT(env):
     env['BUILDERS']['Minify'] = Builder(
         action=Action(minify,
                       'minify $TARGET <-- $SOURCE'
-                      if env['PRODUCTION'] else
+                      if env['MINIFY'] else
                       'copy $TARGET <-- $SOURCE'))

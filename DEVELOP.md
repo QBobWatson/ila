@@ -3,7 +3,7 @@
 
 The command-line arguments given in this guide assume you're using a UNIX-like system (e.g., a Mac).  Building under Windows should be similar.
 
-Overview: 
+Overview:
 * Fetch the repositories
 * Setup the build system
 * Build the site
@@ -33,7 +33,7 @@ To install the build environment, change into `ila/build-environment`, and type:
 ```
 ila/build-environment$ vagrant up --provider virtualbox
 ```
-The box will now configure itself.  It installs an enormous number of packages, including all of `TeXLive`, so be patient.  You may want to tweak `Vagrantfile` to configure how much memory and CPU resources to give to the virtual machine.
+The box will now configure itself.  It installs an enormous number of packages, including all of `TeXLive`, so be patient.  It will also take about 12GB of disk space wherever your VirtualBox VMs are stored.  You may want to tweak `Vagrantfile` to configure how much memory and CPU resources to give to the virtual machine.
 
 If you want to poke around the virtual machine, use `vagrant ssh`.  To stop it, type `vagrant halt`.  All `vagrant` commands must be run from the `ila/build-environment` directory.
 
@@ -49,13 +49,14 @@ You only need to rebuild the dependencies when they are updated.  Now you can bu
 ```
 /base$ scons
 ```
-Beware that the book can take a very long time to build the first time, especially on a laptop: first some 4,000 html files are generated, then each one has to be preprocessed to insert math symbols, figures, etc.  If all goes well, the result of the build can be found in `/base/build`, which is `ila/build` on your host machine.  The virtual machine runs a webserver; point your browser at `http://localhost:8081/` to see the results of the build.  (Opening the file `build/index.html` directly in a browser doesn't work with knowls for technical reasons.)
-
-The build system maintains a cache from previous builds in `ila/staging`.  Among other things, this contains hundreds of megabytes of cached LaTeX output converted to `svg` format.  To build from scratch again, simply `rm -r ila/staging`.
+Beware that the book can take a very long time to build the first time, especially on a laptop: first some 4,000 html files are generated, then each one has to be preprocessed to insert math symbols, figures, etc.  If all goes well, the result of the build can be found in `/home/vagrant/build` in the virtual machine.  The virtual machine runs a webserver; point your browser at `http://localhost:8081/` to see the results of the build.  Run `scons html` to copy the built site into `/base/html`, which is `ila/html` on your host machine.  (The build is not copied back to the host machine by default, since that noticeably slows the build process down.)
 
 The build system accepts several options, which you pass to `scons`:
-* `--production` Makes a version suitable for publishing.  The main difference is minification of CSS and Javascript files.
-* `--build-pdf` Also build the pdf version of the book.  Implied by `--production`.
+* `--build-pdf` Build the pdf version of the book in addition to the html.
+* `--minify` Minify generated css and js files (for production builds).
+* `--scratch` Empty the build directory before building (in case some files disappeared from the build; for production builds).
+* `--production` Synonym for `--build-pdf --minify --scratch`.  Also copies the build to `ila/html`.
+* `--delete-cache` The build system maintains a cache from previous builds in `/home/vagrant/cache` in the virtual machine.  Among other things, this contains hundreds of megabytes of cached LaTeX output converted to `svg` format.  Use this option to regenerate the cache (this takes a long time).  Implies `--scratch`.
 * `--theme THEME` Build with a specified visual theme.  Valid options for `THEME` are `gt` and `duke`.  Defaults to `gt`.
 * `--variant VARIANT` Build a variant of the book.  Currently the only variant is `1553`.  The default variant is `default`.
 
@@ -67,7 +68,7 @@ It will probably save you time in the long run to obtain and learn to use a good
 
 I use Emacs's `nxml-mode`, which came pre-installed with my Emacs distribution.  I don't think it's worth learning to use Emacs just to edit xml.  If you already use Emacs, then be sure to open the xml files in `nxml-mode`; it should automatically read the appropriate schema file from the file `ila/src/schemas.xml`.
 
-Note that the build system will refuse to compile malformed `xml` files.  See Beezer's documentation below for a description of the PreTeXt format, and look at `ila/mathbook/schema/pretext.xml` for the definitive reference with my additions.
+Note that the build system will refuse to compile malformed `xml` files.  Instead it will exit with a completely useless error message from `xmllint`.  This is another good reason to use a smart xml editor.  See Beezer's documentation below for a description of the PreTeXt format, and look at `ila/mathbook/schema/pretext.xml` for the definitive reference with my additions.
 
 ## Resources
 

@@ -1,5 +1,4 @@
-build
-staging
+html
 .sconsign.dblite
 node_modules
 

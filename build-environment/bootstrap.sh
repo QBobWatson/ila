@@ -58,4 +58,4 @@ gem install compass
 
 # Apache
 rm -rf /var/www/html
-ln -s /base/build /var/www/html
+ln -s /home/vagrant/build /var/www/html

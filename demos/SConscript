@@ -14,9 +14,9 @@ from mako.runtime import Context
 Import('env')
 env = env.Clone()
 
-env['CACHE_DIR'] = env.Entry('$STAGING_DIR/build-demos').get_abspath()
+env['DEMO_CACHE_DIR'] = env.Entry('$CACHE_DIR/build-demos').get_abspath()
 
-cache_dir = lambda sd='': os.path.join(env['CACHE_DIR'], sd)
+demo_cache_dir = lambda sd='': os.path.join(env['DEMO_CACHE_DIR'], sd)
 
 
 mako_re = re.compile(r'<%inherit\s+file=[\'"](.*)[\'"]/>', re.M)
@@ -41,7 +41,7 @@ def coffee_filter(text):
 
 VERSIONS = {} # Cache
 def version_filter(fname):
-    fname2 = cache_dir(fname)
+    fname2 = demo_cache_dir(fname)
     if fname in VERSIONS:
         vers = VERSIONS[fname]
     else:
@@ -91,23 +91,22 @@ for src in Split('''
                  rrmat
                  cover
                  '''):
-    libs[src] = env.Coffee('$STAGING_DIR/demos/js/' + src, 'lib/' + src)
+    libs[src] = env.Coffee('$CACHE_DIR/demos/js/' + src, 'lib/' + src)
 
-to_copy = []
 to_minify = []
 
-dynamics_js = env.Command('$CACHE_DIR/js/dynamics.js',
-                          '$STAGING_DIR/demos/js/dynamics.js',
+dynamics_js = env.Command('$DEMO_CACHE_DIR/js/dynamics.js',
+                          '$CACHE_DIR/demos/js/dynamics.js',
                           Copy('$TARGET', '$SOURCE'))
 to_minify.append(dynamics_js)
 
 # Create bundles
 
 demo_css = \
-    env.CatCSS('$CACHE_DIR/css/demo',
+    env.CatCSS('$DEMO_CACHE_DIR/css/demo',
                ['css/demo', 'vendor/katex', '#/mathbox/build/mathbox'])
 demo_js = \
-    env.CatJS('$CACHE_DIR/js/demo',
+    env.CatJS('$DEMO_CACHE_DIR/js/demo',
               [libs['demo2']] +
               Split('''
               #/mathbox/build/mathbox-bundle
@@ -123,17 +122,17 @@ to_minify.append(demo_css)
 to_minify.append(demo_js)
 
 cover_js = \
-    env.CatJS('$CACHE_DIR/js/cover',
+    env.CatJS('$DEMO_CACHE_DIR/js/cover',
               [libs['dynamics'],
                '#/mathbox/build/mathbox-bundle',
                'vendor/domready',
                libs['cover']])
 cover_css = \
-    env.CatCSS('$CACHE_DIR/css/cover',
+    env.CatCSS('$DEMO_CACHE_DIR/css/cover',
                ['css/cover', '#/mathbox/build/mathbox'])
 
 slideshow_js = \
-    env.CatJS('$CACHE_DIR/js/slideshow',
+    env.CatJS('$DEMO_CACHE_DIR/js/slideshow',
               [libs['animstate'], libs['rrmat']] +
               Split('''
               #/mathbox/build/mathbox-bundle
@@ -143,7 +142,7 @@ slideshow_js = \
               vendor/compat
               '''))
 slideshow_css = \
-    env.CatCSS('$CACHE_DIR/css/slideshow',
+    env.CatCSS('$DEMO_CACHE_DIR/css/slideshow',
                Split('''
                vendor/katex
                #/mathbox/build/mathbox
@@ -154,7 +153,7 @@ to_minify.append(slideshow_css)
 to_minify.append(slideshow_js)
 
 rrinter_js = \
-    env.CatJS('$CACHE_DIR/js/rrinter',
+    env.CatJS('$DEMO_CACHE_DIR/js/rrinter',
               [libs['animstate'], libs['rrmat'], libs['rrinter']] +
               Split('''
               #/mathbox/build/mathbox-bundle
@@ -164,7 +163,7 @@ rrinter_js = \
               vendor/compat
               '''))
 rrinter_css = \
-    env.CatCSS('$CACHE_DIR/css/rrinter',
+    env.CatCSS('$DEMO_CACHE_DIR/css/rrinter',
                Split('''
                vendor/katex
                #/mathbox/build/mathbox
@@ -176,12 +175,12 @@ to_minify.append(rrinter_css)
 to_minify.append(rrinter_js)
 
 rabbits_js = \
-    env.CatJS('$CACHE_DIR/js/rabbits',
+    env.CatJS('$DEMO_CACHE_DIR/js/rabbits',
               ['#/vendor/jquery.min.js',
                'vendor/bootstrap.js',
                'vendor/plotly.js'])
 rabbits_css = \
-    env.CatCSS('$CACHE_DIR/css/rabbits', ['vendor/bootstrap.css'])
+    env.CatCSS('$DEMO_CACHE_DIR/css/rabbits', ['vendor/bootstrap.css'])
 to_minify.append(rabbits_css)
 to_minify.append(rabbits_js)
 
@@ -219,9 +218,8 @@ for src in Split('''
                  rowred2
                  rrinter
                  '''):
-    demos[src] = env.Mako('$CACHE_DIR/' + src, src)
+    demos[src] = env.Mako('$BUILD_DIR/demos/' + src, src)
     env.Depends(demos[src], [demo_css, demo_js])
-    to_copy.append(demos[src])
 
 env.Depends(demos['rrinter'], [rrinter_js, rrinter_css])
 env.Depends([demos['dynamics'], demos['dynamics2']], dynamics_js)
@@ -237,15 +235,9 @@ env.Command('$BUILD_DIR/cover.html', 'cover.html',
 env.Command('$BUILD_DIR/demos/rabbits.html', 'rabbits.html',
             Copy("$TARGET", "$SOURCE"))
 
-env.Command('$BUILD_DIR/js/cover.js', cover_js,
-            Copy("$TARGET", "$SOURCE"))
-env.Command('$BUILD_DIR/css/cover.css', cover_css,
-            Copy("$TARGET", "$SOURCE"))
+env.Minify('$BUILD_DIR/js/cover.js', cover_js)
+env.Minify('$BUILD_DIR/css/cover.css', cover_css)
 
-root = env.Dir('$CACHE_DIR')
-for node in Flatten(to_copy):
-    env.Command('$BUILD_DIR/demos/' + node.get_path(root), node,
-                Copy("$TARGET", "$SOURCE"))
-
+root = env.Dir('$DEMO_CACHE_DIR')
 for node in Flatten(to_minify):
     env.Minify('$BUILD_DIR/demos/' + node.get_path(root), node)

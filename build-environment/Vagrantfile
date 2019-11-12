@@ -3,13 +3,14 @@ Vagrant.configure("2") do |config|
   config.vm.box = "generic/ubuntu1804"
   config.vm.box_check_update = false
   config.vm.hostname = "ila"
-  config.vm.synced_folder "../", "/base", type: "9p", accessmode: "squash"
   config.vm.network "forwarded_port", guest: 80, host: 8081
 
   config.vm.provider "virtualbox" do |v|
     v.memory = 4096
     v.cpus = 8
   end
+  # Use this with the virtualbox provider
+  config.vm.synced_folder "../", "/base"
 
   config.vm.provider "libvirt" do |v|
     v.driver = "kvm"
@@ -21,7 +22,11 @@ Vagrant.configure("2") do |config|
     v.graphics_type = "none"
     v.machine_type = "q35"
     v.cpu_mode = "host-passthrough"
+    v.disk_bus = "virtio"
+    v.volume_cache = "writeback"
   end
+  # Use this with the libvirt provider
+  # config.vm.synced_folder "../", "/base", type: "9p", accessmode: "squash"
 
   config.vm.provision :shell, path: "bootstrap.sh"
 end

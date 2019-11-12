@@ -4,7 +4,7 @@ import os
 
 from subprocess import check_output
 
-Import('env build_dir staging_dir')
+Import('env build_dir')
 
 # Create versioning hashes
 def create_hash_dict(target, source, env):
@@ -33,7 +33,7 @@ xml_sources = Glob('*.xml') + Glob('xsl/*.xsl') \
     + Glob('figure-images/*') + Glob('latex/*') + [git_hash_xsl, theme_xsl]
 
 versioned_xml = \
-    env.Command('$STAGING_DIR/${VARIANT}.xml',
+    env.Command('$CACHE_DIR/${VARIANT}.xml',
                 ['xsl/versioning.xsl', 'ila.xml'],
                 'xsltproc -o $TARGET --xinclude ' \
                 '    --stringparam version $VARIANT $SOURCES')
@@ -45,26 +45,24 @@ else:
     env['PDF_FILE'] = 'ila-%s.pdf' % env['VARIANT']
 
 # Put it in /tmp because a ramdisk is much faster in a vm
-env['OUTPUT_HTML'] = '/tmp/output-html'
+env['OUTPUT_HTML'] = '/home/vagrant/output-html'
 output_html = \
-    env.Command('build-html',
+    env.Command('$OUTPUT_HTML',
                 ['xsl/mathbook-html.xsl', versioned_xml],
                 Action('xsltproc -o $OUTPUT_HTML/ --xinclude ' \
                        '    --stringparam pdf.online $PDF_FILE $SOURCES',
                        'Generating html files...'))
-env.Pseudo(output_html)
-env.AddPreAction(output_html, ['rm -rf $OUTPUT_HTML', 'mkdir $OUTPUT_HTML'])
-
-xmllint \
-    = env.Command('verify-xml', ['#/mathbook/build/pretext.rng', versioned_xml],
-                  Action('xmllint --xinclude --noout --relaxng $SOURCES',
-                         'Verifying xml...'))
-env.Depends(output_html, xmllint)
-env.Pseudo(xmllint)
+env.AddPreAction(output_html,
+                 Action('xmllint --xinclude --noout'
+                        '    --relaxng $BASE_DIR/mathbook/build/pretext.rng'
+                        '    $CACHE_DIR/${VARIANT}.xml',
+                        'Verifying xml...'))
+if env['SCRATCH']:
+    env.AddPreAction(output_html, ['rm -rf $OUTPUT_HTML', 'mkdir $OUTPUT_HTML'])
 
 # Now run pretex
 env['PREAMBLE'] = '$OUTPUT_HTML/preamble.tex'
-env['PRETEX_CACHE'] = '$STAGING_DIR/pretex-cache'
+env['PRETEX_CACHE'] = '$CACHE_DIR/pretex-cache'
 env['PRETEX_STYLE'] = '$BASE_DIR/src/latex'
 env['PRETEX_IMGS'] = '$BASE_DIR/src/figure-images'
 pretex = \
@@ -78,16 +76,15 @@ pretex = \
                        '        --output-dir $OUTPUT_HTML' \
                        '        --build-dir  $BUILD_DIR',
                        'Running pretex (be patient)...'))
-env.AddPostAction(pretex, 'rm $BUILD_DIR/index.html')
-
-env.Command('$BUILD_DIR/index.html', pretex,
-            Copy('$TARGET', '$SOURCE'))
-env.Command('$BUILD_DIR/figure-images', pretex,
-            ['mkdir $TARGET', 'cp $PRETEX_CACHE/*.png $TARGET'])
+env.AddPostAction(pretex, 'cp $BUILD_DIR/index2.html $BUILD_DIR/index.html')
+env.AddPostAction(pretex,
+                  ['rm -rf $BUILD_DIR/figure-images',
+                   'mkdir $BUILD_DIR/figure-images',
+                   'cp $PRETEX_CACHE/*.png $BUILD_DIR/figure-images'])
 
 # Build pdf
-if env['BUILD_PDF'] or env['PRODUCTION']:
-    env['LATEX_DIR'] = os.path.join(env['STAGING_DIR'], 'build-pdf')
+if env['BUILD_PDF']:
+    env['LATEX_DIR'] = os.path.join(env['CACHE_DIR'], 'build-pdf')
     env['ENV']['TEXINPUTS'] = ".:" + env['LATEX_DIR'] + "/style:"
     index_tex = \
         env.Command('$LATEX_DIR/index.tex',
