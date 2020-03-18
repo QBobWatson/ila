@@ -54,7 +54,7 @@
     <!-- JDR: preprocessed inline pretex stylesheet is inserted here -->
     <style id="pretex-style"></style>
     <style id="pretex-fonts"></style>
-    <link rel="shortcut icon" href="images/logo.gif"/>
+    <link rel="shortcut icon" href="images/logo.png"/>
 </xsl:template>
 
 <!-- JDR: use theme.sponsor in brand logo -->
