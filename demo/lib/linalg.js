@@ -788,6 +788,7 @@ export class Matrix extends Array {
      * @property {Subspace} rowSpace - The row space.
      * @property {Vector[]} leftNullBasis - Basis for the left null space.
      * @property {Subspace} leftNullSpace - The left null space.
+     * @property {QLData} QR - QR factorization; computed in QR().
      */
     get _cache() {
         if(!this.__cache) this.__cache = {};
@@ -807,6 +808,15 @@ export class Matrix extends Array {
      * @type {integer}
      */
     get n() { return this.length === 0 ? 0 : this[0].length; }
+
+    /**
+     * Whether the matrix is square.
+     *
+     * @type {boolean}
+     */
+    get isSquare() {
+        return this.m == this.n;
+    }
 
     /**
      * Check if this matrix is equal to `other`.
@@ -873,11 +883,11 @@ export class Matrix extends Array {
     }
 
     /**
-     * An iterable over the rows.
+     * Return an iterable over the rows.
      *
-     * @type {Object}
+     * @return {Object}
      */
-    get rows() {
+    rows() {
         return this[Symbol.iterator]();
     }
 
@@ -895,13 +905,13 @@ export class Matrix extends Array {
     }
 
     /**
-     * An iterable over the columns.
+     * Return an iterable over the columns.
      *
-     * @type {Object}
+     * @return {Object}
      */
-    get cols() {
+    cols() {
         let self = this;
-        return (function* () {
+        return (function*() {
             for(let j = 0; j < self.n; ++j)
                 yield self.col(j);
         })();
@@ -937,6 +947,20 @@ export class Matrix extends Array {
      */
     sub(other) {
         return this.add(other, -1);
+    }
+
+    /**
+     * Scale a Matrix in-place.
+     *
+     * This modifies the matrix in-place by multiplying all entries by `c`.
+     *
+     * @param {number} c - The number to multiply.
+     * @return {Matrix} `this`
+     */
+    scale(c) {
+        for(let row of this)
+            row.scale(c);
+        return this;
     }
 
     /**
@@ -1091,7 +1115,7 @@ export class Matrix extends Array {
      * @return {boolean}
      */
     isDiagonal(ε=0) {
-        if(this.m != this.n) return false;
+        if(!this.isSquare) return false;
         return this.isLowerTri(ε) && this.isUpperTri(ε);
     }
 
@@ -1651,7 +1675,7 @@ export class Matrix extends Array {
      *   invertible.
      */
     inverse(ε=1e-10) {
-        if(this.m != this.n)
+        if(!this.isSquare)
             throw new Error("Tried to invert a non-square matrix");
         let E = this.rowOps(ε);
         if(!this.isInvertible)
@@ -1672,7 +1696,7 @@ export class Matrix extends Array {
      */
     det(ε=1e-10) {
         if(this._cache.det !== undefined) return this._cache.det;
-        if(this.m != this.n)
+        if(!this.isSquare)
             throw new Error("Tried to take the determinant of a non-square matrix");
         let {U, detP} = this.PLU(ε);
         let det = 1;
@@ -1682,6 +1706,77 @@ export class Matrix extends Array {
         return this._cache.det;
     }
 
+    // Orthogonality
+
+    /**
+     * Check if the matrix is orthogonal.
+     *
+     * That means that the matrix is square and has orthonormal columns.
+     *
+     * @param {number} [ε=1e-10] - Numbers smaller than this value are taken
+     *   to be zero.
+     * @return {QRData}
+     */
+    isOrthogonal(ε=1e-10) {
+        return this.isSquare &&
+            this.transpose().mult(this).equals(Matrix.identity(this.n), ε);
+    }
+
+    /**
+     * The data computed Gram--Schmidt.
+     *
+     * @typedef QRData
+     * @type {object}
+     * @property {Matrix} Q - An `m`x`n` matrix with orthogonal columns.
+     * @property {Matrix} R - An `n`x`n` upper-triangular matrix.
+     * @property {number[]} LD - A list of the zero columns of `Q`.
+     */
+
+    /**
+     * QR decomposition.
+     *
+     * This computes a matrix `Q` and an upper-triangular matrix `R` such that
+     * `this = QR`.  If `this` has full column rank then `Q` has orthonormal
+     * columns and `R` is invertible.  Otherwise `Q` may have zero columns and
+     * `R` may have zero rows; the nonzero columns of `Q` are orthonormal.
+     *
+     * This implements the Gram--Schmidt algorithm, which is not a very
+     * efficient or numerically accurate.
+     *
+     * @param {number} [ε=1e-10] - Vectors smaller than this value are taken
+     *   to be zero.
+     * @return {QRData}
+     */
+    QR(ε=1e-10) {
+        if(this._cache.QR) return this._cache.QR;
+        let {m, n} = this;
+        let ui = new Array(n), LD=[];
+        let vi = [...this.cols()];
+        let R = Matrix.zero(n);
+        for(let j = 0; j < n; ++j) {
+            let u = vi[j].clone();
+            // Compute ui[j] and the jth column of R at the same time
+            for(let jj = 0; jj < j; ++jj) {
+                let factor = ui[jj].dot(vi[j]);
+                u.sub(ui[jj].clone().scale(factor));
+                R[jj][j] = factor;
+            }
+            let l = u.size;
+            if(l > ε) {
+                R[j][j] = l;
+                ui[j] = u.scale(1/l);
+            } else {
+                R[j][j] = 0;
+                ui[j] = Vector.zero(m);
+                LD.push(j);
+            }
+        }
+        let Q = new Matrix(...ui).transpose();
+        this._cache.QR = {Q, R, LD};
+        if(this._cache.rank === undefined)
+            this._cache.rank = n - LD.length;
+        return this._cache.QR;
+    }
 
     // Eigenspaces
     get eigenvalues() {
@@ -1696,7 +1791,7 @@ export class Matrix extends Array {
 
     // Eigenvalues and eigenspaces.  Only implemented for 1x1, 2x2, 3x3.
     _calcEigendata() {
-        if(this.m !== this.n)
+        if(!this.isSquare)
             throw "Eigenvalues only make sense for square matrices";
         switch(this.n) {
         case 1: this._calcEigendata1x1(); break;
@@ -1916,7 +2011,7 @@ export class Subspace {
         if(this.n != other.n)
             return false;
         let B = this.basis(ε);
-        return [...B.cols].every(col => other.contains(col, ε));
+        return [...B.cols()].every(col => other.contains(col, ε));
     }
 
     /**
@@ -1939,52 +2034,3 @@ export class Subspace {
 
 }
 
-
-// export class Subspace {
-//     // Gram--Schmidt
-//     static span(vecs, n=vecs[0].length, ε=1e-10) {
-//         let ortho = [];
-
-//         for(let v of vecs) {
-//             let comp = new Subspace(ortho, n).orthogonal(v);
-//             let length = comp.lengthsq;
-//             if(length < ε*ε)
-//                 continue;
-//             length = Math.sqrt(length);
-//             comp.scale(1/length);
-//             ortho.push(comp);
-//         }
-
-//         return new Subspace(ortho, n);
-//     }
-
-//     // Construct given an *orthonormal* basis.
-//     constructor(basis, n=basis[0].length) {
-//         this.basis = basis;
-//         this.n = n;
-//     }
-
-//     toString() {
-//         let str = `Subspace of R^${this.n} of dimension ${this.dim} with basis\n`;
-//         str += new Matrix(...this.basis).transpose.toString();
-//         return str;
-//     }
-
-//     get dim() {
-//         return this.basis.length;
-//     }
-
-//     // Orthogonal projection
-//     project(v) {
-//         let coeffs = this.basis.map(b => v.dot(b));
-//         return this.basis.reduce(
-//             (ret, val, idx) => ret.add(val, coeffs[idx]),
-//             Vector.zero(this.n)
-//         );
-//     }
-
-//     // Orthogonal complement
-//     orthogonal(v) {
-//         return v.sub(this.project(v));
-//     }
-// }

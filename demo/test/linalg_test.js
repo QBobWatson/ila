@@ -14,7 +14,7 @@ should.use(function(should, Assertion) {
             other.should.be.an.instanceOf(Matrix);
             obj.m.should.equal(other.m);
             obj.n.should.equal(other.n);
-            approximate(obj.rows, other.rows, ε);
+            approximate([...obj.rows()], [...other.rows()], ε);
         }
         else {
             obj.should.be.an.Array();
@@ -51,6 +51,21 @@ should.use(function(should, Assertion) {
             let EA = E.mult(A);
             EA.equals(U, 1e-10).should.be.true(
                 `Matrix is not correctly factored: EA =\n${EA.toString(2)}\nU =\n${U.toString(2)}`);
+        } else if(which === 'QR') {
+            let {Q, R, LD} = this.obj;
+            R.isUpperTri().should.be.true();
+            let QTQ = Q.transpose().mult(Q);
+            QTQ.isDiagonal(1e-10).should.be.true();
+            for(let j = 0; j < QTQ.n; ++j) {
+                if(LD.includes(j)) {
+                    QTQ[j][j].should.be.approximately(0, 1e-10);
+                    R[j][j].should.be.approximately(0, 1e-10);
+                } else
+                    QTQ[j][j].should.be.approximately(1, 1e-10);
+            }
+            let QR = Q.mult(R);
+            QR.equals(A, 1e-10).should.be.true(
+                `Matrix is not correctly factored: QR =\n${QR.toString(2)}\nA =\n${A.toString(2)}`);
         }
     });
 
@@ -431,14 +446,29 @@ describe('Matrix', () => {
     describe('#rows and #cols', () => {
         let M = new Matrix([1,2],[3,4]);
         it('should iterate over the rows', () =>
-           [...M.rows].should.eql([new Vector(1,2),new Vector(3,4)]));
+           [...M.rows()].should.eql([new Vector(1,2),new Vector(3,4)]));
         it('should iterate over the columns', () =>
-           [...M.cols].should.eql([new Vector(1,3),new Vector(2,4)]));
+           [...M.cols()].should.eql([new Vector(1,3),new Vector(2,4)]));
     });
     describe('#add() and #sub()', () => {
         it('should add componentwise', () =>
            new Matrix([1,2],[3,4]).add(new Matrix([2,1],[4,3])).equals(
                new Matrix([3,3],[7,7])).should.be.true());
+        it('should add with a factor', () =>
+           new Matrix([1,2],[3,4]).add(new Matrix([2,1],[4,3]), 2).equals(
+               new Matrix([5,4],[11,10])).should.be.true());
+        it('should subtract componentwise', () =>
+           new Matrix([1,2],[3,4]).sub(new Matrix([2,1],[4,3])).equals(
+               new Matrix([-1,1],[-1,1])).should.be.true());
+        it('should throw when matrices have different sizes', () => {
+            let M = new Matrix([1,2,3],[4,5,6]);
+            M.add.bind(M, new Matrix([1,2],[3,4])).should.throw(/different sizes/);
+        });
+    });
+    describe('#scale()', () => {
+        it('should scale entries', () =>
+           new Matrix([1,2],[3,4]).scale(2).equals(
+               new Matrix([2,4],[6,8])).should.be.true());
         it('should add with a factor', () =>
            new Matrix([1,2],[3,4]).add(new Matrix([2,1],[4,3]), 2).equals(
                new Matrix([5,4],[11,10])).should.be.true());
@@ -873,6 +903,57 @@ describe('Matrix', () => {
             M.det.bind(M).should.throw(/non-square/);
         });
     });
+    describe('#isOrthogonal()', () => {
+        it('detects orthogonal matrices', () =>
+           new Matrix([1,1],[1,-1]).scale(1/Math.sqrt(2)).isOrthogonal()
+                   .should.be.true());
+        it('detects non-orthogonal matrices', () =>
+           new Matrix([1/Math.sqrt(2), 1],[1/Math.sqrt(2), 0]).isOrthogonal()
+                   .should.be.false());
+        it('says non-square matrices are not orthogonal', () =>
+           new Matrix([1/Math.sqrt(2)],[1/Math.sqrt(2)]).isOrthogonal()
+                   .should.be.false());
+    });
+    describe('#QR()', () => {
+        let testMats = [
+            new Matrix([ 3, -5,  1],
+                       [ 1,  1,  1],
+                       [-1,  5, -2],
+                       [ 3, -7,  8]),
+            new Matrix([ 1,  2,  5],
+                       [-1,  1, -4],
+                       [-1,  4, -3],
+                       [ 1, -4,  7],
+                       [ 1,  2,  1]),
+            new Matrix([ 0,  3, -6,  6,  4, -5],
+                       [ 3, -7,  8, -5,  8,  9],
+                       [ 3, -9, 12, -9,  6, 15]).transpose(),
+            new Matrix([-10,  13,  7, -11],
+                       [  2,   1, -5,   3],
+                       [ -6,   3, 13,  -3],
+                       [ 16, -16, -2,   5],
+                       [  2,   1, -5,  -7])
+        ];
+        it('should factorize matrices correctly', () => {
+            for(let M of testMats)
+                M.QR().should.factorize(M, 'QR');
+        });
+        let testMats2 = [
+            new Matrix([ 0, -3, -6,  4,  9],
+                       [-1, -2, -1,  3,  1],
+                       [-2, -3,  0,  3, -1],
+                       [ 1,  4,  5, -9, -7]),
+            new Matrix([ 2, -6,  6],
+                       [-4,  5, -7],
+                       [ 3,  5, -1],
+                       [-6,  4, -8],
+                       [ 8, -3,  9])
+        ];
+        it('should factorize matrices with linearly dependent columns', () => {
+            for(let M of testMats2)
+                M.QR().should.factorize(M, 'QR');
+        });
+    });
 });
 
 
@@ -944,7 +1025,7 @@ describe('Subspace', () => {
                                [-1, -2, -1,  3,  1],
                                [-2, -3,  0,  3, -1],
                                [ 1,  4,  5, -9, -7]);
-            let vecs = [...M.cols];
+            let vecs = [...M.cols()];
             let V = new Subspace(vecs);
             V.contains(Vector.linearCombination([1, 2, 3, 4, 5], vecs))
                 .should.be.true();
