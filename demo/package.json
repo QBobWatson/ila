@@ -1,0 +1,19 @@
+{
+    "name": "ila-demos",
+    "version": "1.0.0",
+    "description": "only for the test suite",
+    "type": "module",
+    "main": "index.js",
+    "dependencies": {},
+    "devDependencies": {
+        "jsdoc": "^3.6.3",
+        "mocha": "^7.1.1",
+        "should": "^13.2.3"
+    },
+    "scripts": {
+        "test": "mocha",
+        "doc": "jsdoc -c jsdoc.json"
+    },
+    "author": "Joe Rabinoff",
+    "license": "GPL-3.0"
+}

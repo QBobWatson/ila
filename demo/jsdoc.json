@@ -1,0 +1,7 @@
+{
+    "plugins": ["plugins/markdown"],
+    "sourceType": "module",
+    "source": {
+        "include": ["lib/linalg.js"]
+    }
+}
