@@ -33,6 +33,18 @@ should.use(function(should, Assertion) {
         approximate(this.obj, other, ε);
     });
 
+    Assertion.add('decompose', function(vec, V, ε=1e-10) {
+        this.params = {
+            operator: 'to orthogonally decompose',
+            expected: vec
+        };
+        let [v1, v2] = this.obj;
+        v1.clone().add(v2).equals(vec, 1e-10).should.be.true();
+        V.contains(v1).should.be.true();
+        for(let v of V.generators.cols())
+            v.dot(v2).should.be.approximately(0, 1e-10);
+    });
+
     Assertion.add('factorize', function(A, which, ε=1e-10) {
         this.params = {
             operator: 'factorizes',
@@ -66,6 +78,30 @@ should.use(function(should, Assertion) {
             let QR = Q.mult(R);
             QR.equals(A, 1e-10).should.be.true(
                 `Matrix is not correctly factored: QR =\n${QR.toString(2)}\nA =\n${A.toString(2)}`);
+        }
+    });
+
+    Assertion.add('diagonalize', function(A, block=false, ε=1e-10) {
+        this.params = {
+            operator: 'diagonalizes',
+            expected: A
+        };
+        let {C, D} = this.obj;
+        if(!block) D.isDiagonal().should.be.true();
+        C.isInvertible().should.be.true();
+        C.mult(D).equals(A.mult(C), ε).should.be.true();
+    });
+
+    Assertion.add('cplxEigenvectors', function(M, λ, ε=1e-10) {
+        this.params = {
+            operator: 'be complex eigenvectors'
+        };
+        for(let [v_Re, v_Im] of this.obj) {
+            let Mv_Re = M.apply(v_Re);
+            let Mv_Im = M.apply(v_Im);
+            let λv_Re = v_Re.clone().scale(λ.Re).sub(v_Im.clone().scale(λ.Im));
+            let λv_Im = v_Re.clone().scale(λ.Im).add(v_Im.clone().scale(λ.Re));
+            [Mv_Re, Mv_Im].should.resemble([λv_Re, λv_Im], ε);
         }
     });
 
@@ -374,10 +410,10 @@ describe('Root finders', function() {
         it('should find complex Roots', () => {
             // x^2 - 2x^2 + x - 2 = (x-2) (x^2+1)
             cardano(-2,  1, -2).should.resemble(
-                [[2, 1], [Complex.i, 1], [Complex.i.conj(), 1]]);
+                [[2, 1], [Complex.i.conj(), 1], [Complex.i, 1]]);
             // x^2 - x^2 - x - 2 = (x-2) (x^2+x+1)
             cardano(-1, -1, -2).should.resemble(
-                [[2, 1], [ζ, 1], [ζ.clone().conj(), 1]]);
+                [[2, 1], [ζ.clone().conj(), 1], [ζ, 1]]);
         });
 
     });
@@ -779,7 +815,7 @@ describe('Matrix', () => {
             for(let {M} of testMats) {
                 let b = M.leftNullBasis();
                 Vector.isLinearlyIndependent(b).should.be.true();
-                b.length.should.equal(M.m - M.rank);
+                b.should.have.length(M.m - M.rank());
                 let z = Vector.zero(M.n);
                 let MT = M.transpose();
                 for(let v of b)
@@ -788,12 +824,12 @@ describe('Matrix', () => {
         });
         it('should know whether the matrix has foll row and column rank', () => {
             for(let {M, N, C} of testMats) {
-                M.isFullRowRank.should.equal(C.length == M.m);
-                M.isFullColRank.should.equal(N.length == 0);
+                M.isFullRowRank().should.equal(C.length == M.m);
+                M.isFullColRank().should.equal(N.length == 0);
             }
         });
     });
-    describe('#solve()', () => {
+    describe('#solve(), #solveShortest()', () => {
         let testMats = [
             {M: new Matrix([10,-7,0],
                            [-3, 2,6],
@@ -821,8 +857,12 @@ describe('Matrix', () => {
             }
         ];
         it('should solve Mx=b', () => {
-            for(let {M, b} of testMats)
+            for(let {M, b} of testMats) {
                 M.solve(b).should.solve(M, b);
+                let x = M.solveShortest(b);
+                x.should.solve(M, b);
+                M.nullSpace().isOrthogonalTo(x).should.be.true();
+            }
         });
         let testNoSoln = [
             {M: new Matrix([ 2, -6,  6],
@@ -864,20 +904,20 @@ describe('Matrix', () => {
             for(let M of testMats) {
                 M.mult(M.inverse()).equals(Matrix.identity(M.n), 1e-10)
                     .should.be.true();
-                M.isInvertible.should.be.true();
+                M.isInvertible().should.be.true();
             }
         });
         it('should throw for non-square matrices', () => {
             let M = new Matrix([1, 2, 3], [2, 4, 5]);
             M.inverse.bind(M).should.throw(/non-square/);
-            M.isSingular.should.be.true();
+            M.isSingular().should.be.true();
         });
         it('should throw for singular matrices', () => {
             let M = new Matrix([ 1, -2, -1],
                                [-1,  5,  6],
                                [ 5, -4,  5]);
             M.inverse.bind(M).should.throw(/singular/);
-            M.isSingular.should.be.true();
+            M.isSingular().should.be.true();
         });
     });
     describe('#det()', () => {
@@ -954,6 +994,344 @@ describe('Matrix', () => {
                 M.QR().should.factorize(M, 'QR');
         });
     });
+    describe('#charpoly()', () => {
+        it('should compute the characteristic polynomial of a 1x1 matrix', () => {
+            new Matrix([3]).charpoly().should.eql([3]);
+        });
+        it('should compute the characteristic polynomial of a 2x2 matrix', () => {
+            new Matrix([1,2],[3,4]).charpoly().should.eql([-5, -2]);
+        });
+        it('should compute the characteristic polynomial of a 3x3 matrix', () => {
+            new Matrix([1, 6,4],
+                       [2,-1,3],
+                       [5, 0,1]).charpoly().should.eql([1, 33, 97]);
+        });
+        it('should compute the characteristic polynomial of a 4x4 matrix', () => {
+            new Matrix(
+                [2, 1, 1, 0],
+                [4, 3, 3, 1],
+                [8, 7, 9, 5],
+                [6, 7, 9, 8]).charpoly().should.eql([-22, 78, -50, 8]);
+        });
+        it('should throw for non-square matrices', () => {
+            let M = new Matrix([1,2,3],[4,5,6]);
+            M.charpoly.bind(M).should.throw(/non-square/);
+        });
+    });
+    describe('#eigenvalues()', () => {
+        it('should compute eigenvalues for 1x1 matrices', () =>
+           new Matrix([3]).eigenvalues().should.eql([[3, 1]]));
+        it('should compute eigenvalues for 2x2 matrices', () => {
+            new Matrix([1,1],[1,1]).eigenvalues()
+                .should.eql([[0,1], [2,1]]);
+            new Matrix([1,1],[0,1]).eigenvalues().should.eql([[1,2]]);
+            new Matrix([1,1],[-1,1]).eigenvalues()
+                .should.resemble([[new Complex(1, 1), 1], [new Complex(1, -1), 1]]);
+        });
+        it('should compute eigenvalues for 3x3 matrices', () => {
+            Matrix.identity(3, 3).eigenvalues().should.resemble([[3, 3]]);
+            new Matrix([11/13, 22/39,  2/39],
+                       [-4/13, 83/39,  4/39],
+                       [-1/13, 11/39, 40/39]).eigenvalues()
+                .should.resemble([[1, 2], [2, 1]]);
+            new Matrix([    1,   1/2,     0],
+                       [-4/13, 83/39,  4/39],
+                       [ 5/13,  7/78, 34/39]).eigenvalues()
+                .should.resemble([[1, 2], [2, 1]]);
+            new Matrix([23/13,  53/78, -10/39],
+                       [-4/13, 122/39,   4/39],
+                       [-4/13,  49/78,  43/39]).eigenvalues()
+                .should.resemble([[1, 1], [2, 1], [3, 1]]);
+            new Matrix([43/13,   7/13, -88/13],
+                       [ 6/13,  17/13, -28/13],
+                       [24/13, -23/13,  57/13]).eigenvalues()
+                .should.resemble([[1, 1],
+                                  [new Complex(4, -3), 1],
+                                  [new Complex(4,  3), 1]]);
+        });
+    });
+    describe('#eigenspace()', () => {
+        it('should work for 1x1 matrices', () =>
+           new Matrix([3]).eigenspace(3).equals(Subspace.Rn(1)).should.be.true());
+        it('should work for 2x2 matrices with distinct eigenvalues', () => {
+            let M = new Matrix([1, 1], [1, 1]);
+            M.eigenspace(0).equals(new Subspace([new Vector(1,-1)])).should.be.true();
+            M.eigenspace(2).equals(new Subspace([new Vector(1, 1)])).should.be.true();
+            // test caching
+            M.eigenspace(2.001, .1).equals(
+                new Subspace(new Vector([1, 1]))).should.be.true();
+            M.eigenspace.bind(M, 2.001).should.throw(/not an eigenvalue/);
+        });
+        it('should work for 2x2 matrices with a complex eigenvalue', () => {
+            let M = new Matrix([-15/7, 52/7], [-40/7, 57/7]);
+            let λ = new Complex(3, 4);
+            let B = M.eigenspace(λ);
+            B.should.have.length(1);
+            B.should.be.cplxEigenvectors(M, λ);
+            λ.conj();
+            B = M.eigenspace(λ);
+            B.should.have.length(1);
+            B.should.be.cplxEigenvectors(M, λ);
+        });
+        it('should work for 2x2 matrices with a repeated eigenvalue', () => {
+            let M = new Matrix([1,1],[0,1]);
+            M.eigenspace(1).equals(new Subspace([new Vector(1, 0)])).should.be.true();
+            M = new Matrix([2,0],[0,2]);
+            M.eigenspace(2).equals(Subspace.Rn(2)).should.be.true();
+        });
+        it('should work for 3x3 matrices with distinct eigenvalues', () => {
+            let M = new Matrix([23/13,  53/78, -10/39],
+                               [-4/13, 122/39,   4/39],
+                               [-4/13,  49/78,  43/39]);
+            M.eigenspace(1).equals(new Subspace([new Vector(1, 0, 3)]))
+                .should.be.true();
+            M.eigenspace(2).equals(new Subspace([new Vector(7, 2, -1)]))
+                .should.be.true();
+            M.eigenspace(3).equals(new Subspace([new Vector(2, 4, 1)]))
+                .should.be.true();
+        });
+        it('should work for 3x3 matrices with repeated eigenvalues', () => {
+            let M = new Matrix([11/13, 22/39,  2/39],
+                               [-4/13, 83/39,  4/39],
+                               [-1/13, 11/39, 40/39]);
+            M.eigenspace(1).equals(new Subspace(
+                [new Vector(1, 0, 3), new Vector(7, 2, -1)])).should.be.true();
+            M.eigenspace(2).equals(new Subspace([new Vector(2, 4, 1)]))
+                .should.be.true();
+            M = new Matrix([    1,   1/2,     0],
+                           [-4/13, 83/39,  4/39],
+                           [ 5/13,  7/78, 34/39]);
+            M.eigenspace(1).equals(new Subspace([new Vector(1, 0, 3)]))
+                .should.be.true();
+            M.eigenspace(2).equals(new Subspace([new Vector(2, 4, 1)]))
+                .should.be.true();
+            Matrix.identity(3,3).eigenspace(3).equals(Subspace.Rn(3))
+                .should.be.true();
+        });
+        it('should work for 3x3 matrices with a complex eigenvalue', () => {
+            let M = new Matrix([33, -23,   9],
+                               [22,  33, -23],
+                               [19,  14,  50]).scale(1/29);
+            M.eigenspace(2).equals(new Subspace([new Vector(2, -1, 3)]))
+                .should.be.true();
+            let λ = new Complex(1, 1);
+            let B = M.eigenspace(λ);
+            B.should.have.length(1);
+            B.should.be.cplxEigenvectors(M, λ);
+            λ.conj();
+            B = M.eigenspace(λ);
+            B.should.have.length(1);
+            B.should.be.cplxEigenvectors(M, λ);
+        });
+        it('should work for 4x4 matrices with distinct complex eigenvalues', () => {
+            let M = new Matrix([-1226,   230,  1166, -989],
+                               [ 1530,  -192,  -786,  932],
+                               [ 8938, -1856, -6401, 6438],
+                               [12222, -2471, -9114, 8883]).scale(1/133);
+            let λ = new Complex(3, 4);
+            let B = M.eigenspace(λ);
+            B.should.have.length(1);
+            B.should.be.cplxEigenvectors(M, λ);
+            λ.conj();
+            B = M.eigenspace(λ);
+            B.should.have.length(1);
+            B.should.be.cplxEigenvectors(M, λ);
+            λ = new Complex(1, 1);
+            B = M.eigenspace(λ);
+            B.should.have.length(1);
+            B.should.be.cplxEigenvectors(M, λ);
+            λ.conj();
+            B = M.eigenspace(λ);
+            B.should.have.length(1);
+            B.should.be.cplxEigenvectors(M, λ);
+        });
+        it('should work for 4x4 matrices with repeated complex eigenvalues', () => {
+            let M = new Matrix([ -213,   396,   208, -160],
+                               [-2616,  1059,  1056, -976],
+                               [10256, -2036, -7221, 7212],
+                               [10968, -2528, -8088, 7971]).scale(1/133);
+            let λ = new Complex(3, 4);
+            let B = M.eigenspace(λ);
+            B.should.have.length(2);
+            B.should.be.cplxEigenvectors(M, λ);
+            λ.conj();
+            B = M.eigenspace(λ);
+            B.should.have.length(2);
+            B.should.be.cplxEigenvectors(M, λ);
+
+            M = new Matrix([ -126,   371,   168, -119],
+                           [-2442,  1009,   976, -894],
+                           [10604, -2136, -7381, 7376],
+                           [11229, -2603, -8208, 8094]).scale(1/133);
+            λ = new Complex(3, 4);
+            B = M.eigenspace(λ);
+            B.should.have.length(1);
+            B.should.be.cplxEigenvectors(M, λ);
+            λ.conj();
+            B = M.eigenspace(λ);
+            B.should.have.length(1);
+            B.should.be.cplxEigenvectors(M, λ);
+        });
+        it('should work for 4x4 matrices with real and complex eigenvalues', () => {
+            let M = new Matrix([  276,    17,   240, -113],
+                               [ 1419,   138, -1056, 1109],
+                               [ 9654, -2022, -6773, 6806],
+                               [10827, -2249, -8280, 8088]).scale(1/133);
+            let λ = new Complex(3, 4);
+            let B = M.eigenspace(λ);
+            B.should.have.length(1);
+            B.should.be.cplxEigenvectors(M, λ);
+            λ.conj();
+            B = M.eigenspace(λ);
+            B.should.have.length(1);
+            B.should.be.cplxEigenvectors(M, λ);
+            M.eigenspace(3).equals(new Subspace([new Vector(4,9,0,-3)]))
+                .should.be.true();
+            M.eigenspace(4).equals(new Subspace([new Vector(3,-3,2,-3)]))
+                .should.be.true();
+
+            M = new Matrix([  363,    -8,   200,  -72],
+                           [ 2463,  -162, -1536, 1601],
+                           [ 9480, -1972, -6693, 6724],
+                           [10827, -2249, -8280, 8088]).scale(1/133);
+            λ = new Complex(3, 4);
+            B = M.eigenspace(λ);
+            B.should.have.length(1);
+            B.should.be.cplxEigenvectors(M, λ);
+            λ.conj();
+            B = M.eigenspace(λ);
+            B.should.have.length(1);
+            B.should.be.cplxEigenvectors(M, λ);
+            M.eigenspace(3).equals(new Subspace([new Vector(4,9,0,-3),]))
+                .should.be.true();
+
+            M.eigenspace.bind(M, new Complex(3, 5)).should.throw(/not an eigenvalue/);
+        });
+    });
+    describe('#diagonalize(), #blockDiagonalize()', () => {
+        it('should work for 1x1 matrices', () => {
+            let M = new Matrix([3]);
+            M.diagonalize().should.diagonalize(M);
+            M.blockDiagonalize().should.diagonalize(M);
+        });
+        it('should diagonalize 2x2 matrices', () => {
+            let testMats = [
+                new Matrix([1, 1], [1, 1]),
+                new Matrix([2, 0], [0, 2])
+            ];
+            for(let M of testMats) {
+                M.diagonalize().should.diagonalize(M);
+                M.blockDiagonalize().should.diagonalize(M);
+            }
+            new Matrix([1,1],[0,1]).isDiagonalizable().should.be.false();
+        });
+        it('should diagonalize 3x3 matrices', () => {
+            let testMats = [
+                new Matrix([23/13,  53/78, -10/39],
+                           [-4/13, 122/39,   4/39],
+                           [-4/13,  49/78,  43/39]),
+                new Matrix([11/13, 22/39,  2/39],
+                           [-4/13, 83/39,  4/39],
+                           [-1/13, 11/39, 40/39]),
+                Matrix.identity(3, 3)
+            ];
+            for(let M of testMats) {
+                M.diagonalize().should.diagonalize(M);
+                M.blockDiagonalize().should.diagonalize(M);
+            }
+            new Matrix([    1,   1/2,     0],
+                       [-4/13, 83/39,  4/39],
+                       [ 5/13,  7/78, 34/39]).isDiagonalizable().should.be.false();
+        });
+        it('should diagonalize 4x4 matrices with given eigenvalues', () => {
+            let testMats = [{
+                M: new Matrix([1482, -247, -741,  703],
+                              [ 963,  214, -828,  729],
+                              [1572, -360, -842, 1016],
+                              [ 105,  -21, -273,  476]).scale(1/133),
+                ev: [[1,1],[2,1],[3,1],[4,1]]
+            }, {
+                M: new Matrix([ 374, 132, 212, -186],
+                              [ -18,  76, -12,   38],
+                              [-132, -40, -32,   92],
+                              [ 198, 116, 132,  -26]).scale(1/56),
+                ev: [[1,2],[2,1],[3,1]]
+            }, {
+                M: new Matrix([344, 128, 192, -160],
+                              [ 72,  88,  48,  -40],
+                              [-72, -32,   8,   40],
+                              [288, 128, 192, -104]).scale(1/56),
+                ev: [[1,3],[3,1]]
+            }, {
+                M: Matrix.identity(4, 3),
+                ev: [[3,4]]
+            }];
+            for(let {M, ev} of testMats) {
+                M.hintEigenvalues(...ev);
+                M.diagonalize().should.diagonalize(M);
+                M.blockDiagonalize().should.diagonalize(M);
+            }
+        });
+    });
+    describe('#blockDiagonalize()', () => {
+        it('should block-diagonalize 2x2 matrices with a complex eigenvalue', () => {
+            let testMats = [
+                new Matrix([2, -1], [2, 0]),
+                new Matrix([-Math.sqrt(3)+1, -2], [1, -Math.sqrt(3)-1])
+            ];
+            for(let M of testMats) {
+                let {C, D} = M.blockDiagonalize();
+                ({C, D}).should.diagonalize(M, true);
+                D[0][0].should.be.approximately(D[1][1], 1e-10);
+                D[0][1].should.be.approximately(-D[1][0], 1e-10);
+            }
+        });
+        it('should block-diagonalize 3x3 matrices with a complex eigenvalue', () => {
+            let M = new Matrix([33, -23,   9],
+                               [22,  33, -23],
+                               [19,  14,  50]).scale(1/29);
+            let {C, D} = M.blockDiagonalize();
+            ({C, D}).should.diagonalize(M, true);
+            D[0][1].should.equal(0);
+            D[0][2].should.equal(0);
+            D[1][0].should.equal(0);
+            D[2][0].should.equal(0);
+            D[1][1].should.be.approximately(D[2][2], 1e-10);
+            D[1][2].should.be.approximately(-D[2][1], 1e-10);
+        });
+        it('should block-diagonalize 4x4 matrices with repeated complex eigenvalues', () => {
+            let M = new Matrix([ -213,   396,   208, -160],
+                               [-2616,  1059,  1056, -976],
+                               [10256, -2036, -7221, 7212],
+                               [10968, -2528, -8088, 7971]).scale(1/133);
+            let λ = new Complex(3, 4);
+            M.hintEigenvalues([λ, 2], [λ.clone().conj(), 2]);
+            M.blockDiagonalize().should.diagonalize(M, true);
+
+            M = new Matrix([ -126,   371,   168, -119],
+                           [-2442,  1009,   976, -894],
+                           [10604, -2136, -7381, 7376],
+                           [11229, -2603, -8208, 8094]).scale(1/133);
+            M.hintEigenvalues([λ, 2], [λ.clone().conj(), 2]);
+            should(M.blockDiagonalize()).be.null();
+        });
+        it('should block-diagonalize 4x4 matrices with real and complex eigenvalues', () => {
+            let M = new Matrix([  276,    17,   240, -113],
+                               [ 1419,   138, -1056, 1109],
+                               [ 9654, -2022, -6773, 6806],
+                               [10827, -2249, -8280, 8088]).scale(1/133);
+            let λ = new Complex(3, 4);
+            M.hintEigenvalues([3, 1], [4, 1], [λ, 1], [λ.clone().conj(), 1]);
+            M.blockDiagonalize().should.diagonalize(M, true);
+
+            M = new Matrix([ 1360,  480,  1504, -1048],
+                           [-2288, -824, -2608,  1856],
+                           [ 1476,  600,  1712, -1212],
+                           [ 2288,  880,  2608, -1800]).scale(1/56);
+            M.hintEigenvalues([1, 2], [λ, 1], [λ.clone().conj(), 1]);
+            M.blockDiagonalize().should.diagonalize(M, true);
+        });
+    });
 });
 
 
@@ -1011,6 +1389,62 @@ describe('Subspace', () => {
                 .isZero(.1).should.be.true();;
         });
     });
+    describe('#ONbasis()', () => {
+        it('should find an orthonormal basis', () => {
+            let V = new Subspace(new Matrix([ 0, -3, -6,  4,  9],
+                                            [-1, -2, -1,  3,  1],
+                                            [-2, -3,  0,  3, -1],
+                                            [ 1,  4,  5, -9, -7]));
+            let Q = V.ONbasis();
+            Q.colSpace().equals(V).should.be.true();
+            Q.transpose().mult(Q).equals(Matrix.identity(V.dim), 1e-10)
+                .should.be.true();
+        });
+    });
+    describe('#projectionMatrix()', () => {
+        it('should find a nontrivial projection matrix', () => {
+            let V = new Subspace(new Matrix([ 0, -3, -6,  4,  9],
+                                            [-1, -2, -1,  3,  1],
+                                            [-2, -3,  0,  3, -1],
+                                            [ 1,  4,  5, -9, -7]));
+            let P = V.projectionMatrix();
+            P.mult(P).equals(P, 1e-10).should.be.true();
+            P.colSpace().equals(V).should.be.true();
+        });
+        it('should return the zero matrix for the zero subspace', () =>
+           Subspace.zero(3).projectionMatrix().equals(Matrix.zero(3), 1e-10)
+                   .should.be.true());
+        it('should return the identity matrix for the full subspace', () =>
+           Subspace.Rn(3).projectionMatrix().equals(Matrix.identity(3), 1e-10)
+                   .should.be.true());
+    });
+    describe('#orthoDecomp()', () => {
+        let V = new Subspace(new Matrix([ 0, -3, -6,  4,  9],
+                                        [-1, -2, -1,  3,  1],
+                                        [-2, -3,  0,  3, -1],
+                                        [ 1,  4,  5, -9, -7]));
+        it('should find a nontrivial decomposition', () => {
+            let testVecs = [
+                new Vector( 1, 2, 3, 4),
+                new Vector(-2, 3, 7, 8),
+                new Vector(11, 0, 1, 4),
+            ];
+            for(let v of testVecs)
+                V.orthoDecomp(v).should.decompose(v, V);
+        });
+        it('should decompose a vector in V as itself plus zero', () => {
+            let v = new Vector(-3, -3, -5, 5);
+            let [v1, v2] = V.orthoDecomp(v);
+            v1.equals(v, 1e-10).should.be.true();
+            v2.isZero(1e-10).should.be.true();
+        });
+        it('should decompose a vector in the complement as zero plus itself', () => {
+            let v = new Vector(0, 5, -2, 1);
+            let [v1, v2] = V.orthoDecomp(v);
+            v2.equals(v, 1e-10).should.be.true();
+            v1.isZero(1e-10).should.be.true();
+        });
+    });
     describe('#contains()', () => {
         it('should contain every vector when it is maximal', () => {
             let V = new Subspace(new Matrix([ 0,  3, -6,  6,  4, -5],
@@ -1051,5 +1485,21 @@ describe('Subspace', () => {
             W.isSubspaceOf(V).should.be.true();
             V.isSubspaceOf(W).should.be.false();
         });
+    });
+    describe('#orthoComplement()', () => {
+        it('should compute the orthogonal complement', () => {
+            let V = new Subspace(new Matrix([ 0, -3, -6,  4,  9],
+                                            [-1, -2, -1,  3,  1],
+                                            [-2, -3,  0,  3, -1],
+                                            [ 1,  4,  5, -9, -7]));
+            let W = V.orthoComplement();
+            (V.dim + W.dim).should.equal(4);
+            for(let v of V.generators.cols())
+                W.isOrthogonalTo(v).should.be.true();
+        });
+        it('should compute the orthogonal complement of {0}', () =>
+           Subspace.zero(3).orthoComplement().isMaximal().should.be.true());
+        it('should compute the orthogonal complement of R^n', () =>
+           Subspace.Rn(3).orthoComplement().isZero().should.be.true());
     });
 });

@@ -1,11 +1,14 @@
 /** @module lib/linalg
  *
  * @file
- * Classes and routines for doing linear algebra.  Focuses on matrix
- * factorizations, with implementations in dimensions 2 and 3.
+ * Classes and routines for doing linear algebra.
  */
 
 'use strict';
+
+// TODO:
+//  * spectral theorem
+//  * Subspace.intersect(), Subspace.add()
 
 /** @type {number} */
 const π = Math.PI;
@@ -75,8 +78,7 @@ export class Vector extends Array {
         let M = new Matrix(...vecs);
         // Tall matrices never have linearly independent rows.
         if(M.m > M.n) return false;
-        M.PLU(ε);
-        return M.rank == vecs.length;
+        return M.rank(ε) == vecs.length;
     }
 
     /**
@@ -566,9 +568,6 @@ export class Complex extends Vector {
 }
 
 
-////////////////////////////////////////////////////////////////////////////////
-// * Polynomial root solvers
-
 /**
  * Roots are counted with multiplicity: `[x, m]` indicates a root of a
  * polynomial at the number `x` with multiplicity `m`
@@ -654,7 +653,7 @@ export function cardano(b, c, d, ε=1e-10) {
         let α = Math.cbrt(-q/2 + D), β = Math.cbrt(-q/2 - D);
         ret = [[α + β, 1]];
         let z = ζ.clone().scale(α).add(ζ.clone().conj().scale(β)).sub(b/3);
-        if(z.Im < 0) z.conj();
+        if(z.Im > 0) z.conj();
         cplx = [[z, 1], [z.clone().conj(), 1]];
     }
     ret.sort((a, b) => a[0] - b[0]).forEach(a => a[0] -= b/3);
@@ -788,11 +787,32 @@ export class Matrix extends Array {
      * @property {Subspace} rowSpace - The row space.
      * @property {Vector[]} leftNullBasis - Basis for the left null space.
      * @property {Subspace} leftNullSpace - The left null space.
-     * @property {QLData} QR - QR factorization; computed in QR().
+     * @property {QRData} QR - QR factorization; computed in QR().
+     * @property {number} det - The determinant.
+     * @property {number[]} charpoly - Characteristic polynomial.
+     * @property {Root[]} eigenvalues - Eigenvalues.
+     * @property {Map.<number, Subspace>} eigenspaces - Real eigenspaces.
+     * @property {Map.<Complex, Array.<Complex[]>>} cplxEigenspaces - Complex eigenspaces.
+     * @property {Diagonalization} diagonalization - Diagonalization.
+     * @property {Diagonalization} blockDiagonalization - Block diagonalization.
      */
     get _cache() {
         if(!this.__cache) this.__cache = {};
         return this.__cache;
+    }
+
+    /**
+     * Insert a submatrix into the matrix at position `(i,j)`.
+     *
+     * @param {integer} i - The row to insert.
+     * @param {integer} j - The column to insert.
+     * @param {Matrix} M - The submatrix.
+     * @return {Matrix} `this`, after modification.
+     */
+    insertSubmatrix(i, j, M) {
+        for(let ii = 0; ii < M.m; ++ii)
+            this[ii+i].splice(j, M.n, ...M[ii]);
+        return this;
     }
 
     /**
@@ -812,9 +832,9 @@ export class Matrix extends Array {
     /**
      * Whether the matrix is square.
      *
-     * @type {boolean}
+     * @return {boolean}
      */
-    get isSquare() {
+    isSquare() {
         return this.m == this.n;
     }
 
@@ -1115,7 +1135,7 @@ export class Matrix extends Array {
      * @return {boolean}
      */
     isDiagonal(ε=0) {
-        if(!this.isSquare) return false;
+        if(!this.isSquare()) return false;
         return this.isLowerTri(ε) && this.isUpperTri(ε);
     }
 
@@ -1368,7 +1388,7 @@ export class Matrix extends Array {
         if(b.length != this.m)
             throw new Error("Incompatible dimensions of matrix and vector");
         let {P, L, U, pivots} = this.PLU(ε);
-        let r = this.rank;
+        let r = this.rank(ε);
         let Pb = Vector.zero(this.m);
         // Solve LUx = PAx = Pb
         for(let i = 0; i < this.m; ++i) Pb[i] = b[P[i]];
@@ -1397,6 +1417,25 @@ export class Matrix extends Array {
         return x;
     }
 
+
+    /**
+     * Find the shortest solution `x` to the equation `Ax=b`.
+     *
+     * This is obtained by finding some solution using `this.solve()`, then
+     * projecting onto the row space.
+     *
+     * @param {Vector} b - The right-hand side of the equation.
+     * @param {number} [ε=1e-10] - Entries smaller than this value are taken
+     *   to be zero for the purposes of pivoting and projecting.
+     * @return {(Vector|null)} Returns `null` if no solution exists.
+     * @throws Will throw an error if `b.length != this.m`.
+     */
+    solveShortest(b, ε=1e-10) {
+        let x = this.solve(b, ε);
+        if(x === null) return null;
+        return this.rowSpace().project(x, ε);
+    }
+
     /**
      * Compute the pivot positions of the matrix.
      *
@@ -1412,25 +1451,29 @@ export class Matrix extends Array {
     }
 
     /**
-     * The rank of the matrix.
+     * Compute the rank of the matrix.
      *
      * This is computed as a side-effect of other computations.
      *
-     * @type {integer}
+     * @param {number} [ε=1e-10] - Entries smaller than this value are taken
+     *   to be zero for the purposes of pivoting and projecting.
+     * @return {integer}
      */
-    get rank() {
+    rank(ε=1e-10) {
         if(this._cache.rank === undefined) // Hasn't been computed yet
-            this._cache.rank = this.pivots().length;
+            this._cache.rank = this.pivots(ε).length;
         return this._cache.rank;
     }
 
     /**
-     * The nullity of the matrix.
+     * Compute the nullity of the matrix.
      *
-     * @type {integer}
+     * @param {number} [ε=1e-10] - Entries smaller than this value are taken
+     *   to be zero for the purposes of pivoting and projecting.
+     * @return {integer}
      */
-    get nullity() {
-        return this.n - this.rank;
+    nullity(ε=1e-10) {
+        return this.n - this.rank(ε);
     }
 
     /**
@@ -1596,7 +1639,7 @@ export class Matrix extends Array {
     leftNullBasis(ε=1e-10) {
         if(this._cache.leftNullBasis) return this._cache.leftNullBasis;
         let {E} = this.PLU(ε);
-        let r = this.rank;
+        let r = this.rank(ε);
         let ret = new Array(this.m - r);
         for(let i = r; i < this.m; ++i)
             ret[i - r] = E[i].clone();
@@ -1612,54 +1655,62 @@ export class Matrix extends Array {
     leftNullSpace(ε=1e-10) {
         if(this._cache.leftNullSpace) return this._cache.leftNullSpace;
         this._cache.leftNullSpace = new Subspace(
-            this.leftNullBasis(ε), {n: this.n, isBasis: true});
+            this.leftNullBasis(ε), {n: this.m, isBasis: true});
         return this._cache.leftNullSpace;
     }
 
     /**
-     * Whether the matrix has full row rank.
+     * Test whether the matrix has full row rank.
      *
      * This means that there is a pivot in every row.
      *
-     * @type {boolean}
+     * @param {number} [ε=1e-10] - Entries smaller than this value are taken
+     *   to be zero for the purposes of pivoting and projecting.
+     * @return {boolean}
      */
-    get isFullRowRank() {
+    isFullRowRank(ε=1e-10) {
         if(this.m > this.n) return false; // Don't need to row reduce
-        return this.rank == this.m;
+        return this.rank(ε) == this.m;
     }
 
     /**
-     * Whether the matrix has full column rank.
+     * Test whether the matrix has full column rank.
      *
      * This means that there is a pivot in every column.
      *
-     * @type {boolean}
+     * @param {number} [ε=1e-10] - Entries smaller than this value are taken
+     *   to be zero for the purposes of pivoting and projecting.
+     * @return {boolean}
      */
-    get isFullColRank() {
+    isFullColRank(ε=1e-10) {
         if(this.m < this.n) return false; // Don't need to row reduce
-        return this.rank == this.n;
+        return this.rank(ε) == this.n;
     }
 
     /**
-     * Whether the matrix is invertible.
+     * Test whether the matrix is invertible.
      *
      * This means that the matrix is square and has the maximum number of
      * pivots.  Equivalently, there is another matrix (namely `this.inverse()`)
      * such that the product with `this` on both sides is equal to the identity.
      *
-     * @type {boolean}
+     * @param {number} [ε=1e-10] - Entries smaller than this value are taken
+     *   to be zero for the purposes of pivoting and projecting.
+     * @return {boolean}
      */
-    get isInvertible() {
-        return this.isFullRowRank && this.isFullColRank;
+    isInvertible(ε=1e-10) {
+        return this.isFullRowRank(ε) && this.isFullColRank(ε);
     }
 
     /**
      * Alias for `!this.isInvertible()`.
      *
-     * @type {boolean}
+     * @param {number} [ε=1e-10] - Entries smaller than this value are taken
+     *   to be zero for the purposes of pivoting and projecting.
+     * @return {boolean}
      */
-    get isSingular() {
-        return !this.isInvertible;
+    isSingular(ε=1e-10) {
+        return !this.isInvertible(ε);
     }
 
     /**
@@ -1675,10 +1726,10 @@ export class Matrix extends Array {
      *   invertible.
      */
     inverse(ε=1e-10) {
-        if(!this.isSquare)
+        if(!this.isSquare())
             throw new Error("Tried to invert a non-square matrix");
         let E = this.rowOps(ε);
-        if(!this.isInvertible)
+        if(!this.isInvertible(ε))
             throw new Error("Tried to invert a singular matrix");
         return E;
     }
@@ -1696,7 +1747,7 @@ export class Matrix extends Array {
      */
     det(ε=1e-10) {
         if(this._cache.det !== undefined) return this._cache.det;
-        if(!this.isSquare)
+        if(!this.isSquare())
             throw new Error("Tried to take the determinant of a non-square matrix");
         let {U, detP} = this.PLU(ε);
         let det = 1;
@@ -1718,7 +1769,7 @@ export class Matrix extends Array {
      * @return {QRData}
      */
     isOrthogonal(ε=1e-10) {
-        return this.isSquare &&
+        return this.isSquare() &&
             this.transpose().mult(this).equals(Matrix.identity(this.n), ε);
     }
 
@@ -1778,74 +1829,352 @@ export class Matrix extends Array {
         return this._cache.QR;
     }
 
-    // Eigenspaces
-    get eigenvalues() {
-        if(!this._eigendata) this._calcEigendata();
-        return this._eigendata.eigenvalues;
-    }
+    // Eigenstuff
 
-    get charpoly() {
-        if(!this._eigendata) this._calcEigendata();
-        return this._eigendata.charpoly;
-    }
-
-    // Eigenvalues and eigenspaces.  Only implemented for 1x1, 2x2, 3x3.
-    _calcEigendata() {
-        if(!this.isSquare)
-            throw "Eigenvalues only make sense for square matrices";
-        switch(this.n) {
-        case 1: this._calcEigendata1x1(); break;
-        case 2: this._calcEigendata2x2(); break;
-        case 3: this._calcEigendata3x3(); break;
-        default:
-            throw "Eigenvalue calculations only implemented for 1 <= n <= 3";
+    /**
+     * Compute the characteristic polynomial.
+     *
+     * The characteristic polynomial of an `n`x`n` matrix `A` is the determinant
+     * of `(A - λI_n)`, where λ is an indeterminate.  This is a polynomial of
+     * degree `n` and leading coefficient `(-1)^n`.  The polynomial
+     *      (-1)^n λ^n + c1 λ^(n-1) + c2 λ^(n-2) + ... + c(n-1) λ + cn
+     * is represented as an array of numbers `[c1, c2, c3, ..., cn]`.
+     *
+     * This only makes sense for square matrices.  Throws an error if the matrix
+     * is not square.
+     *
+     * This algorithm uses a recursive formula for the characteristic polynomial
+     * in terms of traces of powers of the matrix that can be found in:
+     *      R. R. Silva, J. Math. Phys. 39, 6206-6213 (1998)
+     * I make no claim that this is the most efficient algorithm -- but it is
+     * easy to implement.
+     *
+     * @return {number[]} The coefficients of λ^{n-1}, λ^{n-2}, ..., 1.
+     * @throws Will throw an error if the matrix is not square.
+     */
+    charpoly() {
+        if(this._cache.charpoly) return this._cache.charpoly;
+        if(!this.isSquare())
+            throw new Error("Tried to compute the characteristic polynomial of a non-square matrix");
+        let n = this.n;
+        let ret = new Array(n);
+        let traces = new Array(n);
+        let power = this;
+        for(let i = 0; i < n; ++i) {
+            traces[i] = power.trace;
+            power = power.mult(this);
+            ret[i] = traces[i];
+            for(let j = 0; j < i; ++j)
+                ret[i] += ret[j] * traces[i-j-1];
+            ret[i] = -ret[i]/(i+1);
         }
-        this._eigendata.eigenvalues.forEach(val => {
-            val.eigenspace = this.clone()
-                .sub(Matrix.identity(this.n, val.value))
-                .nullSpace;
-            // Sanity check
-            if(val.eigenspace.dim === 0 || val.eigenspace.dim > val.mult)
-                throw "Numerical error computing eigenspaces";
-        });
+        // This is det(λI - A); multiply by (-1)^n now
+        if(n % 2 == 0)
+            this._cache.charpoly = ret;
+        else
+            this._cache.charpoly = ret.map(x => -x);
+        return this._cache.charpoly;
     }
 
-    _calcEigendata1x1() {
-        let eigenvalue = this.entry(0, 0);
-        this._eigendata = {
-            charpoly: [eigenvalue],
-            eigenvalues: [{
-                value: eigenvalue,
-                mult:  1,
-            }]
-        };
+    /**
+     * Compute the (real and complex) eigenvalues of the matrix.
+     *
+     * These are the roots of the characteristic polynomial.
+     *
+     * Only implemented for matrices of size 1x1, 2x2, and 3x3.
+     *
+     * @param {number} [ε=1e-10] - Eigenvalues will be considered equal if the
+     *   discriminant of the characteristic polynomial is smaller than this.
+     * @return {Root[]} The eigenvalues with algebraic multiplicity.
+     * @throws Will throw an error if the matrix is not square, or if the matrix
+     *   is bigger than 3x3.
+     */
+    eigenvalues(ε=1e-10) {
+        if(this._cache.eigenvalues) return this._cache.eigenvalues;
+        if(!this.isSquare())
+            throw new Error("Tried to compute the eigenvalues of a non-square matrix");
+        switch(this.n) {
+        case 1:
+            this._cache.eigenvalues = [[this[0][0], 1]];
+            break;
+        case 2:
+            this._cache.eigenvalues = quadratic(...this.charpoly(), ε);
+            break;
+        case 3:
+            let [b, c, d] = this.charpoly();
+            // replace λ by -λ and re-sort
+            this._cache.eigenvalues = cardano(b, -c, d, ε).map(
+                ([x, m]) => x instanceof Complex ? [x.mult(-1), m] : [-x, m])
+                .sort(([a,], [b,]) => {
+                    if(typeof a === "number" && typeof b === "number")
+                        return a - b;
+                    if(typeof a === "number") return -1;
+                    if(typeof b === "number") return 1;
+                    if(Math.abs(a.Re - b.Re) < ε) return a.Im - b.Im;
+                    return a.Re - b.Re;
+                });
+            break;
+        default:
+            throw new Error("Eigenvalue computations are only implemented for matrices up to 3x3");
+        }
+        return this._cache.eigenvalues;
     }
 
-    _calcEigendata2x2() {
-        let [b, c] = [-this.trace, this.det];
-        let roots = quadratic(b, c, this.ε);
-        this._eigendata = {
-            charpoly: [b, c],
-            eigenvalues: roots.map(([root, mult]) => {
-                return {value: root, mult: mult};
-            })
-        };
+    /**
+     * Cache the (real and complex) eigenvalues of the matrix.
+     *
+     * This is so that (block) diagonalization can be performed for matrices
+     * larger than 3x3.
+     *
+     * @param {...Root} eigenvalues - The eigenvalues with algebraic multiplicity.
+     * @return {undefined}
+     */
+    hintEigenvalues(...eigenvalues) {
+        this._cache.eigenvalues = eigenvalues;
     }
 
-    _calcEigendata3x3() {
-        let [b, c, d] = [this.trace, (() => {
-            let [a,b,c] = this[0];
-            let [d,e,f] = this[1];
-            let [g,h,i] = this[2];
-            return b*d - a*e + c*g + f*h - a*i - e*i;
-        })(), this.det];
-        let roots = cardano(b, -c, d); // replace x by -x
-        this._eigendata = {
-            charpoly: [b, c, d],
-            eigenvalues: roots.map((root, mult) => {
-                return {value: -root, mult: mult};
-            })
-        };
+    /**
+     * Compute the `λ`-eigenspace of the matrix.
+     *
+     * This works for any size matrix if you know an eigenvalue.  For complex
+     * eigenvalues, it returns a basis for the eigenspace represented as an
+     * Array of pairs of vectors `[v_Re, v_Im]`, where `v_Re + iv_Im` is the
+     * eigenvector.
+     *
+     * @param {number} λ - The eigenvalue.
+     * @param {number} [ε=1e-10] - Rounding factor.
+     * @return {(Subspace|Array.<Vector[]>)} The eigenspace.
+     * @throws Will throw an error if the matrix is not square, or if `λ` is not
+     *   an eigenvalue of the matrix.
+     */
+    eigenspace(λ, ε=1e-10) {
+        if(λ instanceof Complex) {
+            if(Math.abs(λ.Im) > ε)
+                return this._complexEigenspace(λ, ε);
+            λ = λ.Re;
+        }
+        return this._realEigenspace(λ, ε);
+    }
+
+    _realEigenspace(λ, ε=1e-10) {
+        if(!this._cache.eigenspaces) this._cache.eigenspaces = new Map();
+        let closest = Infinity, best;
+        // Find best matching eigenvalue
+        for(let [λ1, V] of this._cache.eigenspaces.entries()) {
+            let c = Math.abs(λ1 - λ);
+            if(c < closest && c < ε) {
+                closest = c;
+                best = V;
+            }
+        }
+        if(best) return best;
+        // Compute the eigenspace
+        let V = this.clone().sub(Matrix.identity(this.n, λ)).nullSpace(ε);
+        if(V.dim == 0)
+            throw new Error("λ is not an eigenvalue of this matrix");
+        this._cache.eigenspaces.set(λ, V);
+        return V;
+    }
+
+    _complexEigenspace(λ, ε=1e-10) {
+        if(!this._cache.cplxEigenspaces) this._cache.cplxEigenspaces = new Map();
+        let closest = Infinity, best;
+        // Find best matching eigenvalue
+        for(let [λ1, V] of this._cache.cplxEigenspaces.entries()) {
+            let c = λ1.clone().sub(λ).sizesq;
+            if(c < closest && c < ε*ε) {
+                closest = c;
+                best = V;
+            }
+        }
+        if(best) return best;
+
+        // The row reduction algorithm in PLU() won't work for complex
+        // matrices.  We implement a simplified version here.
+        let {m, n} = this;
+        let pivots = [];
+        let U = [...this].map(row => [...row].map(x => new Complex(x)));
+        for(let i = 0; i < n; ++i) U[i][i].sub(λ);
+
+        for(let curRow = 0, curCol = 0; curRow < m && curCol < n; ++curCol) {
+            // Find maximal pivot
+            let pivot = U[curRow][curCol], row = curRow;
+            for(let i = curRow+1; i < m; ++i) {
+                if(U[i][curCol].sizesq > pivot.sizesq) {
+                    pivot = U[i][curCol];
+                    row = i;
+                }
+            }
+            if(pivot.sizesq > ε*ε) {
+                // curCol is a pivot column
+                [U[row], U[curRow]] = [U[curRow], U[row]];
+                // Eliminate
+                for(let i = curRow+1; i < m; ++i) {
+                    let l = U[i][curCol].clone().div(pivot).mult(-1);
+                    U[i][curCol].Re = U[i][curCol].Im = 0;
+                    for(let j = curCol+1; j < n; ++j)
+                        U[i][j].add(U[curRow][j].clone().mult(l));
+                }
+                pivots.push([curRow, curCol]);
+                curRow++;
+
+            } else {
+                // Clear the column so U is really upper-triangular
+                for(let i = curRow; i < m; ++i)
+                    U[i][curCol].Re = U[i][curCol].Im = 0;
+            }
+        }
+
+        if(pivots.length == n)
+            throw new Error("λ is not an eigenvalue of this matrix");
+
+        // Transform into rref
+        for(let k = pivots.length-1; k >= 0; --k) {
+            let [row, col] = pivots[k];
+            let pivot = U[row][col];
+            for(let i = 0; i < row; ++i) {
+                let l = U[i][col].clone().div(pivot).mult(-1);
+                for(let j = col+1; j < n; ++j)
+                    U[i][j].add(U[row][j].clone().mult(l));
+                U[i][col].Re = U[i][col].Im = 0;
+            }
+            let l = pivot.recip();
+            for(let j = col+1; j < n; ++j)
+                U[row][j].mult(l);
+            U[row][col].Re = 1;
+            U[row][col].Im = 0;
+        }
+
+        // Now extract the null basisa
+        let basis = [], previous = [];
+        for(let j = 0; j < n; ++j) {
+            if(pivots.length && pivots[0][1] === j) {
+                // Pivot column
+                previous.push(pivots.shift());
+                continue;
+            }
+            // Free column
+            let Re_v = Vector.zero(n), Im_v = Vector.zero(n);
+            for(let [row, col] of previous) {
+                Re_v[col] = -U[row][j].Re;
+                Im_v[col] = -U[row][j].Im;
+            }
+            Re_v[j] = 1;
+            basis.push([Re_v, Im_v]);
+        }
+
+        this._cache.cplxEigenspaces.set(λ.clone(), basis);
+        return basis;
+    }
+
+    /**
+     * Diagonalizability data: `this = CDC^(-1)`.
+     *
+     * @typedef Diagonalization
+     * @type {object}
+     * @property {Matrix} C - An `n`x`n` invertible matrix.
+     * @property {Matrix} D - An `n`x`n` diagonal matrix, or a block diagonal
+     *   matrix in the case of block diagonalization.
+     */
+
+    /**
+     * Diagonalize the matrix.
+     *
+     * This is only implemented for matrices up to 3x3 with real eigenvalues.
+     * It returns an invertible matrix `C` and a diagonal matrix `D` such that
+     * `this = CDC^(-1)`.
+     *
+     * @param {number} [ε=1e-10] - Rounding factor.
+     * @return {?Diagonalization} The diagonalization, or `null` if the matrix
+     *   is not diagonalizable over the reals.
+     * @throws Will throw an error if the matrix is not square or if the matrix is
+     *   larger than 3x3.
+     */
+    diagonalize(ε=1e-10) {
+        if(this._cache.diagonalization) return this._cache.diagonalization;
+        let eigenbasis = new Array(this.n);
+        let D = Matrix.zero(this.n);
+        let i = 0;
+        for(let [λ,m] of this.eigenvalues(ε)) {
+            if(λ instanceof Complex)
+                return null;
+            let V = this.eigenspace(λ, ε);
+            if(V.dim < m)
+                return null;
+            for(let j = 0; j < m; ++j, ++i) {
+                D[i][i] = λ;
+                eigenbasis[i] = V.basis().col(j);
+            }
+        }
+        let C = new Matrix(...eigenbasis).transpose();
+        this._cache.diagonalization = {C, D};
+        return this._cache.diagonalization;
+    }
+
+    /**
+     * Test if the matrix is diagonalizable.
+     *
+     * This is only implemented for matrices up to 3x3 with real eigenvalues.
+     *
+     * @param {number} [ε=1e-10] - Rounding factor.
+     * @return {boolean}
+     * @throws Will throw an error if the matrix is not square or if the matrix is
+     *   larger than 3x3.
+     */
+    isDiagonalizable(ε=1e-10) {
+        return !!this.diagonalize(ε);
+    }
+
+    /**
+     * Block diagonalize the matrix.
+     *
+     * This is only implemented for matrices up to 3x3.  If the matrix is
+     * block-diagonalizable, it returns an invertible matrix `C` and a matrix
+     * `D` with diagonal blocks consisting of numbers and rotation-scaling
+     * matrices, such that `this = CDC^(-1)`.
+     *
+     * If `this` has all real eigenvalues, then `blockDiagonalize()` returns the
+     * same as {@link diagonalize}.
+     *
+     * @param {number} [ε=1e-10] - Rounding factor.
+     * @return {?Diagonalization} The diagonalization, or `null` if the matrix
+     *   is not block-diagonalizable.
+     * @throws Will throw an error if the matrix is not square or if the matrix is
+     *   larger than 3x3.
+     */
+    blockDiagonalize(ε=1e-10) {
+        if(this._cache.blockDiagonalization) return this._cache.blockDiagonalization;
+        let eigenbasis = new Array(this.n);
+        let D = Matrix.zero(this.n);
+        let i = 0;
+        let seen = [];
+        for(let [λ,m] of this.eigenvalues(ε)) {
+            if(λ instanceof Complex) {
+                if(seen.find(z => z.equals(λ)))
+                    continue; // Only use one of a conjugate pair of eigenvalues
+                let B = this.eigenspace(λ, ε);
+                if(B.length < m) // Impossible for matrices <= 3x3
+                    return null;
+                for(let j = 0; j < m; ++j, i += 2) {
+                    // The columns are the real and complex parts of the eigenvectors
+                    eigenbasis[i  ] = B[j][0];
+                    eigenbasis[i+1] = B[j][1];
+                    D.insertSubmatrix(i, i, new Matrix([λ.Re, λ.Im], [-λ.Im, λ.Re]));
+                }
+                seen.push(λ.clone().conj());
+            } else {
+                let V = this.eigenspace(λ, ε);
+                if(V.dim < m)
+                    return null;
+                for(let j = 0; j < m; ++j, ++i) {
+                    D[i][i] = λ;
+                    eigenbasis[i] = V.basis().col(j);
+                }
+            }
+        }
+        let C = new Matrix(...eigenbasis).transpose();
+        this._cache.blockDiagonalization = {C, D};
+        return this._cache.blockDiagonalization;
     }
 }
 
@@ -1931,7 +2260,6 @@ export class Subspace {
             + this.generators.toString(precision);
      }
 
-
     /**
      * Compute a basis for the subspace.
      *
@@ -1948,12 +2276,32 @@ export class Subspace {
     }
 
     /**
+     * Compute an orthonormal basis for the subspace.
+     *
+     * @param {number} [ε=1e-10] - Vectors shorter than this value are taken to
+     *   be zero.
+     * @return {Matrix} A matrix whose columns form an orthonormal basis for the
+     *   Subspace.
+     */
+    ONbasis(ε=1e-10) {
+        if(this._ONbasis) return this._ONbasis;
+        let {Q} = this.generators.QR(ε);
+        this._ONbasis = new Matrix(
+            ...[...Q.cols()].filter(col => !col.isZero())).transpose();
+        if(this._dim === undefined)
+            this._dim = this._ONbasis.n;
+        return this._ONbasis;
+    }
+
+    /**
      * The dimension of the subspace.
      *
      * @type {integer}
      */
     get dim() {
-        return this.basis().n;
+        if(this._dim === undefined)
+            this._dim = this.basis().n;
+        return this._dim;
     }
 
     /**
@@ -1979,13 +2327,93 @@ export class Subspace {
     }
 
     /**
+     * Compute the projection matrix onto `this`.
+     *
+     * @param {number} [ε=1e-10] - Vectors shorter than this value are taken to
+     *   be zero when computing an orthonormal basis.
+     * @return {Matrix} An `n`x`n` matrix for projection onto `this`.
+     */
+    projectionMatrix(ε=1e-10) {
+        if(this._projectionMatrix) return this._projectionMatrix;
+        let Q = this.ONbasis(ε);
+        if(this.dim > 0)
+            this._projectionMatrix = Q.mult(Q.transpose());
+        else
+            this._projectionMatrix = Matrix.zero(this.n);
+        return this._projectionMatrix;
+    }
+
+    /**
+     * Compute the orthogonal decomposition of a vector with respect to `this`.
+     *
+     * This returns the unique pair of vectors `[v1, v2]` such that `v1` is in
+     * `this`, `v2` is orthogonal to `this`, and `v1 + v2 = v`.
+     *
+     * @param {Vector} v - The vector to decompose.
+     * @param {number} [ε=1e-10] - Vectors shorter than this value are taken to
+     *   be zero when computing an orthonormal basis.
+     * @return {Vector[]} Returns `[v1, v2]` as described above.
+     * @throws Throws an error if `v.length != this.n`.
+     */
+    orthoDecomp(v, ε=1e-10) {
+        let P = this.projectionMatrix(ε);
+        let v1 = P.apply(v);
+        return [v1, v.clone().sub(v1)];
+    }
+
+    /**
+     * Compute the orthogonal projection of a vector onto `this`.
+     *
+     * This is an alias for `this.orthoDecomp(v, ε)[0]`.
+     *
+     * @param {Vector} v - The vector to project.
+     * @param {number} [ε=1e-10] - Vectors shorter than this value are taken to
+     *   be zero when computing an orthonormal basis.
+     * @return {Vector} The orthogonal projection.
+     * @throws Throws an error if `v.length != this.n`.
+     */
+    project(v, ε=1e-10) {
+        return this.orthoDecomp(v, ε)[0];
+    }
+
+    /**
+     * Compute the shortest vector from `this` to `v`.
+     *
+     * This is an alias for `this.orthoDecomp(v, ε)[1]`.
+     *
+     * @param {Vector} v - The vector to decompose.
+     * @param {number} [ε=1e-10] - Vectors shorter than this value are taken to
+     *   be zero when computing an orthonormal basis.
+     * @return {Vector} The orthogonal projection.
+     * @throws Throws an error if `v.length != this.n`.
+     */
+    complement(v, ε=1e-10) {
+        return this.orthoDecomp(v, ε)[1];
+    }
+
+    /**
+     * Compute the distance of `v` from `this`.
+     *
+     * This is an alias for `this.complement(v, ε).size`.
+     *
+     * @param {Vector} v - The vector to measure.
+     * @param {number} [ε=1e-10] - Vectors shorter than this value are taken to
+     *   be zero when computing an orthonormal basis.
+     * @return {number} The distance to `this`.
+     * @throws Throws an error if `v.length != this.n`.
+     */
+    distanceTo(v, ε=1e-10) {
+        return this.complement(v, ε).size;
+    }
+
+    /**
      * Check if this Subspace contains a Vector.
      *
      * This means that the vector is a linear combination of the generators.
      *
      * @param {Vector} vec - The vector to test.
-     * @param {number} [ε=1e-10] - Entries smaller than this value are taken
-     *   to be zero for the purposes of pivoting.
+     * @param {number} [ε=1e-10] - Vectors shorter than this value are taken to
+     *   be zero.
      * @return {boolean}
      * @throws Will throw an error if `vec.length != this.n`.
      */
@@ -1996,7 +2424,26 @@ export class Subspace {
             return true; // Nothing to check!
         if(this.isZero(ε))
             return vec.isZero(ε); // Nothing to check!
-        return !!this.basis(ε).solve(vec, ε);
+        return this.distanceTo(vec) < ε;
+    }
+
+    /**
+     * Check if a Vector is orthogonal to `this`.
+     *
+     * @param {Vector} vec - The vector to test.
+     * @param {number} [ε=1e-10] - Vectors shorter than this value are taken to
+     *   be zero.
+     * @return {boolean}
+     * @throws Will throw an error if `vec.length != this.n`.
+     */
+    isOrthogonalTo(vec, ε=1e-10) {
+        if(this.n != vec.length)
+            throw new Error("Vector has the wrong number of entries");
+        if(this.isMaximal(ε))
+            return vec.isZero(ε); // Nothing to check!
+        if(this.isZero(ε))
+            return true;
+        return this.project(vec).sizesq <= ε*ε;
     }
 
     /**
@@ -2032,5 +2479,17 @@ export class Subspace {
         return this.isSubspaceOf(other, ε);
     }
 
+    /**
+     * Find the orthogonal complement of `this`.
+     *
+     * @param {number} [ε=1e-10] - Entries smaller than this value are taken
+     *   to be zero for the purposes of pivoting.
+     * @return {Subspace}
+     */
+    orthoComplement(ε=1e-10) {
+        if(this.isZero(ε))
+            return Subspace.Rn(this.n);
+        return this.generators.leftNullSpace(ε);
+    }
 }
 
