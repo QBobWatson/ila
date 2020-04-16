@@ -1,6 +1,9 @@
 'use strict'; // -*- js2 -*-
 
-/* Implementation of the Jenkins--Traub algorithm for polynomial factorization.
+/** @module lib/rpoly
+ *
+ * @file
+ * Implementation of the Jenkins--Traub algorithm for polynomial factorization.
  *
  * This is a (hopefully faithful) translation of the Fortran implementation:
  *
@@ -10,6 +13,7 @@
  * working with arrays---and includes minor simplifications made possible by
  * eliminating the shared variables used in 493.FOR.
  */
+
 
 const {abs, max, min, log, exp, floor, ceil, sqrt, sin, cos, PI} = Math;
 
@@ -26,7 +30,7 @@ const SINR = sin(94*PI/180); // ~ 0.99756405
 const SQRT2INV = sqrt(0.5); // ~ 0.70710678
 
 /**
- * A polynomial is represented as a list of coefficients.
+ * A polynomial is represented as a list of real coefficients.
  *
  * The zeroth coefficient is the highest-order term.
  *
@@ -48,7 +52,7 @@ const SQRT2INV = sqrt(0.5); // ~ 0.70710678
  * @param {Polynomial} P - The polynomial to factor.
  * @return {Complex[]} The roots found.
  */
-export default function rpoly(P) {
+function rpoly(P) {
     // Make a copy of the coefficients
     P = P.slice();
     // Translate so the leading coefficient is nonzero
@@ -193,6 +197,8 @@ export default function rpoly(P) {
  * @param {number} u - The starting linear coefficient.
  * @param {number} v - The starting constant coefficient.
  * @return {Complex[]} The zeros found.
+ *
+ * @private
  */
 function fxshfr(l2, P, K, u, v) {
     const n = K.length;
@@ -293,6 +299,8 @@ function fxshfr(l2, P, K, u, v) {
  * @return {Array} An array `[roots, QP]`, where `roots` contains the two zeros
  *   found and `QP` is the quotient of `P` by `u*x+v`.  If unsuccessful, return
  *   `[null, null]`.
+ *
+ * @private
  */
 function quadit(u, v, P, K) {
     K = K.slice();
@@ -372,6 +380,8 @@ function quadit(u, v, P, K) {
  *   value of `u` and `v` as in {@link fxshfr} and `K` is the current
  *   K-polynomial.  If iteration converges, return `{success: true, s, QP}`,
  *   where `s` is the zero and `QP` is the quotient polynomial.
+ *
+ * @private
  */
 function realit(s, P, K) {
     K = K.slice();
@@ -433,6 +443,8 @@ function realit(s, P, K) {
  * @return {Array} Return `[type, QK, scalars]`, where `type` is described
  *   below, `QK` is the quotient of `K` by `u*x + v`, and `scalars` contains the
  *   computed scalar quantities `{c, d, f, g, h, a1, a3, a7}`.
+ *
+ * @private
  */
 function calcsc(u, v, a, b, K) {
     // Synthetic division of K by the quadratic 1,U,V
@@ -480,6 +492,8 @@ function calcsc(u, v, a, b, K) {
  * @param {number} b - The constant coefficient of the remainder.
  * @param {Object} scalars - The scalars from {@link calcsc}.
  * @return {Polynomial} The new K-polynomial.
+ *
+ * @private
  */
 function nextk(type, K, QK, QP, a, b, scalars) {
     const n = K.length;
@@ -520,6 +534,8 @@ function nextk(type, K, QK, QP, a, b, scalars) {
  * @param {Object} scalars - The scalars from {@link calcsc}.
  * @return {number[]} An array `[u, v]` containing the new quadratic
  *   coefficients.
+ *
+ * @private
  */
 function newest(type, K, P, a, b, u, v, scalars) {
     if(type === 3)
@@ -560,6 +576,8 @@ function newest(type, K, P, a, b, u, v, scalars) {
  * @return {Array} An array `[a, b, Q]` containing the remainder and the
  *   quotient polynomial.  The polynomial `Q` has the same number of entries as
  *   `P`; the last two entries are `a` and `b` again.
+ *
+ * @private
  */
 function quadsd(u, v, P) {
     let a = 0, b = 0;
@@ -584,6 +602,8 @@ function quadsd(u, v, P) {
  * @param {number} b1 - The linear coefficient.
  * @param {number} c  - The constant coefficient.
  * @return {Complex[]} The roots.
+ *
+ * @private
  */
 function quad(a, b1, c) {
     if(a === 0)
@@ -611,3 +631,5 @@ function quad(a, b1, c) {
     const sr = -b/a, si = abs(d/a);
     return [[sr, si], [sr, -si]];
 }
+
+export default rpoly;

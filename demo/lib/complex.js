@@ -1,10 +1,10 @@
+'use strict';
+
 /** @module lib/complex
  *
  * @file
  * A class for Complex numbers.
  */
-
-'use strict';
 
 import Vector, {initVector} from "./vector.js";  initVector();
 

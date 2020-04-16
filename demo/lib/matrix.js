@@ -1,3 +1,5 @@
+'use strict';
+
 /** @module lib/matrix
  *
  * @file
@@ -5,14 +7,16 @@
  * algebra.
  */
 
-'use strict';
-
 import Vector from "./vector.js";
 import Complex from "./complex.js";
 import Subspace from "./subspace.js";
+import Polynomial from "./polynomial.js";
 
-//import { quadratic, cardano } from "./linalg.js";
-
+// TODO:
+//  * SVD
+//  * pseudo-inverse
+//  * chednovsky or whatever
+//  * PCA?
 
 /**
  * Class representing a matrix.
@@ -137,7 +141,7 @@ class Matrix extends Array {
      * @property {Subspace} leftNullSpace - The left null space.
      * @property {QRData} QR - QR factorization; computed in QR().
      * @property {number} det - The determinant.
-     * @property {number[]} charpoly - Characteristic polynomial.
+     * @property {Polynomial} charpoly - Characteristic polynomial.
      * @property {Root[]} eigenvalues - Eigenvalues.
      * @property {Map.<number, Subspace>} eigenspaces - Real eigenspaces.
      * @property {Map.<Complex, Array.<Complex[]>>} cplxEigenspaces - Complex
@@ -1268,11 +1272,11 @@ class Matrix extends Array {
                 ret[i] += ret[j] * traces[i-j-1];
             ret[i] = -ret[i]/(i+1);
         }
+        ret = Polynomial.create(1, ...ret);
         // This is det(λI - A); multiply by (-1)^n now
-        if(n % 2 == 0)
-            this._cache.charpoly = ret;
-        else
-            this._cache.charpoly = ret.map(x => -x);
+        if(n % 2 == 1)
+            ret.scale(-1);
+        this._cache.charpoly = ret;
         return this._cache.charpoly;
     }
 
@@ -1281,42 +1285,18 @@ class Matrix extends Array {
      *
      * These are the roots of the characteristic polynomial.
      *
-     * Only implemented for matrices of size 1x1, 2x2, and 3x3.
-     *
-     * @param {number} [ε=1e-10] - Eigenvalues will be considered equal if the
-     *   discriminant of the characteristic polynomial is smaller than this.
+     * @param {number} [ε=1e-10] - Eigenvalues will be considered equal if they
+     *   are at most this close together.
      * @return {Root[]} The eigenvalues with algebraic multiplicity.
-     * @throws Will throw an error if the matrix is not square, or if the matrix
-     *   is bigger than 3x3.
+     * @throws Will throw an error if the matrix is not square.
      */
     eigenvalues(ε=1e-10) {
         if(this._cache.eigenvalues) return this._cache.eigenvalues;
         if(!this.isSquare())
             throw new Error("Tried to compute the eigenvalues of a non-square matrix");
-        switch(this.n) {
-        case 1:
-            this._cache.eigenvalues = [[this[0][0], 1]];
-            break;
-        case 2:
-            this._cache.eigenvalues = quadratic(...this.charpoly(), ε);
-            break;
-        case 3:
-            let [b, c, d] = this.charpoly();
-            // replace λ by -λ and re-sort
-            this._cache.eigenvalues = cardano(b, -c, d, ε).map(
-                ([x, m]) => x instanceof Complex ? [x.mult(-1), m] : [-x, m])
-                .sort(([a,], [b,]) => {
-                    if(typeof a === "number" && typeof b === "number")
-                        return a - b;
-                    if(typeof a === "number") return -1;
-                    if(typeof b === "number") return 1;
-                    if(Math.abs(a.Re - b.Re) < ε) return a.Im - b.Im;
-                    return a.Re - b.Re;
-                });
-            break;
-        default:
-            throw new Error("Eigenvalue computations are only implemented for matrices up to 3x3");
-        }
+        this._cache.eigenvalues = this.charpoly()
+            .factor(ε)
+            .map(z => z instanceof Complex || typeof z === "number" ? [z, 1] : z);
         return this._cache.eigenvalues;
     }
 

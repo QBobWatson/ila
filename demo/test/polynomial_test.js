@@ -1,5 +1,7 @@
 'use strict'; // -*- js2 -*-
 
+import './lib/resemble.js';
+
 import Polynomial from "../lib/polynomial.js";
 import Complex from "../lib/complex.js";
 
@@ -174,6 +176,10 @@ describe('Polynomial', () => {
         it('should scale by a scalar', () =>
            poly(1,2,3).scale(2).should.eql(poly(2,4,6)));
     });
+    describe('#monic()', () => {
+        it('should scale by the leading coefficient', () =>
+           poly(2,4,6).monic().should.eql(poly(1,2,3)));
+    });
     describe('#pow()', () => {
         it('should compute powers correctly', () => {
             let p = poly(1, 1);
@@ -224,6 +230,49 @@ describe('Polynomial', () => {
         it('should handle corner cases', () => {
             poly().derivative().should.eql(poly());
             poly(1).derivative(2).should.eql(poly());
+        });
+    });
+    describe('#factor()', () => {
+        it('should factor polynomials with simple real roots', () =>
+           fromRoots(1, 2, 3, 4).factor().should.resemble(
+               [1, 2, 3, 4].map(x => [x, 1])));
+        it('should factor polynomials with simple complex roots', () =>
+           poly(1, -3, 3, -3, 2).factor().should.resemble(
+               [C(0, -1), C(0, 1), 1, 2].map(x => [x, 1])));
+        it('should factor polynomials with multiple real roots', () =>
+           fromRoots([1, 2], [2, 2], 3, 4).factor(1e-7).should.resemble(
+               [[1, 2], [2, 2], [3, 1], [4, 1]]));
+        it('should factor polynomials with multiple complex roots', () =>
+           poly(1, -5, 10, -14, 17, -13, 8, -4).factor(1e-6).should.resemble(
+               [[C(0, -1), 2], [C(0, 1), 2], [1, 1], [2, 2]]));
+        describe('factoring cubics', () => {
+            it('should find a triple root', () => {
+                // x^3 - 6x^2 + 12x - 8 = (x-2)^3
+                poly(1, -6, 12, -8).factor().should.resemble([[2, 3]]);
+            });
+            it('should find double roots', () => {
+                // x^3 - 4x^2 + 5x - 2 = (x-2) (x-1)^2
+                poly(1, -4,  5, -2).factor().should.resemble([[1, 2], [2, 1]]);
+                // x^3 + 4x^2 + 5x + 2 = (x+2) (x+1)^2
+                poly(1,  4,  5,  2).factor().should.resemble([[-2, 1], [-1, 2]]);
+            });
+            it('should find simple real roots', () => {
+                // x^3 + 2x^2 - x - 2 = (x+2) (x+1) (x-1)
+                poly(1, 2, -1, -2).factor().should
+                    .resemble([-2, -1, 1].map(x => [x, 1]));
+                // x^3 +  x^2 - 4x - 4 = (x+2) (x+1) (x-2)
+                poly(1, 1, -4, -4).factor().should
+                    .resemble([-2, -1, 2].map(x => [x, 1]));
+            });
+            it('should find complex Roots', () => {
+                // x^3 - 2x^2 + x - 2 = (x-2) (x^2+1)
+                poly(1, -2,  1, -2).factor().should.resemble(
+                    [Complex.i.conj(), Complex.i, 2].map(x => [x, 1]));
+                // x^3 - x^2 - x - 2 = (x-2) (x^2+x+1)
+                poly(1, -1, -1, -2).factor().should.resemble(
+                    [ζ.clone().conj(), ζ, 2].map(x => [x, 1]));
+            });
+
         });
     });
 });

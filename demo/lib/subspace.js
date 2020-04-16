@@ -1,10 +1,10 @@
+'use strict';
+
 /** @module lib/subspace
  *
  * @file
  * Implements a Subspace class to represent subspaces of `R^n`.
  */
-
-'use strict';
 
 import Matrix from "./matrix.js";
 

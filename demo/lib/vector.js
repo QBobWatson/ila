@@ -1,10 +1,10 @@
+'use strict';
+
 /** @module lib/vector
  *
  * @file
  * Implements a Vector class used for doing vector arithmetic.
  */
-
-'use strict';
 
 import Matrix from "./matrix.js";
 

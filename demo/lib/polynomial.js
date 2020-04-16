@@ -1,18 +1,78 @@
+'use strict';
+
 /** @module lib/polynomial
  *
  * @file
  * A class for polynomial manipulations.
  */
 
-'use strict'; // -*- js2 -*-
-
 import Complex from './complex.js';
+import rpoly from './rpoly.js';
 
 // Convenience
 const C = (a, b=0) => a instanceof Complex ? a : new Complex(a, b);
 
 // Memoized Legendre polynomials
 let legendres;
+
+
+// A cube root of unity
+const ζ = new Complex(-1/2, Math.sqrt(3)/2);
+const π = Math.PI;
+
+
+/**
+ * Find the roots of a cubic polynomial.
+ *
+ * This function finds the roots of the polynomial `x^3 + b x^2 + c x + d` using
+ * [Cardano's formula]{@link https://www.encyclopediaofmath.org/index.php/Cardano_formula}.
+ *
+ * @example
+ * cardano(-4, 5, -2); // [[1, 2], [2, 1]] (approximately)
+ *
+ * @param {number} b - The quadratic coefficient.
+ * @param {number} c - The linear coefficient.
+ * @param {number} d - The constant coefficient.
+ * @param {number} [ε=1e-10] - The roots will be considered equal if the
+ *   discriminant is smaller than this.
+ * @return {Root[]}
+ *
+ * @private
+ */
+function cardano(b, c, d, ε=1e-10) {
+    // Change of variables x --> x-b/3
+    let [p, q] = [-1/3*b*b+c, 2/27*b*b*b - 1/3*b*c + d];
+    // Discriminant
+    let Δ = -27*q*q - 4*p*p*p;
+    let ret;
+    if(Math.abs(Δ) < ε) {
+        if(Math.abs(p) < ε && Math.abs(q) < ε)
+            return [[-b/3, 3]]; // Triple root
+        // Simple root and double root
+        let cr = Math.cbrt(-q/2);
+        ret = [[C(2*cr), 1], [C(-cr), 2]];
+    } else if(Δ > 0) {
+        // Three distinct real roots: 2*Re(cube roots of -q/2 + i sqrt(Δ/108))
+        let D = Math.sqrt(Δ/108);
+        let mod = Math.sqrt(Math.cbrt(q*q/4 + Δ/108)) * 2;
+        let arg = Math.atan2(D, -q/2);
+        ret = [[C(mod * Math.cos(arg/3        )), 1],
+               [C(mod * Math.cos(arg/3 + 2*π/3)), 1],
+               [C(mod * Math.cos(arg/3 - 2*π/3)), 1]
+              ];
+    } else {
+        // Simple real root and conjugate complex roots
+        let D = Math.sqrt(-Δ/108);
+        let α = Math.cbrt(-q/2 + D), β = Math.cbrt(-q/2 - D);
+        ret = [[C(α + β), 1]];
+        let z = ζ.clone().scale(α).add(ζ.clone().conj().scale(β));
+        ret.push([z, 1], [z.clone().conj(), 1]);
+    }
+    ret.sort(([x, ], [y, ]) => x.Re === y.Re ? x.Im - y.Im : x.Re - y.Re);
+    ret.forEach(a => a[0].sub(b/3));
+    return ret.map(([x, m]) => x.Im === 0 ? [x.Re, m] : [x, m]);
+}
+
 
 /**
  * Roots are counted with multiplicity: `[x, m]` indicates a root of a
@@ -354,9 +414,24 @@ class Polynomial extends Array {
      * @return {Polynomial} `this`
      */
     scale(c) {
+        if(c === 1) return this;
         for(let i = 0; i < this.length; ++i)
             this[i] *= c;
         return this;
+    }
+
+    /**
+     * Scale in-place to be monic.
+     *
+     * @example {@lang javascript}
+     * let p = Polynomial.create(2, 4, 6);
+     * p.monic();
+     * p.toString(1);   // "x^2 + 2.0 x + 3.0"
+     *
+     * @return {Polynomial} `this`
+     */
+    monic() {
+        return this.scale(1/this[0]);
     }
 
     /**
@@ -459,6 +534,57 @@ class Polynomial extends Array {
             return ret;
         }
         return this.derivative(n-1).derivative();
+    }
+
+    /**
+     * Find all roots of the polynomial.
+     *
+     * This uses the Jenkins--Traub RPOLY algorithm implemented in `rpoly.js`,
+     * except for in degree 3 where it uses Cardano's formula.
+     *
+     * @param {number} [ε=1e-10] - Roots within `ε` of each other are considered
+     *   equal.
+     * @return {?Root[]} The roots found, or `null` if the algorithm has
+     *   failed.  Complex conjugate roots are guaranteed to be consecutive.
+     */
+    factor(ε=1e-10) {
+        if(this.deg === 3) // Cardano's formula is more accurate than rpoly
+            return cardano(this[1]/this[0], this[2]/this[0], this[3]/this[0], ε);
+        let roots = rpoly(this).map(([re, im]) => C(re, im));
+        if(roots.length < this.deg)
+            return null;
+        // Complex conjugates that are very close together should be a multiple
+        // real root
+        roots.forEach(z => { if(Math.abs(z.Im) < ε/2) z.Im = 0; });
+        // Choose only the negative root in a complex conjugate pair
+        roots = roots.filter(z => z.Im <= 0);
+        let ret = [];
+        for(let root of roots) {
+            // Find closest root
+            let closest = -1, diff = Infinity;
+            for(let i = 0; i < ret.length; ++i) {
+                let r = root.clone().sub(ret[i][0]).sizesq;
+                if(r < ε*ε && r < diff) {
+                    closest = i;
+                    diff = r;
+                }
+            }
+            if(closest === -1)
+                ret.push([root, 1]);
+            else {
+                // Take average
+                let m = ret[closest][1];
+                ret[closest][0].scale(m).add(root).scale(1/(m+1));
+                ret[closest][1]++;
+            }
+        }
+        return ret
+            .sort(([x, ], [y, ]) => x.Re === y.Re ? x.Im - y.Im : x.Re - y.Re)
+            .flatMap(([x, m]) => {
+                if(x.Im === 0)
+                    return [[x.Re, m]];
+                return [[x, m], [x.clone().conj(), m]];
+            });
     }
 }
 
