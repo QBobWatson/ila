@@ -2,8 +2,7 @@
 
 import './lib/resemble.js';
 
-import Polynomial from "../lib/polynomial.js";
-import Complex from "../lib/complex.js";
+import { Polynomial, Complex } from "../lib/linalg.js";
 
 import should from 'should';
 
@@ -232,19 +231,32 @@ describe('Polynomial', () => {
             poly(1).derivative(2).should.eql(poly());
         });
     });
+
     describe('#factor()', () => {
-        it('should factor polynomials with simple real roots', () =>
-           fromRoots(1, 2, 3, 4).factor().should.resemble(
-               [1, 2, 3, 4].map(x => [x, 1])));
-        it('should factor polynomials with simple complex roots', () =>
-           poly(1, -3, 3, -3, 2).factor().should.resemble(
-               [C(0, -1), C(0, 1), 1, 2].map(x => [x, 1])));
-        it('should factor polynomials with multiple real roots', () =>
-           fromRoots([1, 2], [2, 2], 3, 4).factor(1e-7).should.resemble(
-               [[1, 2], [2, 2], [3, 1], [4, 1]]));
-        it('should factor polynomials with multiple complex roots', () =>
-           poly(1, -5, 10, -14, 17, -13, 8, -4).factor(1e-6).should.resemble(
-               [[C(0, -1), 2], [C(0, 1), 2], [1, 1], [2, 2]]));
+        describe('factoring linear polynomials', () => {
+            it('should find one root', () =>
+               poly(1, -1).factor().should.eql([1, 1]));
+        });
+        describe('factoring quadratics', () => {
+            it('should find a double root', () => {
+                // x^2 - 2x + 1 = (x-1)^2
+                poly(1, -2, 1).factor().should.resemble([[1, 2]]);
+                poly(1, 0, 0).factor().should.eql([[0, 2]]);
+            });
+            it('should find simple real roots', () => {
+                // x^2 - 1 = (x-1) (x+1)
+                poly(1, 0, -1).factor().should.resemble([[-1, 1], [1, 1]]);
+                // x^2 - 3x + 2 = (x-1) (x-2)
+                poly(1, -3, 2).factor().should.resemble([[1, 1], [2, 1]]);
+                poly(1, -2, 0).factor().should.eql([[0, 1], [2, 1]]);
+            });
+            it('should find complex roots', function() {
+                poly(1, 0, 1).factor().should.resemble(
+                    [[C(0, 1), 1], [C(0, -1), 1]]);
+                poly(1, 1, 1).factor().should.resemble(
+                    [[ζ, 1], [ζ.clone().conj(), 1]]);
+            });
+        });
         describe('factoring cubics', () => {
             it('should find a triple root', () => {
                 // x^3 - 6x^2 + 12x - 8 = (x-2)^3
@@ -263,16 +275,104 @@ describe('Polynomial', () => {
                 // x^3 +  x^2 - 4x - 4 = (x+2) (x+1) (x-2)
                 poly(1, 1, -4, -4).factor().should
                     .resemble([-2, -1, 2].map(x => [x, 1]));
+                // x^3 - 4x
+                poly(1, 0, -4, 0).factor().should
+                    .resemble([-2, 0, 2].map(x => [x, 1]));
+                // x^3 + 4x
+                poly(1, 0, 4, 0).factor().should
+                    .resemble([0, C(0,-2), C(0,2)].map(x => [x, 1]));
             });
             it('should find complex Roots', () => {
                 // x^3 - 2x^2 + x - 2 = (x-2) (x^2+1)
                 poly(1, -2,  1, -2).factor().should.resemble(
-                    [Complex.i.conj(), Complex.i, 2].map(x => [x, 1]));
+                    [Complex.i, Complex.i.conj(), 2].map(x => [x, 1]));
                 // x^3 - x^2 - x - 2 = (x-2) (x^2+x+1)
                 poly(1, -1, -1, -2).factor().should.resemble(
-                    [ζ.clone().conj(), ζ, 2].map(x => [x, 1]));
+                    [ζ, ζ.clone().conj(), 2].map(x => [x, 1]));
             });
 
+        });
+        describe('factoring quartics', () => {
+            let xm1 = poly(1, -1);
+            it('should find roots at zero', () => {
+                // y^4 for y=x-1
+                poly(1, 0, 0, 0, 0).compose(xm1).factor()
+                    .should.resemble([[1, 4]]);
+                // y^4 - 4y^2 for y=x-1
+                poly(1, 0, -4, 0, 0).compose(xm1).factor()
+                    .should.resemble([[-1, 1], [1, 2], [3, 1]]);
+                // y^4 + 4y^2 for y=x-1
+                poly(1, 0, 4, 0 ,0).compose(xm1).factor()
+                    .should.resemble([[1, 2], [C(1, 2), 1], [C(1, -2), 1]]);
+                // y (y^3 - 3y + 2) = y (y-1)^2 (y+2) for y=x-1
+                poly(1, 0, -3, 2, 0).compose(xm1).factor()
+                    .should.resemble([[-1, 1], [1, 1], [2, 2]]);
+                // y (y^3 - 2y + 4) = y (y+2) (y^2 - 2y + 2) for y=x-1
+                poly(1, 0, -2, 4, 0).compose(xm1).factor()
+                    .should.resemble([-1, 1, C(2,1), C(2,-1)].map(x => [x, 1]));
+                // y (y^3 - 2y - 4) = y (y-2) (y^2 + 2y + 2) for y=x-1
+                poly(1, 0, -2, -4, 0).compose(xm1).factor()
+                    .should.resemble([C(0, 1), C(0, -1), 1, 3].map(x => [x, 1]));
+            });
+            it('should factor biquadratics', () => {
+                // y^4 - 2 y^2 + 1 for y=x-1
+                poly(1, 0, -2, 0, 1).compose(xm1).factor()
+                    .should.resemble([[0, 2], [2, 2]]);
+                // y^4 + 2 y^2 + 1 for y=x-1
+                poly(1, 0, 2, 0, 1).compose(xm1).factor()
+                    .should.resemble([[C(1, 1), 2], [C(1, -1), 2]]);
+                // y^4 + 6 y^2 + 25 for y=x-1
+                poly(1, 0, 6, 0, 25).compose(xm1).factor()
+                    .should.resemble([C(-1, 2), C(-1, -2), C(1, 2), C(1, -2)]
+                                     .map(x => [x.add(1), 1]));
+                // y^4 + 5 y^2 + 4 = (y^2+1) (y^2+4) for y=x-1
+                poly(1, 0, 5, 0, 4).compose(xm1).factor()
+                    .should.resemble([C(0, 1), C(0, -1), C(0, 2), C(0, -2)]
+                                     .map(x => [x.add(1), 1]));
+                // y^4 - 3 y^2 - 4 = (y^2+1) (y^2-4) for y=x-1
+                poly(1, 0, -3, 0, -4).compose(xm1).factor()
+                    .should.resemble([-1, C(1, 1), C(1, -1), 3].map(x => [x, 1]));
+                // y^4 - 5 y^2 + 4 = (y^2-1) (y^2-4) for y=x-1
+                poly(1, 0, -5, 0, 4).compose(xm1).factor()
+                    .should.resemble([-2, -1, 1, 2].map(x => [x+1, 1]));
+            });
+            it('should handle triple roots', () => {
+                // (y-1)^3 (y+3) for y=x-1
+                poly(1, 0, -6, 8, -3).compose(xm1).factor()
+                    .should.resemble([[-2, 1], [2, 3]]);
+                // (y+1)^3 (y-3) for y=x-1
+                poly(1, 0, -6, -8, -3).compose(xm1).factor()
+                    .should.resemble([[0, 3], [4, 1]]);
+            });
+            it('should handle double roots', () => {
+                // (y+3)^2 (y-2) (y-4) for y=x-1
+                poly(1, 0, -19, -6, 72).compose(xm1).factor()
+                    .should.resemble([[-2, 2], [3, 1], [5, 1]]);
+                // (y-1)^2 (y+4) (y-2) for y=x-1
+                poly(1, 0, -11, 18, -8).compose(xm1).factor()
+                    .should.resemble([[-3, 1], [2, 2], [3, 1]]);
+                // (y-1)^2 (y^2 + 2y + 2) for y=x-1
+                poly(1, 0, -1, -2, 2).compose(xm1).factor()
+                    .should.resemble([[C(0, 1), 1], [C(0, -1), 1], [2, 2]]);
+                // (y+1)^2 (y^2 - 2y + 2) for y=x-1
+                poly(1, 0, -1, 2, 2).compose(xm1).factor()
+                    .should.resemble([[0, 2], [C(2, 1), 1], [C(2, -1), 1]]);
+            });
+            it('should handle simple roots', () => {
+                // (y-1) (y-4) (y+2) (y+3) for y=x-1
+                poly(1, 0, -15, -10, 24).compose(xm1).factor()
+                    .should.resemble([-3, -2, 1, 4].map(x => [x+1, 1]));
+                // (y-1) (y-3) (y^2 + 4y + 5) for y=x-1
+                poly(1, 0, -8, -8, 15).compose(xm1).factor()
+                    .should.resemble([C(-1,1), C(-1,-1), 2, 4].map(x => [x, 1]));
+                // (y+1) (y+3) (y^2 - 4y + 5) for y=x-1
+                poly(1, 0, -8, 8, 15).compose(xm1).factor()
+                    .should.resemble([-2, 0, C(3, 1), C(3, -1)].map(x => [x, 1]));
+                // (y^2 - 2y + 2) (y^2 + 2y + 5)for y=x-1
+                poly(1, 0, 3, -6, 10).compose(xm1).factor()
+                    .should.resemble([C(-1, 2), C(-1, -2), C(1, 1), C(1, -1)]
+                                     .map(x => [x.add(1), 1]));
+            });
         });
     });
 });

@@ -8,15 +8,11 @@
 
 import Matrix from "./matrix.js";
 
-var Vector;
-
-export function initVector() {
-    if(Vector) return;
-    Vector =
-
 /**
+ * @summary
  * Class representing a vector.
  *
+ * @desc
  * A vector is a sequence of numbers of a fixed length, called the "length" of
  * the vector.
  *
@@ -27,13 +23,14 @@ export function initVector() {
  * @example
  * Vector.create(1, 2, 3).toString(1);  // "[1.0 2.0 3.0]"
  *
- * @class Vector
  * @extends Array
  */
 class Vector extends Array {
     /**
+     * @summary
      * Create a Vector with the given entries.
      *
+     * @desc
      * Unlike `new Vector()`, this works when `entries` has length one.
      *
      * @example {@lang javascript}
@@ -50,7 +47,8 @@ class Vector extends Array {
     }
 
     /**
-     * Create a Vector with all entries equal to `c`.
+     * @summary
+     * Create a Vector with `n` entries equal to `c`.
      *
      * @example {@lang javascript}
      * Vector.constant(3, 1).toString(1);  // "[1.0 1.0 1.0]"
@@ -66,7 +64,8 @@ class Vector extends Array {
     }
 
     /**
-     * Create a Vector with all entries equal to zero.
+     * @summary
+     * Create a Vector with `n` entries equal to zero.
      *
      * @example {@lang javascript}
      * Vector.zero(3).toString(1);  // "[0.0 0.0 0.0]"
@@ -79,8 +78,10 @@ class Vector extends Array {
     }
 
     /**
+     * @summary
      * Create a unit coordinate vector.
      *
+     * @desc
      * This is the Vector with all entries equal to 0, except the `i`th equal to
      * 1.
      *
@@ -99,11 +100,14 @@ class Vector extends Array {
     }
 
     /**
+     * @summary
      * Check if an iterable of vectors is linearly independent.
      *
+     * @desc
      * This means that the vector equation
      *   `c1 v1 + c2 v2 + ... + cn vn = 0`
-     * has only the solution `c1 = c2 = ... = cn = 0`.
+     * has only the solution `c1 = c2 = ... = cn = 0`.  Equivalently, the matrix
+     * with columns `v1, v2, ..., vn` has full column rank.
      *
      * @example {@lang javascript}
      * Vector.isLinearlyIndependent(
@@ -129,8 +133,10 @@ class Vector extends Array {
     }
 
     /**
+     * @summary
      * Check if an iterable of vectors is linearly dependent.
      *
+     * @desc
      * This is an alias for `!Vector.isLinearlyIndependent(vecs)`.
      *
      * @example {@lang javascript}
@@ -154,8 +160,10 @@ class Vector extends Array {
     }
 
     /**
+     * @summary
      * Return a linearly independent subset.
      *
+     * @desc
      * This returns an Array containing a maximal linearly independent subset of
      * vectors from `vecs`.
      *
@@ -178,8 +186,10 @@ class Vector extends Array {
     }
 
     /**
+     * @summary
      * Compute a linear combination of vectors.
      *
+     * @desc
      * The linear combination of the vectors `v1, v2, ..., vn` with coefficients
      * `c1, c2, ..., cn` is the vector `c1 v1 + c2 v2 + ... + cn vn`.
      *
@@ -204,7 +214,12 @@ class Vector extends Array {
 
 
     /**
+     * @summary
      * The square of the geometric length of the vector.
+     *
+     * @desc
+     * This is the sum of the squares of the entries, which is the dot product
+     * of `this` with itself.
      *
      * @example {@lang javascript}
      * Vector.create(3, 4).sizesq;   // 25
@@ -216,8 +231,10 @@ class Vector extends Array {
     }
 
     /**
+     * @summary
      * The geometric length of the vector.
      *
+     * @desc
      * This is the square root of `this.sizesq`.
      *
      * @example {@lang javascript}
@@ -230,8 +247,10 @@ class Vector extends Array {
     }
 
     /**
+     * @summary
      * Check if this vector is equal to `other`.
      *
+     * @desc
      * Two vectors are equal if they have the same number of entries, and all
      * entries are equal.
      *
@@ -257,6 +276,7 @@ class Vector extends Array {
     }
 
     /**
+     * @summary
      * Create a new Vector with the same entries.
      *
      * @return {Vector} The new vector.
@@ -266,6 +286,7 @@ class Vector extends Array {
     }
 
     /**
+     * @summary
      * Return a string representation of the vector.
      *
      * @example {@lang javascript}
@@ -281,8 +302,10 @@ class Vector extends Array {
     }
 
     /**
+     * @summary
      * Decide if a vector is zero.
      *
+     * @desc
      * This is functionally equivalent to
      *    `this.equals(Vector.zero(this.length), ε)`.
      *
@@ -295,9 +318,11 @@ class Vector extends Array {
     }
 
     /**
+     * @summary
      * Scale the vector by the reciprocal of its length.
      *
-     * This modifies the vector in-place to have length 1.
+     * @desc
+     * This modifies the vector in-place to have [size]{@link Vector#size} 1.
      *
      * @example {@lang javascript}
      * let v = Vector.create(3, 4);
@@ -315,8 +340,10 @@ class Vector extends Array {
     }
 
     /**
+     * @summary
      * Add a Vector in-place.
      *
+     * @desc
      * This modifies the vector in-place by adding the entries of `other`.
      *
      * @example {@lang javascript}
@@ -343,8 +370,10 @@ class Vector extends Array {
     }
 
     /**
+     * @summary
      * Subtract a Vector in-place.
      *
+     * @desc
      * This modifies the vector in-place by subtracting the entries of `other`.
      *
      * @example {@lang javascript}
@@ -364,8 +393,10 @@ class Vector extends Array {
     }
 
     /**
+     * @summary
      * Multiply a Vector by a scalar in-place.
      *
+     * @desc
      * This modifies the vector in-place by multiplying all entries by `c`.
      *
      * @example {@lang javascript}
@@ -386,8 +417,10 @@ class Vector extends Array {
     }
 
     /**
+     * @summary
      * Compute the dot product with another vector.
      *
+     * @desc
      * This is the sum of the pairwise products of the entries of `this` and
      * `other`.
      *
@@ -407,8 +440,5 @@ class Vector extends Array {
     }
 };
 
-}
 
-initVector();
-
-export {Vector as default};
+export default Vector;

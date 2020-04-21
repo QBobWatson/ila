@@ -6,6 +6,8 @@
  * Implements a Subspace class to represent subspaces of `R^n`.
  */
 
+// TODO: toString() as in Matrix docs
+
 import Matrix from "./matrix.js";
 
 /**
@@ -70,7 +72,7 @@ class Subspace {
          * @type {Matrix}
          */
         this.generators = generators instanceof Matrix
-            ? generators : new Matrix(...generators).transpose;
+            ? generators : Matrix.create(...generators).transpose;
 
         this._basis = isBasis ? this.generators : undefined;
 
@@ -100,7 +102,7 @@ class Subspace {
      */
     basis(ε=1e-10) {
         if(this._basis) return this._basis;
-        this._basis = new Matrix(...this.generators.colBasis(ε)).transpose;
+        this._basis = Matrix.create(...this.generators.colBasis(ε)).transpose;
         return this._basis;
     }
 
@@ -115,7 +117,7 @@ class Subspace {
     ONbasis(ε=1e-10) {
         if(this._ONbasis) return this._ONbasis;
         let {Q} = this.generators.QR(ε);
-        this._ONbasis = new Matrix(
+        this._ONbasis = Matrix.create(
             ...[...Q.cols()].filter(col => !col.isZero())).transpose;
         if(this._dim === undefined)
             this._dim = this._ONbasis.n;

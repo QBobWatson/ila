@@ -6,12 +6,14 @@
  * A class for Complex numbers.
  */
 
-import Vector, {initVector} from "./vector.js";  initVector();
+import Vector from "./vector.js";
 
 
 /**
+ * @summary
  * Class representing a complex number.
  *
+ * @desc
  * Complex numbers behave like vectors of length two, in that they can be added
  * and scaled componentwise.  However, complex numbers can also be multiplied
  * together and divided to form new complex numbers.
@@ -23,8 +25,10 @@ import Vector, {initVector} from "./vector.js";  initVector();
  */
 class Complex extends Vector {
     /**
+     * @summary
      * Create a new Complex number with prescribed polar coordinates.
      *
+     * @desc
      * Cartesian and polar coordinates are related by the formula
      * `(x, y) = (r cos(θ), r sin(θ))`.  According to Euler's formula, the
      * output of `Complex.fromPolar(r, θ)` is equal to `r e^{i θ}`.
@@ -41,8 +45,10 @@ class Complex extends Vector {
     }
 
     /**
+     * @summary
      * A copy of `i = new Complex(0, 1)`, a square root of -1.
      *
+     * @desc
      * This returns a new object each time it is accessed.
      *
      * @type {Complex}
@@ -52,6 +58,7 @@ class Complex extends Vector {
     }
 
     /**
+     * @summary
      * The real part (first entry) of the complex number.
      *
      * @example {@lang javascript}
@@ -66,6 +73,7 @@ class Complex extends Vector {
     set Re(x) { this[0] = x; }
 
     /**
+     * @summary
      * The imaginary part part (second entry) of the complex number.
      *
      * @example {@lang javascript}
@@ -80,8 +88,10 @@ class Complex extends Vector {
     set Im(x) { this[1] = x; }
 
     /**
+     * @summary
      * The modulus of the complex number.
      *
+     * @desc
      * This is an alias for the inherited property `this.size`.
      *
      * @example {@lang javascript}
@@ -92,8 +102,10 @@ class Complex extends Vector {
     get mod() { return this.size; }
 
     /**
+     * @summary
      * The argument of the complex number.
      *
+     * @desc
      * This is the angle component of the polar coordinates for the point
      * `(this.Re, this.Im)`.
      *
@@ -115,8 +127,10 @@ class Complex extends Vector {
     }
 
     /**
-     * Check if this complex number is equal to `other`.
+     * @summary
+     * Test if this complex number is equal to `other`.
      *
+     * @desc
      * This is the same as {@link Vector#equals}, except that if `other` is a
      * number, it is promoted to a Complex number first.
      *
@@ -136,6 +150,7 @@ class Complex extends Vector {
     }
 
     /**
+     * @summary
      * Return a string representation of the complex number.
      *
      * @example {@lang javascript}
@@ -151,8 +166,10 @@ class Complex extends Vector {
     }
 
     /**
+     * @summary
      * Replace the Complex number with its complex conjugate.
      *
+     * @desc
      * This modifies `this` in place by negating the imaginary part.
      *
      * @example {@lang javascript}
@@ -168,8 +185,10 @@ class Complex extends Vector {
     }
 
     /**
+     * @summary
      * Add another complex number in-place.
      *
+     * @desc
      * This is the same as {@link Vector#add}, except that if `other` is a
      * number, it is promoted to a Complex number first.
      *
@@ -192,17 +211,19 @@ class Complex extends Vector {
     }
 
     /**
+     * @summary
      * Multiply by a complex number in-place.
      *
+     * @desc
      * Multiplication of complex numbers is defined by the formula
      * `(a + b i) (c + d i) = (ac - bd) + (ad + bc) i`.
      *
      * @example {@lang javascript}
      * let z = new Complex(1, 2), w = new Complex(3, 4);
      * z.mult(w);
-     * z.toString(1);  // "-5.00 + 10.00 i"
+     * z.toString(1);  // "-5.0 + 10.0 i"
      * z.mult(-2);
-     * z.toString(1);  // "10.00 - 20.00 i"
+     * z.toString(1);  // "10.0 - 20.0 i"
      *
      * @param {(Complex|number)} other - The number to multiply.
      * @return {Complex} `this`
@@ -217,8 +238,30 @@ class Complex extends Vector {
     }
 
     /**
+     * @summary
+     * Raise to the power `x`.
+     *
+     * @desc
+     * This returns a new Complex number whose modulus is `this.mod` raised to
+     * the power `x` and whose argument is `x*this.arg`.
+     *
+     * @example {@lang javascript}
+     * new Complex( 1, 2).pow(2  ).toString(1);  // "-3.0 + 4.0 i"
+     * new Complex(-3, 4).pow(1/2).toString(1);  // "1.0 + 2.0 i"
+     *
+     * @param {number} x - The exponent.
+     * @return {Complex} A new Complex number equal to the `this` raised to the
+     *   power `x`.
+     */
+    pow(x) {
+        return Complex.fromPolar(Math.pow(this.mod, x), x * this.arg);
+    }
+
+    /**
+     * @summary
      * Replace the Complex number by its reciprocal.
      *
+     * @desc
      * The reciprocal of a nonzero complex number `a + b i` is
      * `(a - b i)/(a^2 + b^2)`.
      *
@@ -240,8 +283,10 @@ class Complex extends Vector {
     }
 
     /**
+     * @summary
      * Divide by a complex number in-place.
      *
+     * @desc
      * This is the same as `this.mult(other.recip())`, except `other` is not
      * modified.
      *

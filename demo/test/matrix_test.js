@@ -11,7 +11,7 @@ import './lib/resemble.js';
 
 const C = (a,b=0) => new Complex(a, b);
 const vec = Vector.create;
-const mat = (...args) => new Matrix(...args);
+const mat = Matrix.create;
 const poly = Polynomial.create;
 
 
@@ -29,25 +29,25 @@ should.use(function(should, Assertion) {
                 Math.abs(U[i][j]).should.be.above(ε, 'U has small pivots');
             let PA = Matrix.permutation(P).mult(A);
             let LU = L.mult(U);
-            PA.equals(LU, 1e-10).should.be.true(
+            PA.equals(LU, ε).should.be.true(
                 `Matrix is not correctly factored: PA =\n${PA.toString(2)}\nLU =\n${LU.toString(2)}`);
             let EA = E.mult(A);
-            EA.equals(U, 1e-10).should.be.true(
+            EA.equals(U, ε).should.be.true(
                 `Matrix is not correctly factored: EA =\n${EA.toString(2)}\nU =\n${U.toString(2)}`);
         } else if(which === 'QR') {
             let {Q, R, LD} = this.obj;
             R.isUpperTri().should.be.true();
             let QTQ = Q.transpose.mult(Q);
-            QTQ.isDiagonal(1e-10).should.be.true();
+            QTQ.isDiagonal(ε).should.be.true();
             for(let j = 0; j < QTQ.n; ++j) {
                 if(LD.includes(j)) {
-                    QTQ[j][j].should.be.approximately(0, 1e-10);
-                    R[j][j].should.be.approximately(0, 1e-10);
+                    QTQ[j][j].should.be.approximately(0, ε);
+                    R[j][j].should.be.approximately(0, ε);
                 } else
-                    QTQ[j][j].should.be.approximately(1, 1e-10);
+                    QTQ[j][j].should.be.approximately(1, ε);
             }
             let QR = Q.mult(R);
-            QR.equals(A, 1e-10).should.be.true(
+            QR.equals(A, ε).should.be.true(
                 `Matrix is not correctly factored: QR =\n${QR.toString(2)}\nA =\n${A.toString(2)}`);
         }
     });
@@ -95,6 +95,10 @@ should.use(function(should, Assertion) {
 
 
 describe('Matrix', () => {
+    describe('#create()', () =>
+             it('should create a 3x2 matrix', () =>
+                mat([1, 2], [3, 4], [5, 6]).should
+                        .have.properties({m: 3, n: 2})));
     describe('#identity()', () => {
         it('should return a 3x3 identity matrix', () =>
            Matrix.identity(3).equals(
@@ -115,10 +119,78 @@ describe('Matrix', () => {
              it('should create a 3x3 permutation matrix', () =>
                 Matrix.permutation([2, 0, 1]).equals(
                     mat([0,0,1],[1,0,0],[0,1,0])).should.be.true()));
-    describe('#constructor()', () =>
-             it('should create a 3x2 matrix', () =>
-                mat([1, 2], [3, 4], [5, 6]).should
-                        .have.properties({m: 3, n: 2})));
+    describe('#transpose', () =>
+             it('should construct the transpose', () =>
+                mat([1,2,3], [4,5,6]).transpose.equals(
+                    mat([1,4], [2,5], [3,6])).should.be.true()));
+    describe('#normal', () =>
+             it('should construct the normal matrix', () =>
+                mat([1,2], [3,4], [5,6]).normal.equals(
+                    mat([35, 44], [44, 56])).should.be.true()));
+    describe('#trace', () => {
+        it('should compute the sum of the diagonal entries', () =>
+           mat([1,2,3],[4,5,6],[7,8,9]).trace.should.equal(1+5+9));
+        it('should work for non-square matrices', () =>
+           mat([1,2,3],[4,5,6]).trace.should.equal(1+5));
+        it('should work for non-square matrices', () =>
+           mat([1,2],[3,4],[5,6]).trace.should.equal(1+4));
+    });
+    describe('#charpoly', () => {
+        it('should compute the characteristic polynomial of a 1x1 matrix', () => {
+            mat([3]).charpoly.should.eql(poly(-1, 3));
+        });
+        it('should compute the characteristic polynomial of a 2x2 matrix', () => {
+            mat([1,2],[3,4]).charpoly.should.eql(poly(1, -5, -2));
+        });
+        it('should compute the characteristic polynomial of a 3x3 matrix', () => {
+            mat([1, 6,4],
+                [2,-1,3],
+                [5, 0,1]).charpoly.should.eql(poly(-1, 1, 33, 97));
+        });
+        it('should compute the characteristic polynomial of a 4x4 matrix', () => {
+            mat([2, 1, 1, 0],
+                [4, 3, 3, 1],
+                [8, 7, 9, 5],
+                [6, 7, 9, 8]).charpoly.should.eql(poly(1, -22, 78, -50, 8));
+        });
+        it('should throw for non-square matrices', () => {
+            let M = mat([1,2,3],[4,5,6]);
+            (() => M.charpoly).should.throw(/non-square/);
+        });
+    });
+    describe('#det', () => {
+        it('should compute the determinant (1x1)', () =>
+           Matrix.identity(1, 3).det.should.equal(3));
+        it('should compute the determinant (2x2)', () =>
+           mat([3, 4], [5, 6]).det.should.equal(-2));
+        it('should compute the determinant (3x3#1)', () =>
+           mat([0,  1, 2],
+               [1,  0, 3],
+               [4, -3, 8]).det.should.equal(-2));
+        it('should compute the determinant (3x3#2)', () =>
+           mat([ 1, -2, -1],
+               [-1,  5,  6],
+               [ 5, -4,  5]).det.should.equal(0));
+        it('should compute the determinant (4x4)', () =>
+           mat([ 1,  7,  4, 2],
+               [ 3, 11,  9, 5],
+               [-2, -3,  3, 3],
+               [ 7,  8, -8, 9]).det.should.equal(-1329));
+        it('should throw for non-square matrices', () => {
+            let M = mat([1,2,3],[4,5,6]);
+            (() => M.det).should.throw(/non-square/);
+        });
+    });
+
+    describe('#insertSubmatrix()', () => {
+        it('should insert a submatrix correctly', () => {
+            Matrix.zero(4, 5).insertSubmatrix(1, 2, mat([1, 1], [1, 1]))
+                .should.eql(mat([0, 0, 0, 0, 0],
+                                [0, 0, 1, 1, 0],
+                                [0, 0, 1, 1, 0],
+                                [0, 0, 0, 0, 0]));
+        });
+    });
     describe('#equals()', () => {
         let M = mat([0, 1, 2], [3, 4, 5]), M1 = M.clone();
         let N = mat([0.01, 1.01, 2.01], [3, 4, 5]);
@@ -142,9 +214,9 @@ describe('Matrix', () => {
     describe('#toString()', () => {
         let M = mat([10,2],[3,4]);
         it('should have 4 decimal places by default', () =>
-           M.toString().should.eql("10.0000 2.0000\n 3.0000 4.0000"));
+           M.toString().should.eql("[10.0000 2.0000]\n[ 3.0000 4.0000]"));
         it('can have other precision', () =>
-           M.toString(2).should.eql("10.00 2.00\n 3.00 4.00"));
+           M.toString(2).should.eql("[10.00 2.00]\n[ 3.00 4.00]"));
     });
     describe('#row() and #col()', () => {
         let M = mat([1,2],[3,4]);
@@ -153,66 +225,28 @@ describe('Matrix', () => {
         it('should return the second column', () =>
            M.col(1).should.eql(vec(2, 4)));
     });
-    describe('#rows and #cols', () => {
+    describe('#rows() and #cols()', () => {
         let M = mat([1,2],[3,4]);
         it('should iterate over the rows', () =>
            [...M.rows()].should.eql([vec(1,2),vec(3,4)]));
         it('should iterate over the columns', () =>
            [...M.cols()].should.eql([vec(1,3),vec(2,4)]));
     });
-    describe('#add() and #sub()', () => {
-        it('should add componentwise', () =>
-           mat([1,2],[3,4]).add(mat([2,1],[4,3])).equals(
-               mat([3,3],[7,7])).should.be.true());
-        it('should add with a factor', () =>
-           mat([1,2],[3,4]).add(mat([2,1],[4,3]), 2).equals(
-               mat([5,4],[11,10])).should.be.true());
-        it('should subtract componentwise', () =>
-           mat([1,2],[3,4]).sub(mat([2,1],[4,3])).equals(
-               mat([-1,1],[-1,1])).should.be.true());
-        it('should throw when matrices have different sizes', () => {
-            let M = mat([1,2,3],[4,5,6]);
-            M.add.bind(M, mat([1,2],[3,4])).should.throw(/different sizes/);
-        });
+    describe('#leadingEntries()', () => {
+        it('should compute leading entries', () =>
+           mat([1,0],[0,1]).leadingEntries().should.eql([[0,0], [1,1]]));
+        it('should compute leading entries', () =>
+           mat([0,0],[0,1]).leadingEntries().should.eql([[1,1]]));
+        it('should compute leading entries', () =>
+           mat([0,0,0],[0,1,0],[0,0,0],[0,0,1])
+                   .leadingEntries().should.eql([[1,1],[3,2]]));
     });
-    describe('#scale()', () => {
-        it('should scale entries', () =>
-           mat([1,2],[3,4]).scale(2).equals(
-               mat([2,4],[6,8])).should.be.true());
-        it('should add with a factor', () =>
-           mat([1,2],[3,4]).add(mat([2,1],[4,3]), 2).equals(
-               mat([5,4],[11,10])).should.be.true());
-        it('should subtract componentwise', () =>
-           mat([1,2],[3,4]).sub(mat([2,1],[4,3])).equals(
-               mat([-1,1],[-1,1])).should.be.true());
-        it('should throw when matrices have different sizes', () => {
-            let M = mat([1,2,3],[4,5,6]);
-            M.add.bind(M, mat([1,2],[3,4])).should.throw(/different sizes/);
-        });
-    });
-    describe('#transpose', () =>
-             it('should construct the transpose', () =>
-                mat([1,2,3], [4,5,6]).transpose.equals(
-                    mat([1,4], [2,5], [3,6])).should.be.true()));
-    describe('#mult()', () => {
-        it('should compute the product', () =>
-           mat([1,2],[3,4],[5,6]).mult(mat([1,2,3],[4,5,6]))
-                   .equals(mat([9,12,15],[19,26,33],[29,40,51]))
-                   .should.be.true());
-        it('should throw when the matrices have incompatible dimensions', () => {
-            let M = mat([1,2],[3,4],[5,6]);
-            M.mult.bind(M, M).should.throw(/incompatible dimensions/);
-        });
-    });
-    describe('#apply()', () => {
-        it('should compute the product', () =>
-           mat([1,2,3],[4,5,6]).apply(vec(7,8,9))
-                   .equals(vec(50,122)).should.be.true());
-        it('should throw when the vector has incompatible length', () => {
-            let M = mat([1,2],[3,4],[5,6]);
-            M.mult.bind(M, vec(1,2,3))
-                .should.throw(/incompatible dimensions/);
-        });
+
+    describe('#isSquare()', () => {
+        it('should detect square matrices', () =>
+           mat([1,0], [0,1]).isSquare().should.be.true());
+        it('should detect non-square matrices', () =>
+           mat([1,0], [0,1], [0,0]).isSquare().should.be.false());
     });
     describe('#isZero()', () => {
         it('should detect the zero matrix', () => {
@@ -249,15 +283,6 @@ describe('Matrix', () => {
            M.transpose.isLowerUnip().should.be.true());
         it('should not be lower-unipotent', () =>
            N.transpose.isLowerUnip().should.be.false());
-    });
-    describe('#leadingEntries()', () => {
-        it('should compute leading entries', () =>
-           mat([1,0],[0,1]).leadingEntries().should.eql([[0,0], [1,1]]));
-        it('should compute leading entries', () =>
-           mat([0,0],[0,1]).leadingEntries().should.eql([[1,1]]));
-        it('should compute leading entries', () =>
-           mat([0,0,0],[0,1,0],[0,0,0],[0,0,1])
-                   .leadingEntries().should.eql([[1,1],[3,2]]));
     });
     describe('#isEchelon() and #isRREF()', () => {
         let testMats1 = [
@@ -308,14 +333,101 @@ describe('Matrix', () => {
             }
         });
     });
-    describe('#trace', () => {
-        it('should compute the sum of the diagonal entries', () =>
-           mat([1,2,3],[4,5,6],[7,8,9]).trace.should.equal(1+5+9));
-        it('should work for non-square matrices', () =>
-           mat([1,2,3],[4,5,6]).trace.should.equal(1+5));
-        it('should work for non-square matrices', () =>
-           mat([1,2],[3,4],[5,6]).trace.should.equal(1+4));
+    describe('#isOrthogonal()', () => {
+        it('detects orthogonal matrices', () =>
+           mat([1,1],[1,-1]).scale(1/Math.sqrt(2)).isOrthogonal()
+                   .should.be.true());
+        it('detects non-orthogonal matrices', () =>
+           mat([1/Math.sqrt(2), 1],[1/Math.sqrt(2), 0]).isOrthogonal()
+                   .should.be.false());
+        it('says non-square matrices are not orthogonal', () =>
+           mat([1/Math.sqrt(2)],[1/Math.sqrt(2)]).isOrthogonal()
+                   .should.be.false());
     });
+
+    describe('#add() and #sub()', () => {
+        it('should add componentwise', () =>
+           mat([1,2],[3,4]).add(mat([2,1],[4,3])).equals(
+               mat([3,3],[7,7])).should.be.true());
+        it('should add with a factor', () =>
+           mat([1,2],[3,4]).add(mat([2,1],[4,3]), 2).equals(
+               mat([5,4],[11,10])).should.be.true());
+        it('should subtract componentwise', () =>
+           mat([1,2],[3,4]).sub(mat([2,1],[4,3])).equals(
+               mat([-1,1],[-1,1])).should.be.true());
+        it('should throw when matrices have different sizes', () => {
+            let M = mat([1,2,3],[4,5,6]);
+            M.add.bind(M, mat([1,2],[3,4])).should.throw(/different sizes/);
+        });
+    });
+    describe('#scale()', () => {
+        it('should scale entries', () =>
+           mat([1,2],[3,4]).scale(2).equals(
+               mat([2,4],[6,8])).should.be.true());
+        it('should add with a factor', () =>
+           mat([1,2],[3,4]).add(mat([2,1],[4,3]), 2).equals(
+               mat([5,4],[11,10])).should.be.true());
+        it('should subtract componentwise', () =>
+           mat([1,2],[3,4]).sub(mat([2,1],[4,3])).equals(
+               mat([-1,1],[-1,1])).should.be.true());
+        it('should throw when matrices have different sizes', () => {
+            let M = mat([1,2,3],[4,5,6]);
+            M.add.bind(M, mat([1,2],[3,4])).should.throw(/different sizes/);
+        });
+    });
+    describe('#mult()', () => {
+        it('should compute the product', () =>
+           mat([1,2],[3,4],[5,6]).mult(mat([1,2,3],[4,5,6]))
+                   .equals(mat([9,12,15],[19,26,33],[29,40,51]))
+                   .should.be.true());
+        it('should throw when the matrices have incompatible dimensions', () => {
+            let M = mat([1,2],[3,4],[5,6]);
+            M.mult.bind(M, M).should.throw(/incompatible dimensions/);
+        });
+    });
+    describe('#apply()', () => {
+        it('should compute the product', () =>
+           mat([1,2,3],[4,5,6]).apply(vec(7,8,9))
+                   .equals(vec(50,122)).should.be.true());
+        it('should throw when the vector has incompatible length', () => {
+            let M = mat([1,2],[3,4],[5,6]);
+            M.mult.bind(M, vec(1,2,3))
+                .should.throw(/incompatible dimensions/);
+        });
+    });
+    describe('#inverse()', () => {
+        let testMats = [
+            mat([3, 4],
+                [5, 6]),
+            mat([0,  1, 2],
+                [1,  0, 3],
+                [4, -3, 8]),
+            mat([ 1,  7,  4, 2],
+                [ 3, 11,  9, 5],
+                [-2, -3,  3, 3],
+                [ 7,  8, -8, 9])
+        ];
+        it('should compute the inverse', () => {
+            for(let M of testMats) {
+                M.mult(M.inverse()).equals(Matrix.identity(M.n), 1e-10)
+                    .should.be.true();
+                M.isInvertible().should.be.true();
+            }
+        });
+        it('should throw for non-square matrices', () => {
+            let M = mat([1, 2, 3], [2, 4, 5]);
+            M.inverse.bind(M).should.throw(/non-square/);
+            M.isSingular().should.be.true();
+        });
+        it('should throw for singular matrices', () => {
+            let M = mat([ 1, -2, -1],
+                        [-1,  5,  6],
+                        [ 5, -4,  5]);
+            M.inverse.bind(M).should.throw(/singular/);
+            M.isSingular().should.be.true();
+        });
+    });
+
     describe('#rowScale(), #rowReplace(), #rowSwap()', () => {
         let M = mat([1,2,3],[4,5,6],[7,8,9]);
         it('should scale one row', () =>
@@ -328,7 +440,7 @@ describe('Matrix', () => {
            M.rowSwap(1, 2).equals(mat(
                [15,18,21],[7,8,9],[8,10,12])).should.be.true());
     });
-    describe('#PLU(), #rref(), #*Basis(), #isFull*Rank()', () => {
+    describe('#PLU(), #rref(), #*Basis(), #isFull*Rank(), #rowOps()', () => {
         let testMats = [
             {M: mat(
                 [10,-7,0],
@@ -573,72 +685,22 @@ describe('Matrix', () => {
             M.solve.bind(M, vec(1,2,3)).should.throw(/Incompatible/);
         });
     });
-    describe('#inverse()', () => {
-        let testMats = [
-            mat([3, 4],
-                [5, 6]),
-            mat([0,  1, 2],
-                [1,  0, 3],
-                [4, -3, 8]),
-            mat([ 1,  7,  4, 2],
-                [ 3, 11,  9, 5],
-                [-2, -3,  3, 3],
-                [ 7,  8, -8, 9])
-        ];
-        it('should compute the inverse', () => {
-            for(let M of testMats) {
-                M.mult(M.inverse()).equals(Matrix.identity(M.n), 1e-10)
-                    .should.be.true();
-                M.isInvertible().should.be.true();
-            }
-        });
-        it('should throw for non-square matrices', () => {
-            let M = mat([1, 2, 3], [2, 4, 5]);
-            M.inverse.bind(M).should.throw(/non-square/);
-            M.isSingular().should.be.true();
-        });
-        it('should throw for singular matrices', () => {
-            let M = mat([ 1, -2, -1],
-                        [-1,  5,  6],
-                        [ 5, -4,  5]);
-            M.inverse.bind(M).should.throw(/singular/);
-            M.isSingular().should.be.true();
+    describe('#projectColSpace()', () => {
+        let A = Matrix.create([ 0, -3, -6,  4,  9],
+                              [-1, -2, -1,  3,  1],
+                              [-2, -3,  0,  3, -1],
+                              [ 1,  4,  5, -9, -7]);
+        let bs = [[1, 0, 0, 0],
+                  [0, 1, 0, 0],
+                  [0, 0, 1, 0],
+                  [0, 0, 0, 1]].map(x => Vector.create(...x));
+        let CS = A.colSpace();
+        it('should project onto the column space', () => {
+            for(let b of bs)
+                A.projectColSpace(b).should.resemble(CS.project(b));
         });
     });
-    describe('#det()', () => {
-        it('should compute the determinant (1x1)', () =>
-           Matrix.identity(1, 3).det().should.be.approximately(3, 1e-10));
-        it('should compute the determinant (2x2)', () =>
-           mat([3, 4], [5, 6]).det().should.be.approximately(-2, 1e-10));
-        it('should compute the determinant (3x3#1)', () =>
-           mat([0,  1, 2],
-               [1,  0, 3],
-               [4, -3, 8]).det().should.be.approximately(-2, 1e-10));
-        it('should compute the determinant (3x3#2)', () =>
-           mat([ 1, -2, -1],
-               [-1,  5,  6],
-               [ 5, -4,  5]).det().should.equal(0));
-        it('should compute the determinant (4x4)', () =>
-           mat([ 1,  7,  4, 2],
-               [ 3, 11,  9, 5],
-               [-2, -3,  3, 3],
-               [ 7,  8, -8, 9]).det().should.be.approximately(-1329, 1e-10));
-        it('should throw for non-square matrices', () => {
-            let M = mat([1,2,3],[4,5,6]);
-            M.det.bind(M).should.throw(/non-square/);
-        });
-    });
-    describe('#isOrthogonal()', () => {
-        it('detects orthogonal matrices', () =>
-           mat([1,1],[1,-1]).scale(1/Math.sqrt(2)).isOrthogonal()
-                   .should.be.true());
-        it('detects non-orthogonal matrices', () =>
-           mat([1/Math.sqrt(2), 1],[1/Math.sqrt(2), 0]).isOrthogonal()
-                   .should.be.false());
-        it('says non-square matrices are not orthogonal', () =>
-           mat([1/Math.sqrt(2)],[1/Math.sqrt(2)]).isOrthogonal()
-                   .should.be.false());
-    });
+
     describe('#QR()', () => {
         let testMats = [
             mat([ 3, -5,  1],
@@ -660,8 +722,10 @@ describe('Matrix', () => {
                 [  2,   1, -5,  -7])
         ];
         it('should factorize matrices correctly', () => {
-            for(let M of testMats)
-                M.QR().should.factorize(M, 'QR');
+            for(let M of testMats) {
+                M.QR().should.factorize(M, 'QR', 1e-15);
+                M.rank().should.equal(M.n);
+            }
         });
         let testMats2 = [
             mat([ 0, -3, -6,  4,  9],
@@ -677,29 +741,8 @@ describe('Matrix', () => {
         it('should factorize matrices with linearly dependent columns', () => {
             for(let M of testMats2)
                 M.QR().should.factorize(M, 'QR');
-        });
-    });
-    describe('#charpoly()', () => {
-        it('should compute the characteristic polynomial of a 1x1 matrix', () => {
-            mat([3]).charpoly().should.eql(poly(-1, 3));
-        });
-        it('should compute the characteristic polynomial of a 2x2 matrix', () => {
-            mat([1,2],[3,4]).charpoly().should.eql(poly(1, -5, -2));
-        });
-        it('should compute the characteristic polynomial of a 3x3 matrix', () => {
-            mat([1, 6,4],
-                [2,-1,3],
-                [5, 0,1]).charpoly().should.eql(poly(-1, 1, 33, 97));
-        });
-        it('should compute the characteristic polynomial of a 4x4 matrix', () => {
-            mat([2, 1, 1, 0],
-                [4, 3, 3, 1],
-                [8, 7, 9, 5],
-                [6, 7, 9, 8]).charpoly().should.eql(poly(1, -22, 78, -50, 8));
-        });
-        it('should throw for non-square matrices', () => {
-            let M = mat([1,2,3],[4,5,6]);
-            M.charpoly.bind(M).should.throw(/non-square/);
+            testMats2[0].rank().should.equal(3);
+            testMats2[1].rank().should.equal(2);
         });
     });
     describe('#eigenvalues()', () => {
@@ -709,7 +752,7 @@ describe('Matrix', () => {
             mat([1,1],[1,1]).eigenvalues().should.eql([[0, 1], [2, 1]]);
             mat([1,1],[0,1]).eigenvalues().should.eql([[1,2]]);
             mat([1,1],[-1,1]).eigenvalues()
-                .should.resemble([[C(1, 1), 1], [C(1, -1), 1]]);
+                .should.resemble([[C(1, -1), 1], [C(1, 1), 1]]);
         });
         it('should compute eigenvalues for 3x3 matrices', () => {
             Matrix.identity(3, 3).eigenvalues().should.resemble([[3, 3]]);
@@ -728,7 +771,7 @@ describe('Matrix', () => {
             mat([43/13,   7/13, -88/13],
                 [ 6/13,  17/13, -28/13],
                 [24/13, -23/13,  57/13]).eigenvalues()
-                .should.resemble([1, C(4, 3), C(4, -3)].map(x => [x, 1]));
+                .should.resemble([1, C(4, -3), C(4, 3)].map(x => [x, 1]));
         });
     });
     describe('#eigenspace()', () => {
@@ -889,7 +932,7 @@ describe('Matrix', () => {
             M.eigenspace.bind(M, C(3, 5)).should.throw(/not an eigenvalue/);
         });
     });
-    describe('#diagonalize()', () => {
+    describe('#diagonalize(), #isDiagonalizable()', () => {
         it('should work for 1x1 matrices', () => {
             let M = mat([3]);
             M.diagonalize().should.diagonalize(M);

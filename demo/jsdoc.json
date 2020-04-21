@@ -3,6 +3,7 @@
     "sourceType": "module",
     "source": {
         "include": ["lib/complex.js",
+                    "lib/matrix.js",
                     "lib/polynomial.js",
                     "lib/vector.js"]
     },
