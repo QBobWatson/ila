@@ -750,9 +750,9 @@ describe('Matrix', () => {
            mat([3]).eigenvalues().should.eql([[3, 1]]));
         it('should compute eigenvalues for 2x2 matrices', () => {
             mat([1,1],[1,1]).eigenvalues().should.eql([[0, 1], [2, 1]]);
-            mat([1,1],[0,1]).eigenvalues().should.eql([[1,2]]);
+            mat([1,1],[0,1]).eigenvalues().should.eql([[1, 2]]);
             mat([1,1],[-1,1]).eigenvalues()
-                .should.resemble([[C(1, -1), 1], [C(1, 1), 1]]);
+                .should.resemble([[C(1, 1), 1], [C(1, -1), 1]]);
         });
         it('should compute eigenvalues for 3x3 matrices', () => {
             Matrix.identity(3, 3).eigenvalues().should.resemble([[3, 3]]);
@@ -771,7 +771,51 @@ describe('Matrix', () => {
             mat([43/13,   7/13, -88/13],
                 [ 6/13,  17/13, -28/13],
                 [24/13, -23/13,  57/13]).eigenvalues()
-                .should.resemble([1, C(4, -3), C(4, 3)].map(x => [x, 1]));
+                .should.resemble([1, C(4, 3), C(4, -3)].map(x => [x, 1]));
+        });
+        it('should compute eigenvalues for 4x4 matrices', () => {
+            Matrix.identity(4, 3).eigenvalues().should.resemble([[3, 4]]);
+            mat([-140,    325,   -730,   -964],
+                [  88,   -202,    457,    607],
+                [ 127, -585/2, 1317/2, 1741/2],
+                [ -45,  207/2, -465/2, -613/2]).eigenvalues()
+                .should.resemble([1, 2, 3, 4].map(x => [x, 1]));
+            mat([-95,    220,   -490,   -634],
+                [ 22,    -48,    105,    123],
+                [ 73, -333/2,  741/2,  949/2],
+                [-33,  151/2, -337/2, -437/2]).eigenvalues()
+                .should.resemble([[1, 2], [3, 1], [4, 1]]);
+            mat([-635,    1462,   -3298,   -4414],
+                [ 282,    -646,    1457,    1943],
+                [ 453, -2081/2,  4693/2,  6269/2],
+                [-153,   703/2, -1585/2, -2117/2]).eigenvalues()
+                .should.resemble([[1, 3], [4, 1]]);
+            mat([-1229,  5651/2, -12725/2, -16955/2],
+                [  568, -2605/2,   5865/2,   7799/2],
+                [  871,   -2000,     4503,     5994],
+                [ -285,  1309/2,  -2947/2,  -3923/2]).eigenvalues()
+                .should.resemble([[1, 2], [4, 2]]);
+            mat([-76, 345/2, -771/2, -983/2],
+                [ 10,   -18,     39,     33],
+                [ 60,  -134,    299,    377],
+                [-30,    68,   -152,   -196]).eigenvalues()
+                .should.resemble([C(1,1), C(1,-1), 3, 4].map(x => [x, 1]));
+            mat([-1272,    2921,   -6584,   -8783],
+                [  582, -2665/2,  6007/2,  7997/2],
+                [  892,   -2046,    4611,    6145],
+                [ -290,  1331/2, -2999/2, -3997/2]).eigenvalues()
+                .should.resemble([[C(1,1), 1], [C(1,-1), 1], [3, 2]]);
+            mat([ 3440,  -7907,    17832,    23865],
+                [ -722, 3329/2,  -7515/2, -10105/2],
+                [-1294, 5955/2, -13435/2, -18013/2],
+                [  232,   -534,     1205,     1617]).eigenvalues()
+                .should.resemble([C(1, 1), C(1, -1)].map(x => [x, 2]));
+            mat([1996, -9177/2, 20695/2, 27703/2],
+                [ -26,      65,    -150,    -226],
+                [-276,     638,   -1441,   -1947],
+                [ -90,     206,    -464,    -616]).eigenvalues()
+                .should.resemble([C(1, 1), C(1, -1), C(1, 2), C(1, -2)]
+                                 .map(x => [x, 1]));
         });
     });
     describe('#eigenspace()', () => {
@@ -967,31 +1011,23 @@ describe('Matrix', () => {
                 [-4/13, 83/39,  4/39],
                 [ 5/13,  7/78, 34/39]).isDiagonalizable().should.be.false();
         });
-        it('should diagonalize 4x4 matrices with given eigenvalues', () => {
-            let testMats = [{
-                M: mat([1482, -247, -741,  703],
-                       [ 963,  214, -828,  729],
-                       [1572, -360, -842, 1016],
-                       [ 105,  -21, -273,  476]).scale(1/133),
-                ev: [[1,1],[2,1],[3,1],[4,1]]
-            }, {
-                M: mat([ 374, 132, 212, -186],
-                       [ -18,  76, -12,   38],
-                       [-132, -40, -32,   92],
-                       [ 198, 116, 132,  -26]).scale(1/56),
-                ev: [[1,2],[2,1],[3,1]]
-            }, {
-                M: mat([344, 128, 192, -160],
-                       [ 72,  88,  48,  -40],
-                       [-72, -32,   8,   40],
-                       [288, 128, 192, -104]).scale(1/56),
-                ev: [[1,3],[3,1]]
-            }, {
-                M: Matrix.identity(4, 3),
-                ev: [[3,4]]
-            }];
-            for(let {M, ev} of testMats) {
-                M.hintEigenvalues(...ev);
+        it('should diagonalize 4x4 matrices', () => {
+            let testMats = [
+                mat([1482, -247, -741,  703],
+                    [ 963,  214, -828,  729],
+                    [1572, -360, -842, 1016],
+                    [ 105,  -21, -273,  476]).scale(1/133),
+                mat([ 374, 132, 212, -186],
+                    [ -18,  76, -12,   38],
+                    [-132, -40, -32,   92],
+                    [ 198, 116, 132,  -26]).scale(1/56),
+                mat([344, 128, 192, -160],
+                    [ 72,  88,  48,  -40],
+                    [-72, -32,   8,   40],
+                    [288, 128, 192, -104]).scale(1/56),
+                Matrix.identity(4, 3),
+            ];
+            for(let M of testMats) {
                 M.diagonalize().should.diagonalize(M);
                 M.diagonalize({block: true}).should.diagonalize(M);
             }
@@ -1026,31 +1062,25 @@ describe('Matrix', () => {
                         [-2616,  1059,  1056, -976],
                         [10256, -2036, -7221, 7212],
                         [10968, -2528, -8088, 7971]).scale(1/133);
-            let λ = C(3, 4);
-            M.hintEigenvalues([λ, 2], [λ.clone().conj(), 2]);
-            M.diagonalize({block: true}).should.diagonalize(M, true);
+            M.diagonalize({block: true, ε: 1e-8}).should.diagonalize(M, true);
 
             M = mat([ -126,   371,   168, -119],
                     [-2442,  1009,   976, -894],
                     [10604, -2136, -7381, 7376],
                     [11229, -2603, -8208, 8094]).scale(1/133);
-            M.hintEigenvalues([λ, 2], [λ.clone().conj(), 2]);
-            should(M.diagonalize({block: true})).be.null();
+            should(M.diagonalize({block: true, ε: 1e-8})).be.null();
         });
         it('should block-diagonalize 4x4 matrices with real and complex eigenvalues', () => {
             let M = mat([  276,    17,   240, -113],
                         [ 1419,   138, -1056, 1109],
                         [ 9654, -2022, -6773, 6806],
                         [10827, -2249, -8280, 8088]).scale(1/133);
-            let λ = C(3, 4);
-            M.hintEigenvalues([3, 1], [4, 1], [λ, 1], [λ.clone().conj(), 1]);
             M.diagonalize({block: true}).should.diagonalize(M, true);
 
             M = mat([ 1360,  480,  1504, -1048],
                     [-2288, -824, -2608,  1856],
                     [ 1476,  600,  1712, -1212],
                     [ 2288,  880,  2608, -1800]).scale(1/56);
-            M.hintEigenvalues([1, 2], [λ, 1], [λ.clone().conj(), 1]);
             M.diagonalize({block: true}).should.diagonalize(M, true);
         });
         it('should orthogonally diagonalize symmetric matrices', () => {

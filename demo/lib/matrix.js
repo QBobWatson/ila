@@ -283,6 +283,11 @@ class Matrix extends Array {
      * This is not the most efficient algorithm: it runs in approximately
      * `O(n^4)` time.
      *
+     * @example {@lang javascript}
+     * Matrix.create([1, 6,4],
+     *               [2,-1,3],
+     *               [5, 0,1]).charpoly.toString(0);  // "-x^3 + x^2 + 33 x + 97"
+     *
      * @type {Polynomial}
      * @throws Will throw an error if the matrix is not square.
      */
@@ -321,6 +326,11 @@ class Matrix extends Array {
      * This implementation computes the whole characteristic polynomial and
      * returns the constant coefficient, which is not the most efficient
      * algorithm: it runs in approximately `O(n^4)` time.
+     *
+     * @example {@lang javascript}
+     * Matrix.create([1, 6,4],
+     *               [2,-1,3],
+     *               [5, 0,1]).det;  // 97
      *
      * @type {number}
      * @throws Will throw an error if the matrix is not square.
@@ -524,7 +534,7 @@ class Matrix extends Array {
      *
      * @example {@lang javascript}
      * Matrix.create([0, 0, 0],
-     *               [0, 1, 0],
+     *               [0, 1, 2],
      *               [0, 0, 0],
      *               [0, 0, 2]).leadingEntries();  // [[1, 1], [3, 2]]
      *
@@ -878,6 +888,7 @@ class Matrix extends Array {
      * @param {number} [ε=1e-10] - Entries smaller than this value are taken
      *   to be zero for the purposes of pivoting and projecting.
      * @return {boolean} True if the matrix has full row rank.
+     * @see Matrix#rank
      */
     isFullRowRank(ε=1e-10) {
         if(this.m > this.n) return false; // Don't need to row reduce
@@ -911,6 +922,7 @@ class Matrix extends Array {
      * @param {number} [ε=1e-10] - Entries smaller than this value are taken
      *   to be zero for the purposes of pivoting and projecting.
      * @return {boolean} True if the matrix has full column rank.
+     * @see Matrix#rank
      */
     isFullColRank(ε=1e-10) {
         if(this.m < this.n) return false; // Don't need to row reduce
@@ -947,6 +959,7 @@ class Matrix extends Array {
      * @param {number} [ε=1e-10] - Entries smaller than this value are taken
      *   to be zero for the purposes of pivoting and projecting.
      * @return {boolean} True if the matrix is invertible.
+     * @see Matrix#inverse
      */
     isInvertible(ε=1e-10) {
         return this.isFullRowRank(ε) && this.isFullColRank(ε);
@@ -959,6 +972,7 @@ class Matrix extends Array {
      * @param {number} [ε=1e-10] - Entries smaller than this value are taken
      *   to be zero for the purposes of pivoting and projecting.
      * @return {boolean} True if the matrix is not invertible.
+     * @see Matrix#isInvertible
      */
     isSingular(ε=1e-10) {
         return !this.isInvertible(ε);
@@ -1001,9 +1015,18 @@ class Matrix extends Array {
      * matrix `C` such that `CAC^(-1)` is diagonal.  Equivalently, the matrix
      * admits `n` linearly independent eigenvectors (the columns of `C`).
      *
+     * @example {@lang javascript}
+     * Matrix.create([11/13, 22/39,  2/39],
+     *               [-4/13, 83/39,  4/39],
+     *               [-1/13, 11/39, 40/39]).isDiagonalizable();  // true
+     * Matrix.create([    1,   1/2,     0],
+     *               [-4/13, 83/39,  4/39],
+     *               [ 5/13,  7/78, 34/39]).isDiagonalizable();  // false
+     *
      * @param {number} [ε=1e-10] - Rounding factor.
      * @return {boolean} True if the matrix is diagonalizable.
      * @throws Will throw an error if the matrix is not square.
+     * @see Matrix#diagonalize
      */
     isDiagonalizable(ε=1e-10) {
         return !!this.diagonalize({ε});
@@ -2266,7 +2289,6 @@ class Matrix extends Array {
         return this._cache.leftNullSpace;
     }
 
-
     // Orthogonality
 
     /**
@@ -2305,6 +2327,63 @@ class Matrix extends Array {
      * is the one generally used in practice.)
      *
      * As a side-effect, this method also computes the rank of the matrix.
+     *
+     * @example {@lang javascript}
+     * let A = Matrix.create([ 3, -5,  1],
+     *                       [ 1,  1,  1],
+     *                       [-1,  5, -2],
+     *                       [ 3, -7,  8]);
+     * let {Q, R} = A.QR();
+     * Q.toSring();
+     *   // "[ 0.6708  0.2236 -0.6708]
+     *   //  [ 0.2236  0.6708  0.2236]
+     *   //  [-0.2236  0.6708  0.2236]
+     *   //  [ 0.6708 -0.2236  0.6708]"
+     * // Q has orthogonal columns
+     * Q.transpose.mult(Q).toString(1);
+     *   // "[1.0 0.0 0.0]
+     *   //  [0.0 1.0 0.0]
+     *   //  [0.0 0.0 1.0]"
+     * Q.colSpace().equals(A.colSpace());  // true
+     * R.toString();
+     *   // "[4.4721 -8.9443  6.7082]
+     *   //  [0.0000  4.4721 -2.2361]
+     *   //  [0.0000  0.0000  4.4721]"
+     * R.isUpperTri();                     // true
+     * Q.mult(R).toString(1);
+     *   // "[ 3.0 -5.0  1.0]
+     *   //  [ 1.0  1.0  1.0]
+     *   //  [-1.0  5.0 -2.0]
+     *   //  [ 3.0 -7.0  8.0]"
+     *
+     * @example {@lang javascript}
+     * // This matrix has rank 3
+     * let A = Matrix.create([ 0, -3, -6,  4,  9],
+     *                       [-1, -2, -1,  3,  1],
+     *                       [-2, -3,  0,  3, -1],
+     *                       [ 1,  4,  5, -9, -7]);
+     * let {Q, R, LD} = A.QR();
+     * Q.toString();
+     *   // "[ 0.0000 -0.8018 0.0000 -0.5976 0.0000]
+     *   //  [-0.4082  0.0000 0.0000  0.0000 0.0000]
+     *   //  [-0.8165  0.2673 0.0000 -0.3586 0.0000]
+     *   //  [ 0.4082  0.5345 0.0000 -0.7171 0.0000]"
+     * // Columns 3 and 5 are zero: that means the third column was in the span
+     * // of the first 2, and the fifth was in the span of the first 4.
+     * LD;  // [2, 4]
+     * // The nonzero columns form an orthonormal basis of the column space of A.
+     * Q.colSpace().equals(A.colSpace());  // true
+     * R.toString();
+     *   // "[2.4495 4.8990 2.4495 -7.3485  -2.4495]
+     *   //  [0.0000 3.7417 7.4833 -7.2161 -11.2250]
+     *   //  [0.0000 0.0000 0.0000  0.0000   0.0000]
+     *   //  [0.0000 0.0000 0.0000  2.9881   0.0000]
+     *   //  [0.0000 0.0000 0.0000  0.0000   0.0000]"
+     * Q.mult(R).toString(1);
+     *   // "[ 0.0 -3.0 -6.0  4.0  9.0]
+     *   //  [-1.0 -2.0 -1.0  3.0  1.0]
+     *   //  [-2.0 -3.0  0.0  3.0 -1.0]
+     *   //  [ 1.0  4.0  5.0 -9.0 -7.0]"
      *
      * @param {number} [ε=1e-10] - Vectors smaller than this value are taken
      *   to be zero.
@@ -2346,30 +2425,50 @@ class Matrix extends Array {
     // Eigenstuff
 
     /**
+     * @summary
      * Compute the (real and complex) eigenvalues of the matrix.
      *
-     * These are the roots of the characteristic polynomial.
+     * @desc
+     * The eigenvalues are the numbers `λ` such that there exists a nonzero
+     * vector `v` with `Av = λv`.  They are the roots of the characteristic
+     * polynomial.
      *
-     * @param {number} [ε=1e-10] - Eigenvalues will be considered equal if they
-     *   are at most this close together.
-     * @return {Root[]} The eigenvalues with algebraic multiplicity.
-     * @throws Will throw an error if the matrix is not square.
+     * [Factorization]{@link Polynomial#factor} of polynomials is only
+     * implemented in degrees at most 4; for matrices larger than 4x4, use
+     * {@link Matrix#hintEigenvalues}.
+     *
+     * @example {@lang javascript}
+     * Matrix.create([1, 1], [1, 1]).eigenvalues();  // [[0, 1], [2, 1]]
+     * Matrix.create([1, 1], [0, 1]).eigenvalues();  // [[1, 2]]
+     * Matrix.create([1, 1], [-1,1]).eigenvalues();
+     *   // [[new Complex(1, 1), 1], [new Complex(1, -1), 1]]
+     *
+     * @param {number} [ε=1e-10] - Rounding factor to determine multiplicities,
+     *   as in {@link Polynomial#factor}.
+     * @return {Root[]} The eigenvalues with algebraic multiplicity.  They are
+     *   returned in the order specified in {@link Polynomial#factor}.
+     * @throws Will throw an error if the matrix is not square, or if it is
+     *   larger than 4x4 and the eigenvalues have not been
+     *   [hinted]{@link Matrix#hintEigenvalues}.
+     * @see Matrix#charpoly
+     * @see Polynomial#factor
      */
     eigenvalues(ε=1e-10) {
         if(this._cache.eigenvalues) return this._cache.eigenvalues;
         if(!this.isSquare())
             throw new Error("Tried to compute the eigenvalues of a non-square matrix");
-        this._cache.eigenvalues = this.charpoly
-            .factor(ε)
-            .map(z => z instanceof Complex || typeof z === "number" ? [z, 1] : z);
+        this._cache.eigenvalues = this.charpoly.factor(ε);
         return this._cache.eigenvalues;
     }
 
     /**
+     * @summary
      * Cache the (real and complex) eigenvalues of the matrix.
      *
-     * This is so that (block) diagonalization can be performed for matrices
-     * larger than 3x3.
+     * @desc
+     * This is so that eigenvalue computations such as diagonalization can be
+     * performed for matrices larger than 4x4, assuming you know the eigenvalues
+     * beforehand.
      *
      * @param {...Root} eigenvalues - The eigenvalues with algebraic multiplicity.
      * @return {undefined}
@@ -2379,15 +2478,50 @@ class Matrix extends Array {
     }
 
     /**
+     * @summary
      * Compute the `λ`-eigenspace of the matrix.
      *
-     * This works for any size matrix if you know an eigenvalue.  For complex
-     * eigenvalues, it returns a basis for the eigenspace represented as an
-     * Array of pairs of vectors `[v_Re, v_Im]`, where `v_Re + iv_Im` is the
+     * @desc
+     * The `λ`-eigenspace is the null space of `A - λI`.
+     *
+     * This method works for any size matrix if you know an eigenvalue.  For
+     * complex eigenvalues, it returns a basis for the eigenspace represented as
+     * an Array of pairs of vectors `[v_r, v_i]`, where `v_r + i v_i` is the
      * eigenvector.
      *
+     * @example {@lang javascript}
+     * let A = Matrix.create([1, 1], [1, 1]);
+     * A.eigenspace(0).toString(1);
+     *   // "Subspace of R^2 of dimension 1 spanned by
+     *   //  [-1.0]
+     *   //  [ 1.0]"
+     * A.eigenspace(2).toString(1);
+     *   // "Subspace of R^2 of dimension 1 spanned by
+     *   //  [1.0]
+     *   //  [1.0]"
+     *
+     * @example {@lang javascript}
+     * let A = Matrix.create([2, 0], [0, 2]);
+     * A.eigenspace(2).toString();  // "The full subspace R^2"
+     *
+     * @example {@lang javascript}
+     * let A = Matrix.create([1, 1], [0, 1]);
+     * A.eigenspace(1).toString(1);
+     *   // "Subspace of R^2 of dimension 1 spanned by
+     *   //  [1.0]
+     *   //  [0.0]"
+     *
+     * @example {@lang javascript}
+     * let A = Matrix.create([24, -53/2], [20, -22]);
+     * // The (1+i)-eigenspace is spanned by (1.15 + 0.05i, 1).
+     * A.eigenspace(new Complex(1, 1));
+     *   // [Vector.create(1.15, 1), Vector.create(0.05, 0)]
+     * A.eigenspace(new Complex(1, -1));
+     *   // [Vector.create(1.15, 1), Vector.create(-0.05, 0)]
+     *
      * @param {number} λ - The eigenvalue.
-     * @param {number} [ε=1e-10] - Rounding factor.
+     * @param {number} [ε=1e-10] - Entries smaller than this value are taken
+     *   to be zero for the purposes of pivoting and rounding.
      * @return {(Subspace|Array.<Vector[]>)} The eigenspace.
      * @throws Will throw an error if the matrix is not square, or if `λ` is not
      *   an eigenvalue of the matrix.
@@ -2513,6 +2647,7 @@ class Matrix extends Array {
     }
 
     /**
+     * @summary
      * Diagonalizability data: `this = CDC^(-1)`.
      *
      * @typedef Diagonalization
@@ -2523,17 +2658,73 @@ class Matrix extends Array {
      */
 
     /**
+     * @summary
      * Diagonalize the matrix.
      *
-     * This is only implemented for matrices up to 3x3, unless the eigenvalues
-     * have been hinted with {@link Matrix#hintEigenvalues}.
+     * @desc
+     * For usual diagonalization (`opts.block` is falsy), it returns an
+     * invertible matrix `C` and a diagonal matrix `D` such that `A = CDC^(-1)`.
+     * This is possible exactly when `A` has `n` linearly independent real
+     * eigenvectors, which form the columns of `C`; the eigenvalues are the
+     * diagonal entries of `D`.
      *
-     * For usual diagonalization, it returns an invertible matrix `C` and a
-     * diagonal matrix `D` such that `this = CDC^(-1)`.  For block
-     * diagonalization, it returns an invertible matrix `C` and a matrix `D`
-     * with diagonal blocks consisting of numbers and rotation-scaling matrices,
-     * such that `this = CDC^(-1)`.  If all eigenvalues are real, then
-     * diagonalization is the same as block diagonalization.
+     * For block diagonalization (`opts.block` is truthy), it returns an
+     * invertible matrix `C` and a matrix `D` with diagonal blocks consisting of
+     * numbers and rotation-scaling matrices, such that `A = CDC^(-1)`.  This is
+     * possible exactly when `A` has `n` linearly independent (real and complex)
+     * eigenvectors.  If all eigenvalues are real, then diagonalization is the
+     * same as block diagonalization.
+     *
+     * This is only implemented for matrices up to 4x4, unless the eigenvalues
+     * have been [hinted]{@link Matrix#hintEigenvalues}.
+     *
+     * @example {@lang javascript}
+     * let A = Matrix.create([11/13, 22/39,  2/39],
+     *                       [-4/13, 83/39,  4/39],
+     *                       [-1/13, 11/39, 40/39]);
+     * A.eigenvalues();  // [[1, 2], [2, 1]]  (approximately)
+     * let {C, D} = A.diagonalize();
+     * D.toString(1);
+     *   // "[1.0 0.0 0.0]
+     *   //  [0.0 1.0 0.0]
+     *   //  [0.0 0.0 2.0]"
+     * C.toString();
+     *   // "[3.6667 0.3333 2.0000]
+     *   //  [1.0000 0.0000 4.0000]
+     *   //  [0.0000 1.0000 1.0000]"
+     * C.mult(D).mult(C.inverse()).scale(39).toString(1);
+     *   // "[ 33.0 22.0  2.0]
+     *   //  [-12.0 83.0  4.0]
+     *   //  [ -3.0 11.0 40.0]"
+     *
+     * @example {@lang javascript}
+     * let A = Matrix.create([    1,   1/2,     0],
+     *                       [-4/13, 83/39,  4/39],
+     *                       [ 5/13,  7/78, 34/39]);
+     * A.eigenvalues();  // [[1, 2], [2, 1]]  (approximately)
+     * A.diagonalize();  // null
+     *
+     * @example {@lang javascript}
+     * let A = Matrix.create([33/29, -23/29,   9/29],
+     *                       [22/29,  33/29, -23/29],
+     *                       [19/29,  14/29,  50/29]);
+     * A.eigenvalues();
+     *   // [[new Complex(1, 1), 1], [new Complex(1, -1), 1], [2, 1]]
+     *   // (approximately)
+     * A.diagonalize();  // null
+     * let {C, D} = A.diagonalize({block: true});
+     * D.toString(1);
+     *   // "[ 1.0 1.0 0.0]
+     *   //  [-1.0 1.0 0.0]
+     *   //  [ 0.0 0.0 2.0]"
+     * C.toString();
+     *   // "[-1.4000 0.2000  0.6667]
+     *   //  [ 0.4000 1.8000 -0.3333]
+     *   //  [ 1.0000 0.0000  1.0000]"
+     * C.mult(D).mult(C.inverse()).scale(29).toString(1);
+     *   // "[33.0 -23.0   9.0]
+     *   //  [22.0  33.0 -23.0]
+     *   //  [19.0  14.0  50.0]"
      *
      * @param {Object} [opts={}] - Options.
      * @param {boolean} [opts.block=false] - Perform block diagonalization.
@@ -2543,18 +2734,21 @@ class Matrix extends Array {
      * @return {?Diagonalization} The diagonalization, or `null` if the matrix
      *   is not (block) diagonalizable.
      * @throws Will throw an error if the matrix is not square or if the matrix is
-     *   larger than 3x3 and the eigenvalues have not been hinted.
+     *   larger than 4x4 and the eigenvalues have not been
+     *   [hinted]{@link Matrix#hintEigenvalues}.
+     * @see Matrix#eigenvalues
+     * @see Matrix#hintEigenvalues
+     * @see Matrix#eigenspace
      */
     diagonalize({block=false, ortho=false, ε=1e-10}={}) {
         let eigenbasis = new Array(this.n);
         let D = Matrix.zero(this.n);
         let i = 0;
-        let seen = [];
-        for(let [λ,m] of this.eigenvalues(ε)) {
+        // Only use one of a conjugate pair of eigenvalues
+        for(let [λ,m] of this.eigenvalues(ε).filter(
+            ([λ,]) => !(λ instanceof Complex) || λ.Im >= 0)) {
             if(λ instanceof Complex) {
                 if(!block) return null;
-                if(seen.find(z => z.equals(λ)))
-                    continue; // Only use one of a conjugate pair of eigenvalues
                 let B = this.eigenspace(λ, ε);
                 if(B.length < m) // Impossible for matrices <= 3x3
                     return null;
@@ -2564,7 +2758,6 @@ class Matrix extends Array {
                     eigenbasis[i+1] = B[j][1];
                     D.insertSubmatrix(i, i, Matrix.create([λ.Re, λ.Im], [-λ.Im, λ.Re]));
                 }
-                seen.push(λ.clone().conj());
             } else {
                 let V = this.eigenspace(λ, ε);
                 if(V.dim < m)

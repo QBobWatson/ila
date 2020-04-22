@@ -836,7 +836,7 @@ class Polynomial extends Array {
             throw new Error("The zero polynomial does not have discrete roots");
         const [a, b, c, d, e] = this;
         if(this.deg === 1)
-            return [-b/a, 1];
+            return [[-b/a, 1]];
         if(this.deg === 2)
             return quadratic(b/a, c/a, ε);
         if(this.deg === 3)
