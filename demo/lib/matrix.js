@@ -12,6 +12,8 @@ import Complex from "./complex.js";
 import Subspace from "./subspace.js";
 import Polynomial from "./polynomial.js";
 
+import { range } from "./util.js";
+
 // TODO:
 //  * SVD
 //  * pseudo-inverse
@@ -67,10 +69,8 @@ class Matrix extends Array {
     static create(...rows) {
         if(rows.length === 0)
             return new Matrix();
-        let ret = new Matrix(rows.length);
-        let i = 0;
-        for(let row of rows)
-            ret[i++] = row instanceof Vector ? row : Vector.create(...row);
+        let ret = Matrix.from(
+            rows, row => row instanceof Vector ? row : Vector.from(row));
         let n = ret[0].length;
         if(ret.some(row => row.length !== n))
             throw new Error("Matrix rows must have the same length.");
@@ -95,10 +95,7 @@ class Matrix extends Array {
      * @return {Matrix} The `n`x`n` (scaled) identity matrix.
      */
     static identity(n, λ=1) {
-        let ret = new Matrix(n);
-        for(let i = 0; i < n; ++i)
-            ret[i] = Vector.e(i, n, λ);
-        return ret;
+        return Matrix.from(range(n), i => Vector.e(i, n, λ));
     }
 
     /**
@@ -115,10 +112,7 @@ class Matrix extends Array {
      * @return {Matrix} The `m`x`n` zero matrix.
      */
     static zero(m, n=m) {
-        let ret = new Matrix(m);
-        for(let i = 0; i < m; ++i)
-            ret[i] = Vector.zero(n);
-        return ret;
+        return Matrix.from(range(m), i => Vector.zero(n));
     }
 
     /**
@@ -146,10 +140,7 @@ class Matrix extends Array {
      */
     static permutation(vals) {
         let n = vals.length;
-        let ret = new Matrix(n);
-        for(let i = 0; i < n; ++i)
-            ret[i] = Vector.e(vals[i], n);
-        return ret;
+        return Matrix.from(range(n), i => Vector.e(vals[i], n));
     }
 
     /**
@@ -220,7 +211,7 @@ class Matrix extends Array {
      */
     get transpose() {
         if(this._cache.transpose) return this._cache.transpose;
-        this._cache.transpose = Matrix.create(...this.cols());
+        this._cache.transpose = Matrix.from(this.cols());
         return this._cache.transpose;
     }
 
@@ -258,8 +249,7 @@ class Matrix extends Array {
      */
     get trace() {
         let acc = 0;
-        for(let i = 0; i < Math.min(this.m, this.n); ++i)
-            acc += this[i][i];
+        for(const d of this.diag()) acc += d;
         return acc;
     }
 
@@ -415,9 +405,7 @@ class Matrix extends Array {
      * @return {Matrix} The new matrix.
      */
     clone() {
-        // this.map() calls the Matrix() constructor
-        let ret = this.map(row => row.clone());
-        return ret;
+        return Matrix.from(this, row => row.clone());
     }
 
     /**
@@ -434,12 +422,10 @@ class Matrix extends Array {
      * @return {string} A string representation of the matrix.
      */
     toString(precision=4) {
-        // this.map returns a Matrix
-        let strings = [...this].map(
-            row => [...row].map(v => v.toFixed(precision)));
-        let colLens = new Array(this.n);
-        for(let j = 0; j < this.n; ++j)
-            colLens[j] = Math.max(...strings.map(row => row[j].length));
+        let strings = Array.from(
+            this, row => Array.from(row, v => v.toFixed(precision)));
+        let colLens = Array.from(
+            range(this.n), j => Math.max(...strings.map(row => row[j].length)));
         return strings.map(
             row => '[' + row.map(
                 (val, j) => val.padStart(colLens[j], ' ')).join(' ') + ']')
@@ -466,12 +452,8 @@ class Matrix extends Array {
      *
      * @example {@lang javascript}
      * let M = Matrix.create([1, 2], [3, 4], [5, 6]);
-     * for(let row of M.rows())
-     *     console.log(row.toString(0));
-     * // Output:
-     * // [1 2]
-     * // [3 4]
-     * // [5 6]
+     * Array.from(M.rows(), row => row.toString(0));
+     *   // ["[1 2]", "[3 4]", "[5 6]"]
      *
      * @return {Iterable.<Vector>} An iterable over the rows.
      */
@@ -490,10 +472,7 @@ class Matrix extends Array {
      * @return {Vector} The `j`th column of `this`.
      */
     col(j) {
-        let v = Vector.zero(this.m), i = 0;
-        for(let row of this)
-            v[i++] = row[j];
-        return v;
+        return Vector.from(this, row => row[j]);
     }
 
     /**
@@ -502,11 +481,8 @@ class Matrix extends Array {
      *
      * @example {@lang javascript}
      * let M = Matrix.create([1, 2], [3, 4], [5, 6]);
-     * for(let col of M.cols())
-     *     console.log(col.toString(0));
-     * // Output:
-     * // [1 3 5]
-     * // [2 4 6]
+     * Array.from(M.cols(), col => col.toString(0));
+     *   // ["[1 3 5]", "[2 4 6]"]
      *
      * @return {Iterable.<Vector>}
      */
@@ -515,6 +491,24 @@ class Matrix extends Array {
         return (function*() {
             for(let j = 0; j < self.n; ++j)
                 yield self.col(j);
+        })();
+    }
+
+    /**
+     * @summary
+     * Return an iterable over the diagonal entriese.
+     *
+     * @example {@lang javascript}
+     * let M = Matrix.create([1, 2], [3, 4], [5, 6]);
+     * Array.from(M.diag());  // [1, 4]
+     *
+     * @return {Iterable.<number>}
+     */
+    diag() {
+        let self = this;
+        return (function*() {
+            for(let j = 0; j < Math.min(self.m, self.n); ++j)
+                yield self[j][j];
         })();
     }
 
@@ -544,9 +538,9 @@ class Matrix extends Array {
      */
     leadingEntries(ε=0) {
         let entries = [];
-        for(let i = 0; i < this.m; ++i) {
+        for(let [i, row] of this.entries()) {
             for(let j = 0; j < this.n; ++j) {
-                if(Math.abs(this[i][j]) > ε) {
+                if(Math.abs(row[j]) > ε) {
                     entries.push([i, j]);
                     break;
                 }
@@ -651,8 +645,8 @@ class Matrix extends Array {
      * @return {boolean} True if the matrix is upper-unipotent.
      */
     isUpperUnip(ε=0) {
-        for(let i = 1; i < Math.min(this.m, this.n); ++i) {
-            if(Math.abs(this[i][i] - 1) > ε)
+        for(let d of this.diag()) {
+            if(Math.abs(d - 1) > ε)
                 return false;
         }
         return this.isUpperTri(ε);
@@ -720,8 +714,8 @@ class Matrix extends Array {
      * @return {boolean} True if the matrix is lower-unipotent.
      */
     isLowerUnip(ε=0) {
-        for(let i = 1; i < Math.min(this.m, this.n); ++i) {
-            if(Math.abs(this[i][i] - 1) > ε)
+        for(let d of this.diag()) {
+            if(Math.abs(d - 1) > ε)
                 return false;
         }
         return this.isLowerTri(ε);
@@ -1058,8 +1052,7 @@ class Matrix extends Array {
      */
     add(other, factor=1) {
         if(this.m !== other.m || this.n !== other.n)
-            throw new Error(
-                'Tried to add matrices of different sizes');
+            throw new Error('Tried to add matrices of different sizes');
         this.forEach((row, i) => row.add(other[i], factor));
         return this;
     }
@@ -1105,8 +1098,7 @@ class Matrix extends Array {
      * @return {Matrix} `this`
      */
     scale(c) {
-        for(let row of this)
-            row.scale(c);
+        this.forEach(row => row.scale(c));
         return this;
     }
 
@@ -1141,15 +1133,9 @@ class Matrix extends Array {
     mult(other) {
         if(other.m !== this.n)
             throw new Error('Cannot multiply matrices of incompatible dimensions');
-        return this.map(
-            row => {
-                let newRow = Vector.zero(other.n);
-                for(let i = 0; i < other.n; ++i) {
-                    for(let j = 0; j < this.n; ++j)
-                        newRow[i] += row[j] * other[j][i];
-                }
-                return newRow;
-            });
+        return Matrix.from(this,
+            row => Vector.from(range(other.n), i => row.reduce(
+                (a, v, j) => a + v * other[j][i], 0)));
     }
 
     /**
@@ -1177,7 +1163,7 @@ class Matrix extends Array {
     apply(v) {
         if(v.length !== this.n)
             throw new Error('Cannot multiply matrix and vector of incompatible dimensions');
-        return Vector.create(...[...this].map(row => row.dot(v)));
+        return Vector.from(this, row => row.dot(v));
     }
 
 
@@ -1424,8 +1410,7 @@ class Matrix extends Array {
     PLU(ε=1e-10) {
         if(this._cache.PLU) return this._cache.PLU;
 
-        let P = new Array(this.m);
-        for(let i = 0; i < this.m; ++i) P[i] = i;
+        let P = Array.from(range(this.m));
         let L = Matrix.identity(this.m);
         let E = Matrix.identity(this.m);
         let U = this.clone();
@@ -1713,9 +1698,8 @@ class Matrix extends Array {
             throw new Error("Incompatible dimensions of matrix and vector");
         let {P, L, U, pivots} = this.PLU(ε);
         let r = this.rank(ε);
-        let Pb = Vector.zero(this.m);
         // Solve LUx = PAx = Pb
-        for(let i = 0; i < this.m; ++i) Pb[i] = b[P[i]];
+        let Pb = Vector.from(range(this.m), i => b[P[i]]);
         // Solve Ly = Pb by forward-substitution
         let y = Pb.clone();
         for(let i = 1; i < this.m; ++i) {
@@ -1947,11 +1931,8 @@ class Matrix extends Array {
      *   //  [0 1  2 0 -3]
      *   //  [0 0  0 1  0]
      *   //  [0 0  0 0  0]"
-     * for(vec of A.nullBasis())
-     *     console.log(vec.toString(0));
-     * // Output:
-     * // [3 -2 1 0 0]
-     * // [-5 3 0 0 1]
+     * A.nullBasis().map(vec => vec.toString(0));
+     *   // ["[3 -2 1 0 0]", "[-5 3 0 0 1]"]
      * A.isFullColRank();  // false
      *
      * @example {@lang javascript}
@@ -2000,13 +1981,10 @@ class Matrix extends Array {
      *                       [-1, -2, -1,  3,  1],
      *                       [-2, -3,  0,  3, -1],
      *                       [ 1,  4,  5, -9, -7]);
-     * for(vec of A.nullBasis())
-     *     console.log(vec.toString(0));
-     * // Output:
-     * // [3 -2 1 0 0]
-     * // [-5 3 0 0 1]
+     * A.nullBasis().map(vec => vec.toString(0));
+     *   // ["[3 -2 1 0 0]", "[-5 3 0 0 1]"]
      * A.nullSpace().toString(0);
-     *   // "Subspace of R^5 of dimension 2 spanned by
+     *   // "Subspace of R^5 of dimension 2 with basis
      *   //  [ 3] [-5]
      *   //  [-2] [ 3]
      *   //  [ 1] [ 0]
@@ -2018,8 +1996,7 @@ class Matrix extends Array {
      *                       [0, 1],
      *                       [0, 0]);
      * A.nullBasis(); // []
-     * A.nullSpace().toString();
-     *   // "Zero subspace of R^2"
+     * A.nullSpace().toString();  // "The zero subspace of R^2"
      *
      * @param {number} [ε=1e-10] - Entries smaller than this value are taken
      *   to be zero for the purposes of pivoting.
@@ -2054,12 +2031,8 @@ class Matrix extends Array {
      *                       [-2, -3,  0,  3, -1],
      *                       [ 1,  4,  5, -9, -7]);
      * A.pivots();  // [[0, 0], [1, 1], [2, 3]]
-     * for(vec of A.colBasis())
-     *     console.log(vec.toString(0));
-     * // Output:
-     * // [0 -1 -2 1]
-     * // [-3 -2 -3 4]
-     * // [4 3 3 -9]
+     * A.colBasis().map(vec => vec.toString(0));
+     *   // ["[0 -1 -2 1]", "[-3 -2 -3 4]", "[4 3 3 -9]"]
      *
      * @param {number} [ε=1e-10] - Entries smaller than this value are taken
      *   to be zero for the purposes of pivoting.
@@ -2068,7 +2041,7 @@ class Matrix extends Array {
      */
     colBasis(ε=1e-10) {
         if(this._cache.colBasis) return this._cache.colBasis;
-        this._cache.colBasis = this.pivots(ε).map(([, j]) => this.col(j));
+        this._cache.colBasis = Array.from(this.pivots(ε), ([, j]) => this.col(j));
         return this._cache.colBasis;
     }
 
@@ -2081,34 +2054,26 @@ class Matrix extends Array {
      *                       [-1, -2, -1,  3,  1],
      *                       [-2, -3,  0,  3, -1],
      *                       [ 1,  4,  5, -9, -7]);
-     * for(vec of A.colBasis())
-     *     console.log(vec.toString(0));
-     * // Output:
-     * // [0 -1 -2 1]
-     * // [-3 -2 -3 4]
-     * // [4 3 3 -9]
+     * A.colBasis().map(vec => vec.toString(0));
+     *   // ["[0 -1 -2 1]", "[-3 -2 -3 4]", "[4 3 3 -9]"]
      * A.colSpace().toString(0);
-     *   // "Subspace of R^4 of dimension 3 spanned by
+     *   // "Subspace of R^4 of dimension 3 with basis
      *   //  [ 0] [-3] [ 4]
      *   //  [-1] [-2] [ 3]
      *   //  [-2] [-3] [ 3]
      *   //  [ 1] [ 4] [-9]"
      *
      * @desc
-     * This is essentially a shortcut for `new Subspace([...this.cols()])`,
-     * except that the returned subspace will come equipped with the cached
-     * output of `this.colBasis()` if it has been computed.
+     * This is essentially a shortcut for `new Subspace(Array.from(this.cols()))`.
      *
+     * @param {number} [ε=1e-10] - Entries smaller than this value are taken
+     *   to be zero for the purposes of pivoting.
      * @return {Subspace} The column space of the matrix.
      * @see Matrix#colBasis
      */
-    colSpace() {
+    colSpace(ε=1e-10) {
         if(this._cache.colSpace) return this._cache.colSpace;
-        if(this._cache.colBasis)
-            this._cache.colSpace = new Subspace(this._cache.colBasis,
-                                                {n: this.m, isBasis: true});
-        else
-            this._cache.colSpace = new Subspace(this, {n: this.m});
+        this._cache.colSpace = new Subspace(this, {n: this.m, ε});
         return this._cache.colSpace;
     }
 
@@ -2138,12 +2103,10 @@ class Matrix extends Array {
      *   //  [ 0.0000 -3.0000 -6.0000  4.0000  9.0000]
      *   //  [ 0.0000  0.0000  0.0000 -4.1667  0.0000]
      *   //  [ 0.0000  0.0000  0.0000  0.0000  0.0000]"
-     * for(vec of A.rowBasis())
-     *     console.log(vec.toString());
-     * // Output:
-     * // [-2.0000 -3.0000 0.0000 3.0000 -1.0000]
-     * // [0.0000 -3.0000 -6.0000 4.0000 9.0000]
-     * // [0.0000 0.0000 0.0000 -4.1667 0.0000]
+     * A.rowBasis().map(vec => vec.toString());
+     *   // ["[-2.0000 -3.0000 0.0000 3.0000 -1.0000]",
+     *   //  "[0.0000 -3.0000 -6.0000 4.0000 9.0000]",
+     *   //  "[0.0000 0.0000 0.0000 -4.1667 0.0000]"]
      *
      * @param {number} [ε=1e-10] - Entries smaller than this value are taken
      *   to be zero for the purposes of pivoting.
@@ -2162,7 +2125,7 @@ class Matrix extends Array {
      * Return the row space of the matrix.
      *
      * @desc
-     * This is essentially a shortcut for `new Subspace([...this.rows()])`,
+     * This is essentially a shortcut for `new Subspace(Array.from(this.rows()))`,
      * except that the returned subspace will come equipped with the cached
      * output of `this.rowBasis()` if it has been computed.
      *
@@ -2174,7 +2137,7 @@ class Matrix extends Array {
      * // Note that the Subspace computed a basis by finding the pivots of the
      * // matrix whose columns are the generators it was provided.
      * A.rowSpace().toString(0);
-     *   // "Subspace of R^5 of dimension 3 spanned by
+     *   // "Subspace of R^5 of dimension 3 with basis
      *   //  [ 0] [ 1] [-2]
      *   //  [-3] [-2] [-3]
      *   //  [-6] [-1] [ 0]
@@ -2189,23 +2152,25 @@ class Matrix extends Array {
      * // Precompute a basis of the row space
      * A.rowBasis();
      * A.rowSpace().toString();
-     *   // "Subspace of R^5 of dimension 3 spanned by
+     *   // "Subspace of R^5 of dimension 3 with basis
      *   //  [-2.0000] [ 0.0000] [ 0.0000]
      *   //  [-3.0000] [-3.0000] [ 0.0000]
      *   //  [ 0.0000] [-6.0000] [ 0.0000]
      *   //  [ 3.0000] [ 4.0000] [-4.1667]
      *   //  [-1.0000] [ 9.0000] [ 0.0000]"
      *
+     * @param {number} [ε=1e-10] - Entries smaller than this value are taken
+     *   to be zero for the purposes of pivoting.
      * @return {Subspace} The row space of the matrix.
      * @see Matrix#rowBasis
      */
-    rowSpace() {
+    rowSpace(ε=1e-10) {
         if(this._cache.rowSpace) return this._cache.rowSpace;
         if(this._cache.rowBasis)
             this._cache.rowSpace = new Subspace(this._cache.rowBasis,
-                                                {n: this.n, isBasis: true});
+                                                {n: this.n, isBasis: true, ε});
         else
-            this._cache.rowSpace = new Subspace(this.transpose, {n: this.n});
+            this._cache.rowSpace = new Subspace(this.transpose, {n: this.n, ε});
         return this._cache.rowSpace;
     }
 
@@ -2235,10 +2200,8 @@ class Matrix extends Array {
      *   //  [0.8333 0.0000  0.5000 1.0000]
      *   //  [0.0000 1.0000 -0.4000 0.2000]"
      * A.rank();  // 3
-     * for(vec of A.leftNullBasis())
-     *     console.log(vec.toString());
-     * // Output:
-     * // [0.0000 1.0000 -0.4000 0.2000]
+     * A.leftNullBasis().map(vec => vec.toString());
+     *   // ["[0.0000 1.0000 -0.4000 0.2000]"]
      *
      * @param {number} [ε=1e-10] - Entries smaller than this value are taken
      *   to be zero for the purposes of pivoting.
@@ -2265,12 +2228,10 @@ class Matrix extends Array {
      *                       [-1, -2, -1,  3,  1],
      *                       [-2, -3,  0,  3, -1],
      *                       [ 1,  4,  5, -9, -7]);
-     * for(vec of A.leftNullBasis())
-     *     console.log(vec.toString());
-     * // Output:
-     * // [0.0000 1.0000 -0.4000 0.2000]
+     * A.leftNullBasis().map(vec => vec.toString());
+     *   // ["[0.0000 1.0000 -0.4000 0.2000]"]
      * A.leftNullSpace().toString(1);
-     *   // "Subspace of R^4 of dimension 1 spanned by
+     *   // "Subspace of R^4 of dimension 1 with basis
      *   //  [ 0.0]
      *   //  [ 1.0]
      *   //  [-0.4]
@@ -2394,7 +2355,7 @@ class Matrix extends Array {
         if(this._cache.QR) return this._cache.QR;
         let {m, n} = this;
         let ui = new Array(n), LD=[];
-        let vi = [...this.cols()];
+        let vi = Array.from(this.cols());
         let R = Matrix.zero(n);
         for(let j = 0; j < n; ++j) {
             let u = vi[j].clone();
@@ -2416,7 +2377,7 @@ class Matrix extends Array {
                 LD.push(j);
             }
         }
-        let Q = Matrix.create(...ui).transpose;
+        let Q = Matrix.from(ui).transpose;
         this._cache.QR = {Q, R, LD};
         this._cache.rank = n - LD.length;
         return this._cache.QR;
@@ -2492,11 +2453,11 @@ class Matrix extends Array {
      * @example {@lang javascript}
      * let A = Matrix.create([1, 1], [1, 1]);
      * A.eigenspace(0).toString(1);
-     *   // "Subspace of R^2 of dimension 1 spanned by
+     *   // "Subspace of R^2 of dimension 1 with basis
      *   //  [-1.0]
      *   //  [ 1.0]"
      * A.eigenspace(2).toString(1);
-     *   // "Subspace of R^2 of dimension 1 spanned by
+     *   // "Subspace of R^2 of dimension 1 with basis
      *   //  [1.0]
      *   //  [1.0]"
      *
@@ -2507,7 +2468,7 @@ class Matrix extends Array {
      * @example {@lang javascript}
      * let A = Matrix.create([1, 1], [0, 1]);
      * A.eigenspace(1).toString(1);
-     *   // "Subspace of R^2 of dimension 1 spanned by
+     *   // "Subspace of R^2 of dimension 1 with basis
      *   //  [1.0]
      *   //  [0.0]"
      *
@@ -2541,7 +2502,7 @@ class Matrix extends Array {
         // Find best matching eigenvalue
         for(let [λ1, V] of this._cache.eigenspaces.entries()) {
             let c = Math.abs(λ1 - λ);
-            if(c < closest && c < ε) {
+            if(c < closest && c <= ε) {
                 closest = c;
                 best = V;
             }
@@ -2561,7 +2522,7 @@ class Matrix extends Array {
         // Find best matching eigenvalue
         for(let [λ1, V] of this._cache.cplxEigenspaces.entries()) {
             let c = λ1.clone().sub(λ).sizesq;
-            if(c < closest && c < ε*ε) {
+            if(c < closest && c <= ε*ε) {
                 closest = c;
                 best = V;
             }
@@ -2572,7 +2533,7 @@ class Matrix extends Array {
         // matrices.  We implement a simplified version here.
         let {m, n} = this;
         let pivots = [];
-        let U = [...this].map(row => [...row].map(x => new Complex(x)));
+        let U = Array.from(this, row => Array.from(row, x => new Complex(x)));
         for(let i = 0; i < n; ++i) U[i][i].sub(λ);
 
         for(let curRow = 0, curCol = 0; curRow < m && curCol < n; ++curCol) {
@@ -2741,7 +2702,7 @@ class Matrix extends Array {
      * @see Matrix#eigenspace
      */
     diagonalize({block=false, ortho=false, ε=1e-10}={}) {
-        let eigenbasis = new Array(this.n);
+        let eigenbasis = [];
         let D = Matrix.zero(this.n);
         let i = 0;
         // Only use one of a conjugate pair of eigenvalues
@@ -2754,22 +2715,21 @@ class Matrix extends Array {
                     return null;
                 for(let j = 0; j < m; ++j, i += 2) {
                     // The columns are the real and complex parts of the eigenvectors
-                    eigenbasis[i  ] = B[j][0];
-                    eigenbasis[i+1] = B[j][1];
+                    eigenbasis.push(...B[j]);
                     D.insertSubmatrix(i, i, Matrix.create([λ.Re, λ.Im], [-λ.Im, λ.Re]));
                 }
             } else {
                 let V = this.eigenspace(λ, ε);
                 if(V.dim < m)
                     return null;
-                let B = ortho ? V.ONbasis(ε) : V.basis(ε);
+                let B = ortho ? V.ONbasis(ε) : V.basis;
                 for(let j = 0; j < m; ++j, ++i) {
                     D[i][i] = λ;
                     eigenbasis[i] = B.col(j);
                 }
             }
         }
-        let C = Matrix.create(...eigenbasis).transpose;
+        let C = Matrix.from(eigenbasis).transpose;
         return {C, D};
     }
 

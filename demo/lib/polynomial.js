@@ -10,9 +10,10 @@ const { abs, sqrt, cbrt, atan2, cos, min, max } = Math;
 const π = Math.PI;
 
 import Complex from './complex.js';
+import { range } from "./util.js";
 
 // Convenience
-const C = (a, b=0) => a instanceof Complex ? a : new Complex(a, b);
+const C = (a, b=0) => new Complex(a, b);
 
 // Memoized Legendre polynomials
 let legendres;
@@ -90,7 +91,8 @@ function quadratic(b, c, ε=1e-10) {
  *
  * @desc
  * This function finds the roots of the polynomial `x^3 + b x^2 + c x + d` using
- * [Cardano's formula]{@link https://www.encyclopediaofmath.org/index.php/Cardano_formula}.
+ * [Cardano's formula]{@link
+ * https://www.encyclopediaofmath.org/index.php/Cardano_formula}.
  *
  * @example
  * cardano(-4, 5, -2); // [[1, 2], [2, 1]] (approximately)
@@ -323,8 +325,8 @@ class Polynomial extends Array {
      * Create a Polynomial with the given coefficients.
      *
      * @desc
-     * Unlike `new Polynomial()`, this works when `coeffs` has length
-     * one.  This strips all leading zeros from the coefficients.
+     * This is like `Polynomial.of`, except it strips all leading zeros from the
+     * coefficients.
      *
      * @example {@lang javascript}
      * Polynomial.create(1, 2, 1).toString(1); // "x^2 + 2.0 x + 1.0"
@@ -338,9 +340,7 @@ class Polynomial extends Array {
     static create(...coeffs) {
         while(coeffs[0] === 0)
             coeffs.shift();
-        if(coeffs.length === 1)
-            return new Polynomial(1).fill(coeffs[0]);
-        return new Polynomial(...coeffs);
+        return Polynomial.from(coeffs);
     }
 
     /**
@@ -364,21 +364,17 @@ class Polynomial extends Array {
     static fromRoots(...roots) {
         let P = [C(1)];
         let n = 1;
-        roots = roots.flatMap(r => {
-            if(r instanceof Complex) return [r];
-            if(r instanceof Array) {
-                let [c, m] = r;
-                return new Array(m).fill(0).map(() => C(c));
-            }
-            return [r];
-        });
+        roots = roots.flatMap(
+            r => r instanceof Complex ? [r]
+                : r instanceof Array ? Array.from(range(r[1]), () => C(r[0]))
+                : [r]);
         while(roots.length > 0) {
             let c = roots.pop();
             P.forEach((a, i) => a.mult(c).scale(-1).add((i < n-1 ? P[i+1] : 0)));
             P.unshift(C(1));
             n++;
         }
-        return Polynomial.create(...P.map(x => x.Re));
+        return Polynomial.from(P, x => x.Re);
     }
 
     /**
@@ -479,7 +475,7 @@ class Polynomial extends Array {
 
     /**
      * @summary
-     * Decide if a polynomial is zero.
+     * Test if a polynomial is zero.
      *
      * @desc
      * This means that the degree is `-Infinity`, i.e. that the coefficient list
@@ -497,7 +493,7 @@ class Polynomial extends Array {
 
     /**
      * @summary
-     * Check if this Polynomial is equal to `P`.
+     * Test if this Polynomial is equal to `P`.
      *
      * @desc
      * Two polynomials are equal if they have the same degree, and all
@@ -594,12 +590,14 @@ class Polynomial extends Array {
      */
     mult(P) {
         if(this.isZero() || P.isZero()) return Polynomial.create();
-        let ret = new Polynomial(this.deg + P.deg + 1).fill(0);
-        for(let i = 0; i < ret.length; ++i) {
-            for(let j = max(0, i-P.deg); j <= min(i, this.deg); ++j)
-                ret[i] += this[j] * P[i-j];
-        }
-        return ret;
+        return Polynomial.from(
+            range(this.deg + P.deg + 1),
+            i => {
+                let acc = 0;
+                for(let j = max(0, i-P.deg); j <= min(i, this.deg); ++j)
+                    acc += this[j] * P[i-j];
+                return acc;
+            });
     }
 
     /**
@@ -619,12 +617,15 @@ class Polynomial extends Array {
      * R.toString(1);  // 8.0 x - 4.0
      *
      * @param {Polynomial} P - The polynomial to divide.
+     * @param {number} [ε=0] - Leading coefficients of the remainder are
+     *   considered to be zero if they are smaller than this.  This is provided
+     *   in order to account for rounding errors.
      * @return {Polynomial[]} An array `[Q, R]`, where `Q` is the quotient of
      *   `this` by `P` and `R` is the remainder.
      * @throws Will throw an error if `P` has larger degree or is the zero
      *   polynomial.
      */
-    div(P) {
+    div(P, ε=0) {
         if(P.deg > this.deg)
             throw new Error("Tried to divide by a polynomial of larger degree");
         if(P.isZero())
@@ -640,7 +641,7 @@ class Polynomial extends Array {
         }
         let quot = ret.slice(0, this.deg - P.deg + 1);
         let rem = ret.slice(this.deg - P.deg + 1, ret.length);
-        while(rem[0] === 0) rem.shift();
+        while(Math.abs(rem[0]) <= ε) rem.shift();
         return [quot, rem];
     }
 
@@ -705,7 +706,7 @@ class Polynomial extends Array {
             if(n & 1)
                 ret = ret.mult(base);
             n >>= 1;
-            if(!n) break;
+            if(n === 0) break;
             base = base.mult(base);
         }
         return ret;

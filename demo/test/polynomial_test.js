@@ -15,13 +15,13 @@ const ζ = new Complex(-1/2, Math.sqrt(3)/2);
 describe('Polynomial', () => {
     describe('#create()', () => {
         it("should create polynomials of degree 2", () =>
-           [...poly(1, 2, 3)].should.eql([1, 2, 3]));
+           Array.from(poly(1, 2, 3)).should.eql([1, 2, 3]));
         it("should create polynomials of degree 0", () =>
-           [...poly(1)].should.eql([1]));
+           Array.from(poly(1)).should.eql([1]));
         it("should create polynomials of degree -Infinity", () =>
-           [...poly()].should.eql([]));
+           Array.from(poly()).should.eql([]));
         it("should strip leading zeros", () =>
-           [...poly(0, 0, 1, 2)].should.eql([1, 2]));
+           Array.from(poly(0, 0, 1, 2)).should.eql([1, 2]));
     });
     describe('#fromRoots()', () => {
         it("should create polynomials with real roots", () => {
@@ -235,7 +235,7 @@ describe('Polynomial', () => {
     describe('#factor()', () => {
         describe('factoring linear polynomials', () => {
             it('should find one root', () =>
-               poly(1, -1).factor().should.eql([1, 1]));
+               poly(1, -1).factor().should.eql([[1, 1]]));
         });
         describe('factoring quadratics', () => {
             it('should find a double root', () => {

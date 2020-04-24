@@ -6,6 +6,7 @@
  * Implements a Vector class used for doing vector arithmetic.
  */
 
+import { range } from "./util.js";
 import Matrix from "./matrix.js";
 
 /**
@@ -31,7 +32,7 @@ class Vector extends Array {
      * Create a Vector with the given entries.
      *
      * @desc
-     * Unlike `new Vector()`, this works when `entries` has length one.
+     * This is an alias for `Vector.of`.
      *
      * @example {@lang javascript}
      * Vector.create(1).toString(1);    // "[1.0]"
@@ -41,9 +42,7 @@ class Vector extends Array {
      * @return {Vector} The vector with the given entries.
      */
     static create(...entries) {
-        if(entries.length === 1)
-            return Vector.constant(1, entries[0]);
-        return new Vector(...entries);
+        return Vector.from(entries);
     }
 
     /**
@@ -58,9 +57,7 @@ class Vector extends Array {
      * @return {Vector} The vector `[c, c, ..., c]`.
      */
     static constant(n, c) {
-        let ret = new Vector(n);
-        ret.fill(c);
-        return ret;
+        return Vector.from(range(n), () => c);
     }
 
     /**
@@ -94,9 +91,7 @@ class Vector extends Array {
      * @return {Vector} The `i`th unit coordinate vector in `R^n`.
      */
     static e(i, n, λ=1) {
-        let ret = Vector.zero(n);
-        ret[i] = λ;
-        return ret;
+        return Vector.from(range(n), j => j === i ? λ : 0);
     }
 
     /**
@@ -126,7 +121,7 @@ class Vector extends Array {
      * @throws Will throw an error if the vectors do not have the same length.
      */
     static isLinearlyIndependent(vecs, ε=1e-10) {
-        let M = new Matrix(...vecs);
+        let M = Matrix.from(vecs);
         // Tall matrices never have linearly independent rows.
         if(M.m > M.n) return false;
         return M.rank(ε) == vecs.length;
@@ -180,9 +175,8 @@ class Vector extends Array {
      * @throws Will throw an error if the vectors do not have the same length.
      */
     static linearlyIndependentSubset(vecs, ε=1e-10) {
-        let M = new Matrix(...vecs).transpose;
-        let pivots = M.pivots(ε);
-        return pivots.map(([, j]) => vecs[j]);
+        return Array.from(Matrix.from(vecs).transpose.pivots(ε),
+                          ([,j]) => vecs[j]);
     }
 
     /**
@@ -208,8 +202,9 @@ class Vector extends Array {
      *   or if `coeffs` is empty.
      */
     static linearCombination(coeffs, vecs) {
-        return coeffs.reduce((a, c, i) => a.add(vecs[i].clone().scale(c)),
-                             Vector.zero(vecs[0].length));
+        return coeffs.reduce(
+            (a, c, i) => a.add(vecs[i].clone().scale(c)),
+            Vector.zero(vecs[0].length));
     }
 
 
@@ -272,7 +267,7 @@ class Vector extends Array {
             return false;
         if(ε === 0)
             return this.every((v, i) => v === other[i]);
-        return this.every((v, i) => Math.abs(v - other[i]) < ε);
+        return this.every((v, i) => Math.abs(v - other[i]) <= ε);
     }
 
     /**
@@ -296,8 +291,7 @@ class Vector extends Array {
      * @return {string} A string representation of the vector.
      */
     toString(precision=4) {
-        // this.map() returns a new Vector
-        const strings = [...this.map(v => v.toFixed(precision))];
+        const strings = Array.from(this, v => v.toFixed(precision));
         return "[" + strings.join(' ') + "]";
     }
 

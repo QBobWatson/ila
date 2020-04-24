@@ -5,6 +5,7 @@
         "include": ["lib/complex.js",
                     "lib/matrix.js",
                     "lib/polynomial.js",
+                    "lib/subspace.js",
                     "lib/vector.js"]
     },
     "markdown": {

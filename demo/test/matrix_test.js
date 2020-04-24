@@ -228,9 +228,20 @@ describe('Matrix', () => {
     describe('#rows() and #cols()', () => {
         let M = mat([1,2],[3,4]);
         it('should iterate over the rows', () =>
-           [...M.rows()].should.eql([vec(1,2),vec(3,4)]));
+           Array.from(M.rows()).should.eql([vec(1,2),vec(3,4)]));
         it('should iterate over the columns', () =>
-           [...M.cols()].should.eql([vec(1,3),vec(2,4)]));
+           Array.from(M.cols()).should.eql([vec(1,3),vec(2,4)]));
+    });
+    describe('#diag()', () => {
+        it('should iterate over diagonal entries of square matrices', () =>
+           Array.from(mat([1, 2, 3], [4, 5, 6], [7, 8, 9]).diag())
+                   .should.eql([1, 5 ,9]));
+        it('should iterate over diagonal entries of tall matrices', () =>
+           Array.from(mat([1, 2], [4, 5], [7, 8]).diag())
+                   .should.eql([1, 5]));
+        it('should iterate over diagonal entries of wide matrices', () =>
+           Array.from(mat([1, 2, 3], [4, 5, 6]).diag())
+                   .should.eql([1, 5]));
     });
     describe('#leadingEntries()', () => {
         it('should compute leading entries', () =>
@@ -693,7 +704,7 @@ describe('Matrix', () => {
         let bs = [[1, 0, 0, 0],
                   [0, 1, 0, 0],
                   [0, 0, 1, 0],
-                  [0, 0, 0, 1]].map(x => Vector.create(...x));
+                  [0, 0, 0, 1]].map(x => Vector.from(x));
         let CS = A.colSpace();
         it('should project onto the column space', () => {
             for(let b of bs)

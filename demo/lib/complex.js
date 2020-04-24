@@ -119,11 +119,15 @@ class Complex extends Vector {
     get arg() { return Math.atan2(this.Im, this.Re); }
 
     /**
-     * @param {number} a - The real part.
+     * @param {number} a - The real part.  If `a` is a Complex number, then this
+     *   method clones `a`.
      * @param {number} [b=0] - The imaginary part.
      */
     constructor(a, b=0) {
-        super(a, b);
+        if(a instanceof Complex)
+            super(a.Re, a.Im);
+        else
+            super(a, b);
     }
 
     /**
