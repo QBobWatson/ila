@@ -19,9 +19,6 @@ import { range } from "./util.js";
 //  * pseudo-inverse
 //  * cholesky
 //  * PCA?
-//  * isSymmetric
-//  * Matrix.diagonal
-//  * adjugate
 
 /**
  * @summary
@@ -41,7 +38,6 @@ import { range } from "./util.js";
  *   // "[1 2]
  *   //  [3 4]
  *   //  [5 6]"
- *
  *
  * @extends Array
  */
@@ -117,6 +113,47 @@ class Matrix extends Array {
 
     /**
      * @summary
+     * Create a diagonal matrix with specified diagonal entries.
+     *
+     * @desc
+     * A diagonal matrix has nonzero entries only along the main diagonal.  This
+     * method creates a `d`x`d` diagonal matrix with diagonal entries equal to
+     * `entries`, where `d = entries.length`.  If `m` is specified, then it
+     * creates an `m`x`d` matrix, and if `m` and `n` are both specified, then it
+     * creates an `m`x`n` matrix.
+     *
+     * @example {@lang javascript}
+     * Matrix.diagonal([1, 2, 3]).toString(0);
+     *  // "[1 0 0]
+     *  //  [0 2 0]
+     *  //  [0 0 3]"
+     * Matrix.diagonal([1, 2, 3], 4).toString(0);
+     *  // "[1 0 0]
+     *  //  [0 2 0]
+     *  //  [0 0 3]
+     *  //  [0 0 0]"
+     * Matrix.diagonal([1, 2, 3], 3, 4).toString(0);
+     *  // "[1 0 0 0]
+     *  //  [0 2 0 0]
+     *  //  [0 0 3 0]"
+     *
+     * @param {number[]} entries - The diagonal entries of the resulting Matrix.
+     * @param {integer} [m=entries.length] - The resulting Matrix will have this
+     *   many rows.
+     * @param {integer} [n=entries.length] - The resulting Matrix will have this
+     *   many columns.
+     * @return {Matrix} The `m`x`n` diagonal matrix with `entries` along the
+     *   main diagonal.
+     */
+    static diagonal(entries, m=entries.length, n=entries.length) {
+        let ret = Matrix.zero(m, n);
+        for(let i = 0; i < Math.min(m, n, entries.length); ++i)
+            ret[i][i] = entries[i];
+        return ret;
+    }
+
+    /**
+     * @summary
      * Create a permutation Matrix.
      *
      * @desc
@@ -127,6 +164,7 @@ class Matrix extends Array {
      * Matrix.permutation([1, 0]).toString(0);
      *   // "[0 1]
      *   //  [1 0]"
+     *
      * @example {@lang javascript}
      * Matrix.permutation([2, 0, 1]).toString(0);
      *   // "[0 0 1]
@@ -152,6 +190,7 @@ class Matrix extends Array {
      * @property {PLUData} PLU - PLU factorization; computed in `PLU()`.
      * @property {Matrix} rref - Reduced row echelon form.
      * @property {Matrix} E - Matrix such that `E*this = rref`.
+     * @property {Matrix} adjugate - Transpose matrix of cofactors.
      * @property {Vector[]} nullBasis - Basis for the null space.
      * @property {Subspace} nullSpace - The null space.
      * @property {Vector[]} colBasis - Basis for the column space.
@@ -253,6 +292,26 @@ class Matrix extends Array {
         return acc;
     }
 
+    _fadeev_leverrier() {
+        let n = this.n;
+        let ret = Polynomial.create(1);
+        let AM = Matrix.zero(n), adjugate;
+        let c = 1;
+        for(let k = 1; k <= n; ++k) {
+            for(let i = 0; i < n; ++i)
+                AM[i][i] += c;
+            if(k == n) adjugate = AM;
+            AM = this.mult(AM);
+            c = -AM.trace/k;
+            ret.push(c);
+        }
+        // This is det(λI - A); multiply by (-1)^n now
+        if(n % 2 === 1) ret.scale(-1);
+        if(n % 2 === 0) adjugate.scale(-1);
+        this._cache.charpoly = ret;
+        this._cache.adjugate = adjugate;
+    }
+
     /**
      * @summary
      * The characteristic polynomial of the matrix.
@@ -266,12 +325,12 @@ class Matrix extends Array {
      * This only makes sense for square matrices.  Throws an error if the matrix
      * is not square.
      *
-     * This algorithm uses a recursive formula for the characteristic polynomial
-     * in terms of traces of powers of the matrix that can be found in:
-     * > R. R. Silva, J. Math. Phys. 39, 6206-6213 (1998)
-     *
+     * This method implements the
+     * [Fadeev&ndash;LeVerrier algorithm]{@link
+     * https://en.wikipedia.org/wiki/Faddeev-LeVerrier_algorithm}.
      * This is not the most efficient algorithm: it runs in approximately
-     * `O(n^4)` time.
+     * `O(n^4)` time.  However, it has the advantage that it computes the
+     * [adjugate matrix]{@link Matrix#adjugate} at the same time.
      *
      * @example {@lang javascript}
      * Matrix.create([1, 6,4],
@@ -282,51 +341,62 @@ class Matrix extends Array {
      * @throws Will throw an error if the matrix is not square.
      */
     get charpoly() {
-        if(this._cache.charpoly) return this._cache.charpoly;
         if(!this.isSquare())
             throw new Error("Tried to compute the characteristic polynomial of a non-square matrix");
-        let n = this.n;
-        let ret = new Array(n);
-        let traces = new Array(n);
-        let power = this;
-        for(let i = 0; i < n; ++i) {
-            traces[i] = power.trace;
-            power = power.mult(this);
-            ret[i] = traces[i];
-            for(let j = 0; j < i; ++j)
-                ret[i] += ret[j] * traces[i-j-1];
-            ret[i] = -ret[i]/(i+1);
-        }
-        ret = Polynomial.create(1, ...ret);
-        // This is det(λI - A); multiply by (-1)^n now
-        if(n % 2 == 1)
-            ret.scale(-1);
-        this._cache.charpoly = ret;
+        if(this._cache.charpoly) return this._cache.charpoly;
+        this._fadeev_leverrier();
         return this._cache.charpoly;
     }
 
     /**
      * @summary
-     * The matrix determinant.
+     * The adjugate matrix of the matrix.
      *
      * @desc
+     * The adjugate matrix of `A` is the matrix `B` whose `(i, j)` entry is the
+     * `(j, i)` cofactor of `A`.  It has the property that
+     * > `AB = BA = det(A) I`
+     *
+     * In particular, if `A` is invertible then `B = det(A) A^(-1)`.
+     *
+     * This method uses the
+     * [Fadeev&ndash;LeVerrier algorithm]{@link
+     * https://en.wikipedia.org/wiki/Faddeev-LeVerrier_algorithm},
+     * which computes the [characteristic polynomial]{@link Matrix#charpoly} at
+     * the same time.  It runs in about `O(n^4)` time, which is much better than
+     * computing `n^2` determinants.
+     *
      * This only makes sense for square matrices.  Throws an error if the matrix
      * is not square.
      *
-     * This implementation computes the whole characteristic polynomial and
-     * returns the constant coefficient, which is not the most efficient
-     * algorithm: it runs in approximately `O(n^4)` time.
-     *
      * @example {@lang javascript}
-     * Matrix.create([1, 6,4],
-     *               [2,-1,3],
-     *               [5, 0,1]).det;  // 97
+     * let A = Matrix.create([1, 6,4],
+     *                       [2,-1,3],
+     *                       [5, 0,1]);
+     * let B = A.adjugate;
+     * B.toString(0);
+     *   // "[-1  -6  22]
+     *   //  [13 -19   5]
+     *   //  [ 5  30 -13]"
+     * A.mult(B).toString(0);
+     *   // "[97  0  0]
+     *   //  [ 0 97  0]
+     *   //  [ 0  0 97]"
+     * B.mult(A).toString(0);
+     *   // "[97  0  0]
+     *   //  [ 0 97  0]
+     *   //  [ 0  0 97]"
+     * A.det();  // 97
      *
-     * @type {number}
+     * @type {Matrix}
      * @throws Will throw an error if the matrix is not square.
+     * @see Matrix#charpoly
      */
-    get det() {
-        return this.charpoly[this.n];
+    get adjugate() {
+        if(!this.isSquare())
+            throw new Error("Tried to compute the adjugate of a non-square matrix");
+        this._fadeev_leverrier(); // Computes the adjugate
+        return this._cache.adjugate;
     }
 
 
@@ -379,12 +449,12 @@ class Matrix extends Array {
      * entries are equal.
      *
      * @example {@lang javascript}
-     * let M = Matrix.zero(2, 3);
-     * let N = Matrix.create([0, 0,  0.01],
+     * let A = Matrix.zero(2, 3);
+     * let B = Matrix.create([0, 0,  0.01],
      *                       [0, 0, -0.01]);
-     * M.equals(N);                 // false
-     * M.equals(N, 0.05);           // true
-     * M.equals(Matrix.zero(3, 2)); // false
+     * A.equals(B);                 // false
+     * A.equals(B, 0.05);           // true
+     * A.equals(Matrix.zero(3, 2)); // false
      *
      * @param {Matrix} other - The matrix to compare.
      * @param {number} [ε=0] - Entries will test as equal if they are within `ε`
@@ -451,8 +521,8 @@ class Matrix extends Array {
      * Return an iterable over the rows.
      *
      * @example {@lang javascript}
-     * let M = Matrix.create([1, 2], [3, 4], [5, 6]);
-     * Array.from(M.rows(), row => row.toString(0));
+     * let A = Matrix.create([1, 2], [3, 4], [5, 6]);
+     * Array.from(A.rows(), row => row.toString(0));
      *   // ["[1 2]", "[3 4]", "[5 6]"]
      *
      * @return {Iterable.<Vector>} An iterable over the rows.
@@ -480,11 +550,11 @@ class Matrix extends Array {
      * Return an iterable over the columns.
      *
      * @example {@lang javascript}
-     * let M = Matrix.create([1, 2], [3, 4], [5, 6]);
-     * Array.from(M.cols(), col => col.toString(0));
+     * let A = Matrix.create([1, 2], [3, 4], [5, 6]);
+     * Array.from(A.cols(), col => col.toString(0));
      *   // ["[1 3 5]", "[2 4 6]"]
      *
-     * @return {Iterable.<Vector>}
+     * @return {Iterable.<Vector>} An iterable over the columns.
      */
     cols() {
         let self = this;
@@ -499,10 +569,10 @@ class Matrix extends Array {
      * Return an iterable over the diagonal entriese.
      *
      * @example {@lang javascript}
-     * let M = Matrix.create([1, 2], [3, 4], [5, 6]);
-     * Array.from(M.diag());  // [1, 4]
+     * let A = Matrix.create([1, 2], [3, 4], [5, 6]);
+     * Array.from(A.diag());  // [1, 4]
      *
-     * @return {Iterable.<number>}
+     * @return {Iterable.<number>} An iterable over the diagonal entries.
      */
     diag() {
         let self = this;
@@ -510,6 +580,59 @@ class Matrix extends Array {
             for(let j = 0; j < Math.min(self.m, self.n); ++j)
                 yield self[j][j];
         })();
+    }
+
+    /**
+     * @summary
+     * Return the `(i, j)` minor of the matrix.
+     *
+     * @desc
+     * The `(i, j)` minor of a matrix is the matrix obtained by deleting the
+     * `i`th row and the `j`th column.
+     *
+     * @example {@lang javascript}
+     * let A = Matrix.create([1, 2, 3],
+     *                       [4, 5, 6],
+     *                       [7, 8, 9]);
+     * A.minor(0, 1).toString(0);
+     *  // "[4 6]
+     *  //  [7 9]"
+     *
+     * @param {integer} i - The row to delete.
+     * @param {integer} j - The column to delete.
+     * @return {Matrix} The `(i, j)` minor.
+     * @see Matrix#cofactor
+     */
+    minor(i, j) {
+        let ret = this.clone();
+        ret.splice(i, 1);
+        ret.forEach(row => row.splice(j, 1));
+        return ret;
+    }
+
+    /**
+     * @summary
+     * Return the `(i, j)` cofactor of the matrix.
+     *
+     * @desc
+     * The `(i, j)` cofactor of a matrix is `(-1)^(i+j)` times the determinant
+     * of the `(i, j)` minor.  This only makes sense for square matrices.
+     *
+     * @example {@lang javascript}
+     * let A = Matrix.create([1, 2, 3],
+     *                       [4, 5, 6],
+     *                       [7, 8, 9]);
+     * A.cofactor(0, 1);  // 6
+     *
+     * @param {integer} i - The row.
+     * @param {integer} j - The column.
+     * @return {number} The `(i, j)` cofactor.
+     * @throws Will throw an error if the matrix is not square.
+     * @see Matrix#minor
+     * @see Matrix#adjugate
+     */
+    cofactor(i, j) {
+        return this.minor(i, j).det() * ((i + j) % 2 === 0 ? 1 : -1);
     }
 
     /**
@@ -554,10 +677,10 @@ class Matrix extends Array {
 
     /**
      * @summary
-     * Whether the matrix is square.
+     * Test whether the matrix is square.
      *
      * @desc
-     * This means it has the same number of rows as columns.
+     * A square matrix has the same number of rows as columns.
      *
      * @example {@lang javascript}
      * Matrix.create([1, 2], [3, 4]).isSquare();          // true
@@ -571,7 +694,10 @@ class Matrix extends Array {
 
     /**
      * @summary
-     * Whether the matrix is zero.
+     * Test whether the matrix is zero.
+     *
+     * @desc
+     * All entries of the zero matrix are equal to zero.
      *
      * @example {@lang javascript}
      * Matrix.create([0, 0], [0, 0]).isZero();        // true
@@ -588,10 +714,11 @@ class Matrix extends Array {
 
     /**
      * @summary
-     * Whether the matrix is upper-triangular.
+     * Test whether the matrix is upper-triangular.
      *
      * @desc
-     * This means that all entries below the main diagonal are equal to zero.
+     * A matrix is upper-triangular if all entries below the main diagonal are
+     * equal to zero.
      *
      * @example {@lang javascript}
      * Matrix.create([1, 1, 1],
@@ -620,7 +747,7 @@ class Matrix extends Array {
 
     /**
      * @summary
-     * Whether the matrix is upper-triangular with ones on the diagonal.
+     * Test whether the matrix is upper-triangular with ones on the diagonal.
      *
      * @desc
      * For square matrices, this means that the matrix is "unipotent": some
@@ -654,11 +781,11 @@ class Matrix extends Array {
 
     /**
      * @summary
-     * Whether the matrix is lower-triangular.
+     * Test whether the matrix is lower-triangular.
      *
      * @desc
-     * This means that all entries above the main diagonal are equal to zero.
-     * Equivalently, `this.transpose` is upper-triangular.
+     * A matrix is lower-triangular if all entries above the main diagonal are
+     * equal to zero.  Equivalently, `this.transpose` is upper-triangular.
      *
      * @example {@lang javascript}
      * Matrix.create([1, 0, 0],
@@ -687,7 +814,7 @@ class Matrix extends Array {
 
     /**
      * @summary
-     * Whether the matrix is lower-triangular with ones on the diagonal.
+     * Test whether the matrix is lower-triangular with ones on the diagonal.
      *
      * @desc
      * For square matrices, this means that the matrix is "unipotent": some
@@ -723,10 +850,10 @@ class Matrix extends Array {
 
     /**
      * @summary
-     * Whether the matrix is diagonal.
+     * Test whether the matrix is diagonal.
      *
      * @desc
-     * This means that the only nonzero entries of the matrix are on the
+     * A matrix is diagonal if the only nonzero entries of the matrix are on the
      * diagonal.  Equivalently, the matrix is both upper- and lower-triangular.
      *
      * @example {@lang javascript}
@@ -753,12 +880,13 @@ class Matrix extends Array {
 
     /**
      * @summary
-     * Whether the matrix is in row-echelon form.
+     * Test whether the matrix is in row-echelon form.
      *
      * @desc
-     * This means that the first nonzero entry of each row is to the right of
-     * the first nonzero entry of the previous row, which implies that all
-     * entries below a pivot are zero and all zero rows are at the bottom.
+     * A matrix is in row-echelon form if the first nonzero entry of each row is
+     * to the right of the first nonzero entry of the previous row, which
+     * implies that all entries below a pivot are zero and all zero rows are at
+     * the bottom.
      *
      * @example {@lang javascript}
      * Matrix.create([1,  0,  2],
@@ -803,11 +931,12 @@ class Matrix extends Array {
 
     /**
      * @summary
-     * Whether the matrix is in reduced row-echelon form.
+     * Test whether the matrix is in reduced row-echelon form.
      *
      * @desc
-     * This means that it is in row-echelon form, and in addition, all pivots
-     * are equal to one, and all entries above a pivot are equal to zero.
+     * A matrix is in reduced row-echelon form if it is in row-echelon form, and
+     * in addition, all pivots are equal to one, and all entries above a pivot
+     * are equal to zero.
      *
      * @example {@lang javascript}
      * Matrix.create([1,  0,  2],
@@ -861,7 +990,7 @@ class Matrix extends Array {
      * Test whether the matrix has full row rank.
      *
      * @desc
-     * This means that the following equivalent conditions hold:
+     * A matrix has full row rank if the following equivalent conditions hold:
      *  * There is a pivot in every row.
      *  * The number of pivots equals `m`.
      *  * The column space has dimension `m`.
@@ -894,7 +1023,7 @@ class Matrix extends Array {
      * Test whether the matrix has full column rank.
      *
      * @desc
-     * This means that the following equivalent conditions hold:
+     * A matrix has full column rank if the following equivalent conditions hold:
      *  * There is a pivot in every column.
      *  * The number of pivots equals `n`.
      *  * The null space is zero.
@@ -928,7 +1057,7 @@ class Matrix extends Array {
      * Test whether the matrix is invertible.
      *
      * @desc
-     * This means that the following equivalent conditions hold:
+     * A matrix is invertible if the following equivalent conditions hold:
      *  * The matrix is square and has the maximum number of pivots.
      *  * The matrix has full row rank and full column rank.
      *  * There is another matrix (namely, the inverse) such that the product
@@ -977,7 +1106,7 @@ class Matrix extends Array {
      * Test if the matrix is orthogonal.
      *
      * @desc
-     * This means that the matrix is square and has orthonormal columns.
+     * A matrix is orthogonal if it is square and has orthonormal columns.
      * Equivalently `A` is square and `A^TA` is the identity matrix.
      *
      * @example {@lang javascript}
@@ -1002,12 +1131,39 @@ class Matrix extends Array {
 
     /**
      * @summary
+     * Test if the matrix is symmetric.
+     *
+     * @desc
+     * A matrix is symmetric if it is equal to its transpose.  This method is a
+     * shortcut for `this.equals(this.transpose, ε)`.
+     *
+     * @example {@lang javascript}
+     * Matrix.create([1, 2, 3],
+     *               [2, 4, 5],
+     *               [3, 5, 6]).isSymmetric();  // true
+     * Matrix.create([1, 2, 3],
+     *               [4, 5, 6],
+     *               [7, 8, 9]).isSymmetric();  // false
+     * Matrix.create([1, 2, 3],
+     *               [2, 4, 5]).isSymmetric();  // false
+     *
+     * @param {number} [ε=1e-10] - Entries will test as equal if they are within
+     *   `ε` of each other.
+     * @return {boolean} True if the matrix is symmetric.
+     */
+    isSymmetric(ε=1e-10) {
+        return this.equals(this.transpose, ε);
+    }
+
+    /**
+     * @summary
      * Test if the matrix is diagonalizable.
      *
      * @desc
-     * This means that the matrix is square, and there exists an invertible
-     * matrix `C` such that `CAC^(-1)` is diagonal.  Equivalently, the matrix
-     * admits `n` linearly independent eigenvectors (the columns of `C`).
+     * A matrix is diagonalizable if it is square and there exists an
+     * invertible matrix `C` such that `CAC^(-1)` is diagonal.  Equivalently,
+     * the matrix admits `n` linearly independent eigenvectors (the columns of
+     * `C`).
      *
      * @example {@lang javascript}
      * Matrix.create([11/13, 22/39,  2/39],
@@ -1037,10 +1193,10 @@ class Matrix extends Array {
      * This modifies the matrix in-place by adding the entries of `other`.
      *
      * @example {@lang javascript}
-     * let M = Matrix.create([1, 2], [3, 4]);
-     * let N = Matrix.create([2, 1], [4, 3]);
-     * M.add(N);
-     * M.toString(0);
+     * let A = Matrix.create([1, 2], [3, 4]);
+     * let B = Matrix.create([2, 1], [4, 3]);
+     * A.add(B);
+     * A.toString(0);
      *   // "[3 3]
      *   //  [7 7]"
      *
@@ -1065,10 +1221,10 @@ class Matrix extends Array {
      * This modifies the matrix in-place by subtracting the entries of `other`.
      *
      * @example {@lang javascript}
-     * let M = Matrix.create([1, 2], [3, 4]);
-     * let N = Matrix.create([2, 1], [4, 3]);
-     * M.sub(N);
-     * M.toString(0);
+     * let A = Matrix.create([1, 2], [3, 4]);
+     * let B = Matrix.create([2, 1], [4, 3]);
+     * A.sub(B);
+     * A.toString(0);
      *   // "[-1 1]
      *   //  [-1 1]"
      *
@@ -1088,9 +1244,9 @@ class Matrix extends Array {
      * This modifies the matrix in-place by multiplying all entries by `c`.
      *
      * @example {@lang javascript}
-     * let M = Matrix.create([1, 2], [3, 4]);
-     * M.scale(2);
-     * M.toString(0);
+     * let A = Matrix.create([1, 2], [3, 4]);
+     * A.scale(2);
+     * A.toString(0);
      *   // "[2 4]
      *   //  [6 8]"
      *
@@ -1118,9 +1274,9 @@ class Matrix extends Array {
      * on Wikipedia.
      *
      * @example {@lang javascript}
-     * let M = Matrix.create([1, 2], [3, 4], [5, 6]);
-     * let N = Matrix.create([1, 2, 3], [4, 5, 6]);
-     * M.mult(N).toString(0);
+     * let A = Matrix.create([1, 2], [3, 4], [5, 6]);
+     * let B = Matrix.create([1, 2, 3], [4, 5, 6]);
+     * A.mult(B).toString(0);
      *   // "[ 9 12 15]
      *   //  [19 26 33]
      *   //  [29 40 51]"
@@ -1151,8 +1307,8 @@ class Matrix extends Array {
      * This is an optimized special case of {@link Matrix#mult}.
      *
      * @example {@lang javascript}
-     * let M = Matrix.create([1, 2, 3], [4, 5, 6]);
-     * M.apply(Vector.create(1, -1, 1)).toString(0); // "[2 5]"
+     * let A = Matrix.create([1, 2, 3], [4, 5, 6]);
+     * B.apply(Vector.create(1, -1, 1)).toString(0); // "[2 5]"
      *
      * @param {Vector|number[]} v - The vector to multiply.  An array of numbers
      *   is promoted to a vector.
@@ -1228,11 +1384,11 @@ class Matrix extends Array {
      * by the scalar `c`.  This is one of the three fundamental row operations.
      *
      * @example {@lang javascript}
-     * let M = Matrix.create([1, 2, 3],
+     * let A = Matrix.create([1, 2, 3],
      *                       [4, 5, 6],
      *                       [7, 8, 9]);
-     * M.rowScale(1, 2);
-     * M.toString(0);
+     * A.rowScale(1, 2);
+     * A.toString(0);
      *   // "[1  2  3]
      *   //  [8 10 12]
      *   //  [7  8  9]"
@@ -1258,11 +1414,11 @@ class Matrix extends Array {
      * to row `i1`.  This is one of the three fundamental row operations.
      *
      * @example {@lang javascript}
-     * let M = Matrix.create([1, 2, 3],
+     * let A = Matrix.create([1, 2, 3],
      *                       [4, 5, 6],
      *                       [7, 8, 9]);
-     * M.rowReplace(1, 2, -1);
-     * M.toString(0);
+     * A.rowReplace(1, 2, -1);
+     * A.toString(0);
      *   // "[ 1  2  3]
      *   //  [-3 -3 -3]
      *   //  [ 7  8  9]"
@@ -1289,11 +1445,11 @@ class Matrix extends Array {
      * row operations.
      *
      * @example {@lang javascript}
-     * let M = Matrix.create([1, 2, 3],
+     * let A = Matrix.create([1, 2, 3],
      *                       [4, 5, 6],
      *                       [7, 8, 9]);
-     * M.rowSwap(0, 1);
-     * M.toString(0);
+     * A.rowSwap(0, 1);
+     * A.toString(0);
      *   // "[4 5 6]
      *   //  [1 2 3]
      *   //  [7 8 9]"
@@ -1321,8 +1477,6 @@ class Matrix extends Array {
      * @typedef PLUData
      * @type {Object}
      * @property {number[]} P - A permutation of the numbers `1...m-1`.
-     * @property {number} signP - The sign of the permutation P.  This is the
-     *   determinant of the permutation matrix associated to `P`, as generated
      *   by {@link Matrix.permutation}.
      * @property {Matrix} L - An `m`x`m` lower-triangular matrix with ones on
      *   the diagonal.
@@ -1330,6 +1484,8 @@ class Matrix extends Array {
      * @property {Matrix} E - An `m`x`m` invertible matrix equal to `L^(-1)P`,
      *   so `EA = U`.
      * @property {Pivot[]} pivots - An array of pivot positions.
+     * @property {number} det - The determinant of the matrix (only set for
+     *   square matrices).
      *
      * @see Matrix#PLU
      */
@@ -1360,15 +1516,14 @@ class Matrix extends Array {
      *                       [-1, -2, -1,  3,  1],
      *                       [-2, -3,  0,  3, -1],
      *                       [ 1,  4,  5, -9, -7]);
-     * let {P, signP, L, U, E, pivots} = A.PLU();
-     * // P is [2, 0, 3, 1]
+     * let {P, L, U, E, pivots} = A.PLU();
+     * P;  // [2, 0, 3, 1]
      * // let PM = Matrix.permutation(P);
      * PM.toString(0);
      *   // "[0 0 1 0]
      *   //  [1 0 0 0]
      *   //  [0 0 0 1]
      *   //  [0 1 0 0]"
-     * PM.det;  // -1, the same as signP
      * L.toString();
      *   // "[ 1.0000  0.0000  0.0000 0.0000]
      *   //  [ 0.0000  1.0000  0.0000 0.0000]
@@ -1406,6 +1561,7 @@ class Matrix extends Array {
      * @see Matrix#isLowerUnip
      * @see Matrix.permutation
      * @see Matrix#rref
+     * @see Matrix#det
      */
     PLU(ε=1e-10) {
         if(this._cache.PLU) return this._cache.PLU;
@@ -1417,6 +1573,7 @@ class Matrix extends Array {
         let {m, n} = this;
         let pivots = [];
         let signP = 1;
+        let det = 1;
 
         for(let curRow = 0, curCol = 0; curRow < m && curCol < n; ++curCol) {
             // Find maximal pivot
@@ -1449,6 +1606,7 @@ class Matrix extends Array {
                     E.rowReplace(i, curRow, -l);
                 }
                 pivots.push([curRow, curCol]);
+                if(m === n) det *= pivot;
                 curRow++;
 
             } else {
@@ -1458,7 +1616,9 @@ class Matrix extends Array {
             }
         }
 
-        this._cache.PLU = {P, L, U, E, pivots, signP};
+        this._cache.PLU = {P, L, U, E, pivots};
+        if(m === n)
+            this._cache.PLU.det = pivots.length === n ? det * signP : 0;
         return this._cache.PLU;
     }
 
@@ -1559,6 +1719,51 @@ class Matrix extends Array {
      */
     nullity(ε=1e-10) {
         return this.n - this.rank(ε);
+    }
+
+    /**
+     * @summary
+     * Compute the matrix determinant.
+     *
+     * @desc
+     * The determinant is computed as a side-effect of {@link Matrix#PLU}: the
+     * determinant of `A` equals the determinant of `P` times the determinant of
+     * `U`.  Since `P` is a permutation matrix and `U` is upper-triangular, both
+     * quantities are easy to compute.
+     *
+     * The `PLU` decomposition does not use exact arithmetic: pivots smaller
+     * than `ε` are considered to be zero.  Also, computing the echelon form may
+     * involve dividing by large pivots.  Therefore, `this.det()` may fail to be
+     * an integer even when `this` has all integer entries.  On the other hand,
+     * the constant coefficient of the [characteristic polynomial]{@link
+     * Matrix#charpoly} is also equal to the determinant, is computed using
+     * exact arithmetic (but in `O(n^4)` time), and will always produce an
+     * integer determinant for matrices with integer entries.
+     *
+     * This only makes sense for square matrices.  Throws an error if the matrix
+     * is not square.
+     *
+     * @example {@lang javascript}
+     * Matrix.create([1, 6,4],
+     *               [2,-1,3],
+     *               [5, 0,1]).det();  // 97
+     *
+     * @example {@lang javascript}
+     * let A = Matrix.create([3, 4],
+     *                       [5, 6]);
+     * A.det();             // -2.0000000000000018
+     * A.charpoly.eval(0);  // -2
+     *
+     * @param {number} [ε=1e-10] - Entries smaller than this value are taken
+     *   to be zero for the purposes of pivoting.
+     * @return {number} The matrix determinant.
+     * @throws Will throw an error if the matrix is not square.
+     * @see Matrix#PLU
+     */
+    det(ε) {
+        if(!this.isSquare())
+            throw new Error("Tried to compute the determinant of a non-square matrix");
+        return this.PLU(ε).det;
     }
 
     /**

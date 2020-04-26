@@ -115,6 +115,24 @@ describe('Matrix', () => {
            Matrix.zero(2).equals(
                mat([0, 0], [0, 0])).should.be.true());
     });
+    describe('#diagonal()', () => {
+        it('should create a square diagonal matrix', () =>
+           Matrix.diagonal([1, 2, 3]).equals(
+               mat([1,0,0],[0,2,0],[0,0,3])).should.be.true());
+        it('should create a tall diagonal matrix', () =>
+           Matrix.diagonal([1, 2, 3], 4).equals(
+               mat([1,0,0],[0,2,0],[0,0,3],[0,0,0])).should.be.true());
+        it('should create a wide diagonal matrix', () =>
+           Matrix.diagonal([1, 2, 3], 3, 4).equals(
+               mat([1,0,0,0],[0,2,0,0],[0,0,3,0])).should.be.true());
+        it('should create a big diagonal matrix', () =>
+           Matrix.diagonal([1, 2, 3], 4, 5).equals(
+               mat([1,0,0,0,0],[0,2,0,0,0],[0,0,3,0,0],[0,0,0,0,0]))
+                   .should.be.true());
+        it('should create a small diagonal matrix', () =>
+           Matrix.diagonal([1, 2, 3, 4], 2, 3).equals(
+               mat([1,0,0],[0,2,0])).should.be.true());
+    });
     describe('#permutation()', () =>
              it('should create a 3x3 permutation matrix', () =>
                 Matrix.permutation([2, 0, 1]).equals(
@@ -160,25 +178,48 @@ describe('Matrix', () => {
     });
     describe('#det', () => {
         it('should compute the determinant (1x1)', () =>
-           Matrix.identity(1, 3).det.should.equal(3));
+           Matrix.identity(1, 3).det().should.equal(3));
         it('should compute the determinant (2x2)', () =>
-           mat([3, 4], [5, 6]).det.should.equal(-2));
+           mat([3, 4], [5, 6]).det().should.be.approximately(-2, 1e-10));
         it('should compute the determinant (3x3#1)', () =>
            mat([0,  1, 2],
                [1,  0, 3],
-               [4, -3, 8]).det.should.equal(-2));
+               [4, -3, 8]).det().should.be.approximately(-2, 1e-10));
         it('should compute the determinant (3x3#2)', () =>
            mat([ 1, -2, -1],
                [-1,  5,  6],
-               [ 5, -4,  5]).det.should.equal(0));
+               [ 5, -4,  5]).det().should.equal(0));
         it('should compute the determinant (4x4)', () =>
            mat([ 1,  7,  4, 2],
                [ 3, 11,  9, 5],
                [-2, -3,  3, 3],
-               [ 7,  8, -8, 9]).det.should.equal(-1329));
+               [ 7,  8, -8, 9]).det().should.be.approximately(-1329, 1e-10));
         it('should throw for non-square matrices', () => {
             let M = mat([1,2,3],[4,5,6]);
-            (() => M.det).should.throw(/non-square/);
+            (() => M.det()).should.throw(/non-square/);
+        });
+    });
+    describe('#cofactor', () => {
+        let testMats = [
+            mat([3, 4],
+                [5, 6]),
+            mat([0,  1, 2],
+                [1,  0, 3],
+                [4, -3, 8]),
+            mat([ 1,  7,  4, 2],
+                [ 3, 11,  9, 5],
+                [-2, -3,  3, 3],
+                [ 7,  8, -8, 9])
+        ];
+        it('should compute cofactors', () => {
+            for(let M of testMats) {
+                for(let i = 0; i < M.n; ++i) {
+                    for(let j = 0; j < M.n; ++j) {
+                        M.adjugate[i][j].should.be.approximately(
+                            M.cofactor(j, i), 1e-10);
+                    }
+                }
+            }
         });
     });
 
@@ -355,6 +396,14 @@ describe('Matrix', () => {
            mat([1/Math.sqrt(2)],[1/Math.sqrt(2)]).isOrthogonal()
                    .should.be.false());
     });
+    describe('#isSymmetric()', () => {
+        it('detects symmetric matrices', () =>
+           mat([1,2,3],[2,4,5],[3,5,6]).isSymmetric().should.be.true());
+        it('detects non-symmetric square matrices', () =>
+           mat([1,2,3],[4,5,6],[7,8,9]).isSymmetric().should.be.false());
+        it('detects non-symmetric non-square matrices', () =>
+           mat([1,2,3],[2,4,5]).isSymmetric().should.be.false());
+    });
 
     describe('#add() and #sub()', () => {
         it('should add componentwise', () =>
@@ -406,7 +455,7 @@ describe('Matrix', () => {
                 .should.throw(/incompatible dimensions/);
         });
     });
-    describe('#inverse()', () => {
+    describe('#inverse(), #adjugate', () => {
         let testMats = [
             mat([3, 4],
                 [5, 6]),
@@ -423,6 +472,12 @@ describe('Matrix', () => {
                 M.mult(M.inverse()).equals(Matrix.identity(M.n), 1e-10)
                     .should.be.true();
                 M.isInvertible().should.be.true();
+            }
+        });
+        it('should compute the adjugate', () => {
+            for(let M of testMats) {
+                M.inverse().scale(M.det()).equals(M.adjugate, 1e-10)
+                    .should.be.true();
             }
         });
         it('should throw for non-square matrices', () => {
