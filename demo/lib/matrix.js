@@ -15,10 +15,10 @@ import Polynomial from "./polynomial.js";
 import { range } from "./util.js";
 
 // TODO:
-//  * SVD
 //  * pseudo-inverse
-//  * cholesky
+//  * cholesky / LDL
 //  * PCA?
+//  * Cache/hint isSymmetric, isPosDef, etc.
 
 /**
  * @summary
@@ -718,7 +718,7 @@ class Matrix extends Array {
      *
      * @desc
      * A matrix is upper-triangular if all entries below the main diagonal are
-     * equal to zero.
+     * equal to zero.  Equivalently, `this.transpose` is lower-triangular.
      *
      * @example {@lang javascript}
      * Matrix.create([1, 1, 1],
@@ -734,6 +734,7 @@ class Matrix extends Array {
      * @param {number} [ε=0] - Entries smaller than this value are assumed
      *   to be zero.
      * @return {boolean} True if the matrix is upper-triangular.
+     * @see Matrix#isLowerTri
      */
     isUpperTri(ε=0) {
         for(let i = 1; i < this.m; ++i) {
@@ -747,31 +748,32 @@ class Matrix extends Array {
 
     /**
      * @summary
-     * Test whether the matrix is upper-triangular with ones on the diagonal.
+     * Test whether the matrix is upper-unitriangular.
      *
      * @desc
-     * For square matrices, this means that the matrix is "unipotent": some
-     * power of (`this` minus the identity) is the zero matrix.
+     * An upper-unitriangular matrix is an upper-triangular matrix with ones on
+     * the diagonal.  Equivalently, `this.transpose` is lower-unitriangular.
      *
      * @example {@lang javascript}
      * Matrix.create([1, 2, 1],
      *               [0, 1, 1],
-     *               [0, 0, 1]).isUpperUnip(); // true
+     *               [0, 0, 1]).isUpperUni(); // true
      * Matrix.create([1, 3],
      *               [0, 1],
-     *               [0, 0]).isUpperUnip();    // true
+     *               [0, 0]).isUpperUni();    // true
      * Matrix.create([1, 1, 1],
      *               [0, 1, 1],
-     *               [0, 2, 1]).isUpperUnip(); // false
+     *               [0, 2, 1]).isUpperUni(); // false
      * Matrix.create([1, 1, 1],
      *               [0, 1, 1],
-     *               [0, 0, 2]).isUpperUnip(); // false
+     *               [0, 0, 2]).isUpperUni(); // false
      *
      * @param {number} [ε=0] - Entries smaller than this value are assumed
      *   to be zero.
      * @return {boolean} True if the matrix is upper-unipotent.
+     * @see Matrix#isLowerUni
      */
-    isUpperUnip(ε=0) {
+    isUpperUni(ε=0) {
         for(let d of this.diag()) {
             if(Math.abs(d - 1) > ε)
                 return false;
@@ -814,33 +816,32 @@ class Matrix extends Array {
 
     /**
      * @summary
-     * Test whether the matrix is lower-triangular with ones on the diagonal.
+     * Test whether the matrix is lower-unitriangular.
      *
      * @desc
-     * For square matrices, this means that the matrix is "unipotent": some
-     * power of (`this` minus the identity) is the zero matrix.
-     *
-     * Equivalently, `this.transpose` is upper-unipotent.
+     * A lower-unitriangular matrix is a lower-triangular matrix with ones on
+     * the diagonal.  Equivalently, `this.transpose` is upper-unitriangular.
      *
      * @example {@lang javascript}
      * Matrix.create([1, 0, 0],
      *               [2, 1, 0],
-     *               [1, 1, 1]).isLowerUnip(); // true
+     *               [1, 1, 1]).isLowerUni(); // true
      * Matrix.create([1, 0],
      *               [2, 1],
-     *               [3, 3]).isLowerUnip();    // true
+     *               [3, 3]).isLowerUni();    // true
      * Matrix.create([1, 0, 0],
      *               [1, 1, 2],
-     *               [1, 1, 1]).isLowerUnip(); // false
+     *               [1, 1, 1]).isLowerUni(); // false
      * Matrix.create([1, 0, 0],
      *               [1, 1, 0],
-     *               [1, 1, 2]).isLowerUnip(); // false
+     *               [1, 1, 2]).isLowerUni(); // false
      *
      * @param {number} [ε=0] - Entries smaller than this value are assumed
      *   to be zero.
      * @return {boolean} True if the matrix is lower-unipotent.
+     * @see Matrix#isUpperUni
      */
-    isLowerUnip(ε=0) {
+    isLowerUni(ε=0) {
         for(let d of this.diag()) {
             if(Math.abs(d - 1) > ε)
                 return false;
@@ -1529,7 +1530,7 @@ class Matrix extends Array {
      *   //  [ 0.0000  1.0000  0.0000 0.0000]
      *   //  [-0.5000 -0.8333  1.0000 0.0000]
      *   //  [ 0.5000  0.1667 -0.2000 1.0000]"
-     * L.isLowerUnip();  // true
+     * L.isLowerUni();  // true
      * U.toString();
      *   // "[-2.0000 -3.0000  0.0000  3.0000 -1.0000]
      *   //  [ 0.0000 -3.0000 -6.0000  4.0000  9.0000]
@@ -1558,7 +1559,7 @@ class Matrix extends Array {
      * @return {PLUData} The `PA=LU` factorization, along with other data
      *   computed at the same time.
      * @see Matrix#isEchelon
-     * @see Matrix#isLowerUnip
+     * @see Matrix#isLowerUni
      * @see Matrix.permutation
      * @see Matrix#rref
      * @see Matrix#det
@@ -2841,6 +2842,10 @@ class Matrix extends Array {
      * eigenvectors.  If all eigenvalues are real, then diagonalization is the
      * same as block diagonalization.
      *
+     * If `opts.ortho` is truthy, compute orthonormal eigenbases for all real
+     * eigenvalues.  Then if (and only if) `A` is symmetric, the matrix `C` will
+     * be orthogonal, thus resulting in an orthogonal decomposition `A = CDC^T`.
+     *
      * This is only implemented for matrices up to 4x4, unless the eigenvalues
      * have been [hinted]{@link Matrix#hintEigenvalues}.
      *
@@ -2892,6 +2897,19 @@ class Matrix extends Array {
      *   //  [22.0  33.0 -23.0]
      *   //  [19.0  14.0  50.0]"
      *
+     * @example {@lang javascript}
+     * let A = Matrix.create([-1,  5,  4],
+     *                       [ 5, -2,  3],
+     *                       [ 4,  3, -9]);
+     * A.isSymmetric();  // true
+     * let {C, D} = A.diagonalize({ortho: true});
+     * C.toString();
+     *   // "[-0.3105  0.6337 0.7085]
+     *   //  [-0.1442 -0.7681 0.6239]
+     *   //  [ 0.9396  0.0916 0.3299]"
+     * C.isOrthogonal();  // true
+     * C.mult(D).mult(C.transpose).equals(A, 1e-10);  // true
+     *
      * @param {Object} [opts={}] - Options.
      * @param {boolean} [opts.block=false] - Perform block diagonalization.
      * @param {boolean} [opts.ortho=false] - Use orthonormal bases for real
@@ -2939,6 +2957,7 @@ class Matrix extends Array {
     }
 
     /**
+     * @summary
      * Singular value decomposition data.
      *
      * @typedef SVDData
@@ -2948,23 +2967,104 @@ class Matrix extends Array {
      * @property {number[]} Σ - The singular values.
      */
 
-
     /**
+     * @summary
      * Singular Value decomposition.
      *
+     * @desc
      * This computes an orthogonal `m`x`m` matrix `U`, an orthogonal `n`x`n`
-     * matrix `V`, and a diagonal `m`x`n` matrix `Σ`, such that
-     * `this = U Σ V^T`.  The diagonal entries of `Σ` are the singular values of
-     * the matrix.
+     * matrix `V`, and a diagonal `m`x`n` matrix `Σ`, such that `A = U Σ V^T`.
+     * The nonzero diagonal entries of `Σ` are the singular values of the
+     * matrix, in descending order.  The first `r = rank(A)` columns of `V` form
+     * an orthonormal basis for the row space of `A`, and the last `n-r` columns
+     * form an orthonormal basis for the null space.  The first `r` columns of
+     * `U` form an orthonormal basis for the column space of `A`, and the last
+     * `m-r` columns form an orthonormal basis for the left null space.
      *
      * Only the nonzero diagonal entries of the matrix `Σ` are returned.  Use
-     * {@link Matrix.diagonal} to turn it into a matrix.
+     * {@link Matrix.diagonal} to turn it into a matrix, as in
+     * `Matrix.diagonal(Σ, m, n)`.
      *
-     * @param {number} [ε=1e-10] - Rounding factor.
-     * @return {SVDData}
+     * This method will fail if `min(m, n) > 4`, as the eigenvalue computations
+     * have not been implemented for matrices larger that 4x4.  This method
+     * implements the naïve schoolbook algorithm for computing the SVD, which is
+     * rarely used in practice.
+     *
+     * @example {@lang javascript}
+     * let A = Matrix.create([ 0, -3, -6,  4,  9],
+     *                       [-1, -2, -1,  3,  1],
+     *                       [-2, -3,  0,  3, -1],
+     *                       [ 1,  4,  5, -9, -7]);
+     * let {U, V, Σ} = A.SVD();
+     * U.toString();
+     *   // "[-0.6428  0.5630 0.5194 -0.0000]
+     *   //  [-0.1951 -0.3367 0.1235  0.9129]
+     *   //  [-0.1224 -0.6974 0.6045 -0.3651]
+     *   //  [ 0.7306  0.2887 0.5912  0.1826]"
+     * U.isOrthogonal();  // true
+     * V.toString();
+     *   // "[ 0.0660  0.3409 -0.4064  0.0000  0.8452]
+     *   //  [ 0.3162  0.3765 -0.6874 -0.1690 -0.5071]
+     *   //  [ 0.4344 -0.2697 -0.1557  0.8452  0.0000]
+     *   //  [-0.5694 -0.5819 -0.5806  0.0000 -0.0000]
+     *   //  [-0.6186  0.5750  0.0304  0.5071 -0.1690]"
+     * V.isOrthogonal();  // true
+     * // The number of singular values is the rank.
+     * Σ;  //  [17.73589205992891, 5.925426481232183, 1.824130985994107]
+     * U.mult(Matrix.diagonal(Σ, 4, 5)).mult(V.transpose).equals(A, 1e-10);  // true
+     * let vi = Array.from(V.cols());
+     * new Subspace(vi.slice(0, 3)).equals(A.rowSpace());    // true
+     * new Subspace(vi.slice(3)).equals(A.nullSpace());      // true
+     * let ui = Array.from(U.cols());
+     * new Subspace(ui.slice(0, 3)).equals(A.colSpace());    // true
+     * new Subspace(ui.slice(3)).equals(A.leftNullSpace());  // true
+     *
+     * @param {number} [ε=1e-10] - Rounding factor used when computing
+     *   eigenvalues and eigenvectors of the normal matrix.
+     * @return {SVDData} The singular value decomposition.
+     * @throws Will throw an error if the `min(m, n) > 4`, or if the eigenvalue
+     *   / eigenspace computations otherwise fail numerically.
      */
     SVD(ε=1e-10) {
         if(this._cache.SVDData) return this._cache.SVDData;
+        // If the matrix is wide, then the normal matrix of the transpose is
+        // smaller, so compute the SVD of the transpose instead.
+        let {m, n} = this;
+        if(m < n) {
+            let {U, V, Σ} = this.transpose.SVD(ε);
+            this._cache.SVDData = {U: V, V: U, Σ};
+            return this._cache.SVDData;
+        }
+        let ATA = this.normal;
+        let eigenvals = ATA.eigenvalues(ε);
+        let Σ = [], ui = [], vi = [];
+        for(let i = eigenvals.length - 1; i >= 0; --i) {
+            let [λ, m] = eigenvals[i];
+            if(λ instanceof Complex)
+                throw new Error("Eigenvalue computation failed for normal matrix");
+            λ = Math.max(λ, 0);  // Paranoia
+            let σ = Math.sqrt(λ);
+            let Q = ATA.eigenspace(λ, ε).ONbasis(ε);
+            if(Q.n < m)
+                throw new Error("Eigenspace computation failed for normal matrix");
+            for(let v of Q.cols()) {
+                vi.push(v);
+                if(λ > ε) {
+                    // Singular value
+                    Σ.push(σ);
+                    ui.push(this.apply(v).scale(1/σ));
+                }
+            }
+        }
+        // Now we have computed V and the singular values, as well as the first
+        // `r` columns of U, which form a basis for the column space of A.  It
+        // remains to compute an orthonormal basis of the left null space.
+        ui.push(...this.leftNullSpace(ε).ONbasis(ε).cols());
+        this._cache.SVDData = {
+            U: Matrix.from(ui).transpose,
+            V: Matrix.from(vi).transpose,
+            Σ: Σ
+        };
         return this._cache.SVDData;
     }
 };

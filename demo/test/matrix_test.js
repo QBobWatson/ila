@@ -23,7 +23,7 @@ should.use(function(should, Assertion) {
         };
         if(which === 'PA=LU') {
             let {P, L, U, E} = this.obj;
-            L.isLowerUnip().should.be.true('L is not lower unipotent');
+            L.isLowerUni().should.be.true('L is not lower unipotent');
             U.isEchelon().should.be.true('U is not in echelon form');
             for(let [i, j] of U.leadingEntries())
                 Math.abs(U[i][j]).should.be.above(ε, 'U has small pivots');
@@ -49,6 +49,14 @@ should.use(function(should, Assertion) {
             let QR = Q.mult(R);
             QR.equals(A, ε).should.be.true(
                 `Matrix is not correctly factored: QR =\n${QR.toString(2)}\nA =\n${A.toString(2)}`);
+        } else if(which === 'SVD') {
+            let {U, V, Σ} = this.obj;
+            U.isOrthogonal(ε).should.be.true();
+            V.isOrthogonal(ε).should.be.true();
+            Σ.slice().sort((a, b) => b-a).should.eql(Σ);
+            let {m, n} = A;
+            U.mult(Matrix.diagonal(Σ, m, n)).mult(V.transpose).equals(A, ε)
+                .should.be.true();
         }
     });
 
@@ -324,17 +332,17 @@ describe('Matrix', () => {
             Matrix.identity(3).isDiagonal().should.be.true();
         });
     });
-    describe('#isUpperUnip() and #isLowerUnip()', () => {
+    describe('#isUpperUni() and #isLowerUni()', () => {
         let M = mat([1, 1, 1], [0, 1, 1], [0, 0, 1]);
         let N = mat([1, 1, 1], [0, 2, 1], [0, 0, 1]);
         it('should be upper-uniponent', () =>
-           M.isUpperUnip().should.be.true());
+           M.isUpperUni().should.be.true());
         it('should not be upper-unipotent', () =>
-           N.isUpperUnip().should.be.false());
+           N.isUpperUni().should.be.false());
         it('should be lower-unipotent', () =>
-           M.transpose.isLowerUnip().should.be.true());
+           M.transpose.isLowerUni().should.be.true());
         it('should not be lower-unipotent', () =>
-           N.transpose.isLowerUnip().should.be.false());
+           N.transpose.isLowerUni().should.be.false());
     });
     describe('#isEchelon() and #isRREF()', () => {
         let testMats1 = [
@@ -1178,6 +1186,44 @@ describe('Matrix', () => {
             let M = testMats.pop();
             M.eigenvalues().should.resemble([[1, 2], [2, 1]]);
             M.eigenspace(1).dim.should.equal(2);
+        });
+    });
+
+    describe('#SVD()', () => {
+        let testMats = [
+            mat([10,-7,0],
+                [-3, 2,6],
+                [ 5,-1,5]),
+            mat([2, 1, 1, 0],
+                [4, 3, 3, 1],
+                [8, 7, 9, 5],
+                [6, 7, 9, 8]),
+            mat([-1, 0, 1],
+                [ 2, 1, 1],
+                [-1, 2, 0]),
+            mat([ 2, -6,  6],
+                [-4,  5, -7],
+                [ 3,  5, -1],
+                [-6,  4, -8],
+                [ 8, -3,  9]),
+            mat([ 0, -3, -6,  4,  9],
+                [-1, -2, -1,  3,  1],
+                [-2, -3,  0,  3, -1],
+                [ 1,  4,  5, -9, -7]),
+            mat([ 0,  3, -6,  6,  4, -5],
+                [ 3, -7,  8, -5,  8,  9],
+                [ 3, -9, 12, -9,  6, 15]),
+            mat([1, 2, 3, 4],
+                [4, 5, 6, 7],
+                [6, 7, 8, 9]),
+            mat([1, 3, 5, 7],
+                [3, 5, 7, 9],
+                [5, 7, 9, 1])
+        ];
+        it('should compute the SVD', () => {
+            for(let M of testMats) {
+                M.SVD(1e-8).should.factorize(M, 'SVD', 1e-8);
+            }
         });
     });
 });
