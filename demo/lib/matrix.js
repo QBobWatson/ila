@@ -3,8 +3,7 @@
 /** @module lib/matrix
  *
  * @file
- * Implements a Matrix class containing most algorithms from basic linear
- * algebra.
+ * Implements a Matrix class containing algorithms from basic linear algebra.
  */
 
 import Vector from "./vector.js";
@@ -15,10 +14,7 @@ import Polynomial from "./polynomial.js";
 import { range } from "./util.js";
 
 // TODO:
-//  * pseudo-inverse
-//  * cholesky / LDL
 //  * PCA?
-//  * Cache/hint isSymmetric, isPosDef, etc.
 
 /**
  * @summary
@@ -191,6 +187,7 @@ class Matrix extends Array {
      * @property {Matrix} rref - Reduced row echelon form.
      * @property {Matrix} E - Matrix such that `E*this = rref`.
      * @property {Matrix} adjugate - Transpose matrix of cofactors.
+     * @property {Matrix} normal - The normal matrix `A^TA`.
      * @property {Vector[]} nullBasis - Basis for the null space.
      * @property {Subspace} nullSpace - The null space.
      * @property {Vector[]} colBasis - Basis for the column space.
@@ -205,7 +202,14 @@ class Matrix extends Array {
      * @property {Map.<number, Subspace>} eigenspaces - Real eigenspaces.
      * @property {Map.<Complex, Array.<Complex[]>>} cplxEigenspaces - Complex
      *   eigenspaces.
-     * @property {Matrix} normal - The normal matrix `A^TA`.
+     * @property {Matrix} pinv - The pseudo-inverse.
+     * @property {boolean} isSymmetric - Whether the matrix is symmetric.
+     * @property {boolean} isUpperTri - Whether the matrix is upper-triangular.
+     * @property {boolean} isUpperUni - Whether the matrix is upper-unitriangular.
+     * @property {boolean} isLowerTri - Whether the matrix is lower-triangular.
+     * @property {boolean} isLowerUni - Whether the matrix is lower-unitriangular.
+     * @property {boolean} isEchelon - Whether the matrix is in row-echelon form.
+     * @property {boolean} hasONCols - Whether the matrix has orthonormal columns.
      */
     get _cache() {
         if(!this.__cache) this.__cache = {};
@@ -272,6 +276,7 @@ class Matrix extends Array {
     get normal() {
         if(this._cache.normal) return this._cache.normal;
         this._cache.normal = this.transpose.mult(this);
+        this._cache.normal.hint({isSymmetric: true});
         return this._cache.normal;
     }
 
@@ -411,6 +416,64 @@ class Matrix extends Array {
      */
     invalidate() {
         if(this.__cache) delete this.__cache;
+    }
+
+    /**
+     * @summary
+     * Hint precomputed or known properties of the matrix.
+     *
+     * @desc
+     * This is provided so that the methods in this class can select the best
+     * algorithm depending on special properties of the matrix.
+     *
+     * @param {Object} hints - Hinted properties.
+     * @param {boolean} hints.isSymmetric - Whether the matrix is symmetric.
+     * @param {boolean} hints.isUpperTri - Whether the matrix is upper-triangular.
+     * @param {boolean} hints.isUpperUni - Whether the matrix is upper-unitriangular.
+     * @param {boolean} hints.isLowerTri - Whether the matrix is lower-triangular.
+     * @param {boolean} hints.isLowerUni - Whether the matrix is lower-unitriangular.
+     * @param {boolean} hints.isEchelon - Whether the matrix is in row-echelon form.
+     * @param {boolean} hints.hasONCols - Whether the matrix has orthonormal columns.
+     * @param {Root[]} hints.eigenvalues - The eigenvalues of the matrix.
+     * @return {undefined}
+     */
+    hint({isSymmetric,
+          isUpperTri,
+          isUpperUni,
+          isLowerTri,
+          isLowerUni,
+          isEchelon,
+          hasONCols,
+          eigenvalues}) {
+        if(isSymmetric !== undefined)
+            this._cache.isSymmetric = isSymmetric;
+        if(hasONCols !== undefined) {
+            this._cache.hasONCols = hasONCols;
+            this._cache.rank = this.n;
+        }
+        if(isUpperTri !== undefined)
+            this._cache.isUpperTri = isUpperTri;
+        if(isUpperUni !== undefined) {
+            this._cache.isUpperUni = isUpperUni;
+            if(isUpperUni) {
+                this._cache.isUpperTri = true;
+                this._cache.isEchelon = true;
+            }
+        }
+        if(isLowerTri !== undefined)
+            this._cache.isLowerTri = isLowerTri;
+        if(isLowerUni !== undefined) {
+            this._cache.isLowerUni = isLowerUni;
+            if(isLowerUni)
+                this._cache.isLowerTri = true;
+        }
+        if(isEchelon !== undefined) {
+            this._cache.isEchelon = isEchelon;
+            if(isEchelon)
+                this._cache.isUpperTri = true;
+        }
+        if(eigenvalues)
+            this._cache.eigenvalues = eigenvalues;
     }
 
     /**
@@ -737,12 +800,17 @@ class Matrix extends Array {
      * @see Matrix#isLowerTri
      */
     isUpperTri(ε=0) {
+        if(this._cache.isUpperTri !== undefined)
+            return this._cache.isUpperTri;
         for(let i = 1; i < this.m; ++i) {
             for(let j = 0; j < i; ++j) {
-                if(Math.abs(this[i][j]) > ε)
+                if(Math.abs(this[i][j]) > ε) {
+                    this._cache.isUpperTri = false;
                     return false;
+                }
             }
         }
+        this._cache.isUpperTri = true;
         return true;
     }
 
@@ -805,12 +873,17 @@ class Matrix extends Array {
      * @return {boolean} True if the matrix is lower-triangular.
      */
     isLowerTri(ε=0) {
+        if(this._cache.isLowerTri !== undefined)
+            return this._cache.isLowerTri;
         for(let i = 0; i < this.m; ++i) {
             for(let j = i+1; j < this.n; ++j) {
-                if(Math.abs(this[i][j]) > ε)
+                if(Math.abs(this[i][j]) > ε) {
+                    this._cache.isLowerTri = false;
                     return false;
+                }
             }
         }
+        this._cache.isLowerTri = true;
         return true;
     }
 
@@ -919,14 +992,18 @@ class Matrix extends Array {
      * @return {boolean} True if the matrix is in row echelon form.
      */
     isEchelon(ε=0) {
+        if(this._cache.isEchelon) return this._cache.isEchelon;
         let i0 = -1;
         let j0 = -1;
         for(let [i, j] of this.leadingEntries(ε)) {
-            if(i !== i0 + 1 || j <= j0)
+            if(i !== i0 + 1 || j <= j0) {
+                this._cache.isEchelon = false;
                 return false;
+            }
             i0 = i;
             j0 = j;
         }
+        this._cache.isEchelon = true;
         return true;
     }
 
@@ -984,7 +1061,6 @@ class Matrix extends Array {
         }
         return true;
     }
-
 
     /**
      * @summary
@@ -1104,6 +1180,29 @@ class Matrix extends Array {
 
     /**
      * @summary
+     * Test if the matrix is has orthonormal columns.
+     *
+     * @desc
+     * This means that `A^TA` is the identity matrix.
+     *
+     * @example {@lang javascript}
+     * Matrix.create([1, 0],
+     *               [0, 1],
+     *               [0, 0]).hasONCols(); // true
+     *
+     * @param {number} [ε=1e-10] - Numbers smaller than this value are taken
+     *   to be zero.
+     * @return {boolean} True if the matrix has orthonormal columns.
+     */
+    hasONCols(ε=1e-10) {
+        if(this._cache.hasONCols) return this._cache.hasONCols;
+        this._cache.hasONCols =
+            this.normal.equals(Matrix.identity(this.n), ε);
+        return this._cache.hasONCols;
+    }
+
+    /**
+     * @summary
      * Test if the matrix is orthogonal.
      *
      * @desc
@@ -1126,8 +1225,7 @@ class Matrix extends Array {
      * @return {boolean} True if the matrix is orthogonal.
      */
     isOrthogonal(ε=1e-10) {
-        return this.isSquare() &&
-            this.normal.equals(Matrix.identity(this.n), ε);
+        return this.isSquare() && this.hasONCols(ε);
     }
 
     /**
@@ -1153,7 +1251,50 @@ class Matrix extends Array {
      * @return {boolean} True if the matrix is symmetric.
      */
     isSymmetric(ε=1e-10) {
-        return this.equals(this.transpose, ε);
+        if(this._cache.isSymmetric) return this._cache.isSymmetric;
+        this._cache.isSymmetric = this.equals(this.transpose, ε);
+        return this._cache.isSymmetric;
+    }
+
+    /**
+     * @summary
+     * Test if a symmetric matrix is positive-definite.
+     *
+     * @desc
+     * A symmetric matrix is positive-definite if and only if `x^T A x > 0`
+     * whenever `x` is a nonzero vector.  Equivalently, all eigenvalues of `A`
+     * are positive, or all diagonal entries of `D` in the LDLT decomposition
+     * are positive.
+     *
+     * This method works by computing the LDLT decomposition.
+     *
+     * @example {@lang javascript}
+     * let A = Matrix.create([3, 2, 3],
+     *                       [2, 7, 4],
+     *                       [3, 4, 8]);
+     * A.isPosDef();  // true
+     *
+     * @example {@lang javascript}
+     * let A = Matrix.create([1, 2, 3],
+     *                       [2, 5, 4],
+     *                       [3, 4, 2]);
+     * A.isPosDef();  // false
+     * // Here is a witness to the indefiniteness of A:
+     * let v = Vector.create(-7, 2, 1);
+     * v.dot(A.apply(v));  // -11
+     *
+     * @param {number} [ε=1e-10] - Entries are considered to be zero if they are
+     *   smaller than this.
+     * @return {boolean} True if the matrix is positive-definite.
+     * @throws Will throw an error if the matrix is not symmetric.
+     * @see Matrix#LDLT
+     */
+    isPosDef(ε=1e-10) {
+        if(!this.isSymmetric())
+            throw new Error("Tried to test positive-definiteness of a non-symmetric matrix.");
+        let LDLT = this.LDLT();
+        if(!LDLT) return false;
+        return LDLT.D.every(x => x > 0);
     }
 
     /**
@@ -1180,6 +1321,8 @@ class Matrix extends Array {
      * @see Matrix#diagonalize
      */
     isDiagonalizable(ε=1e-10) {
+        if(this.isSymmetric(ε))
+            return true;
         return !!this.diagonalize({ε});
     }
 
@@ -1370,6 +1513,7 @@ class Matrix extends Array {
         let E = this.rowOps(ε);
         if(!this.isInvertible(ε))
             throw new Error("Tried to invert a singular matrix");
+        E.hint({inverse: this});
         return E;
     }
 
@@ -1505,8 +1649,9 @@ class Matrix extends Array {
      * performed on `A`).
      *
      * This is the core method that implements Gaussian elimination.  It uses
-     * maximal partial pivoting for numerical stability.  This algorithm runs in
-     * about `O(n^3)` time for an `n`x`n` matrix, which seems to be standard.
+     * maximal partial pivoting for numerical stability.  This algorithm
+     * requires about `2n^3/3` operations for an `n`x`n` matrix, which seems to
+     * be standard.
      *
      * The permutation matrix `P` is returned as a list of `n` numbers defining
      * the permutation.  Use {@link Matrix.permutation} to turn it into a
@@ -1617,6 +1762,8 @@ class Matrix extends Array {
             }
         }
 
+        L.hint({isLowerUni: true});
+        U.hint({isEchelon: true});
         this._cache.PLU = {P, L, U, E, pivots};
         if(m === n)
             this._cache.PLU.det = pivots.length === n ? det * signP : 0;
@@ -1870,15 +2017,74 @@ class Matrix extends Array {
 
     /**
      * @summary
+     * Solve `Ax=b` using reverse-substitution.
+     *
+     * @desc
+     * This method assumes `A` is in row-echelon form.  Solving using
+     * reverse-substitution is very efficient: it requires about `m(m+1)/2`
+     * operations.
+     *
+     * @private
+     */
+    _solveReverseSubst(b, ε) {
+        let x = Vector.zero(this.n);
+        let pivots = this.leadingEntries(ε);
+        let r = pivots.length;
+        // Check if a solution exists
+        for(let i = r; i < this.m; ++i) {
+            if(Math.abs(b[i]) > ε)
+                return null;
+        }
+        for(let p = r-1; p >= 0; --p) {
+            let [row, col] = pivots[p];
+            x[col] = b[row];
+            for(let pp = p+1; pp < r; ++pp) {
+                let [, col1] = pivots[pp];
+                x[col] -= this[row][col1] * x[col1];
+            }
+            x[col] /= this[row][col];
+        }
+        return x;
+    }
+
+    /**
+     * @summary
+     * Solve `Ax=b` using forward-substitution.
+     *
+     * @desc
+     * This method assumes `A` is lower-unitriangular.  Solving using
+     * forward-substitution is very efficient: it requires about `m(m+1)/2`
+     * operations.
+     *
+     * @private
+     */
+    _solveForwardSubst(b) {
+        let x = b.clone();
+        for(let i = 1; i < this.m; ++i) {
+            for(let ii = 0; ii < i; ++ii)
+                x[i] -= this[i][ii] * x[ii];
+        }
+        return x;
+    }
+
+    /**
+     * @summary
      * Find some solution `x` of the equation `Ax=b`.
      *
      * @desc
-     * This is the solution obtained by forward- and back-substituting in the
-     * `PA=LU` decomposition, taking the free variables equal to zero.  All
-     * other solutions can be obtained by adding vectors in the null space.
-     *
-     * This runs in about `O(n^2)` time once the `PA=LU` decomposition has been
-     * computed.
+     * This method tries to find the most efficient algorithm based on
+     * properties of the matrix:
+     *  * If the matrix is in echelon form, solve using reverse-substitution.
+     *    This requires about `m(m+1)/2` operations.
+     *  * If the matrix is lower-unitriangular, solve using
+     *    forward-substitution.  This requires about `m(m+1)/2` operations.
+     *  * If the matrix is symmetric, try an LDLT decomposition.  If it exists,
+     *    solve using forward- and reverse-substitution.  This requires about
+     *    `m(m+1)` operations once the `LDLT` decomposition has been computed.
+     *  * If the matrix has no special properties, compute a PLU decomposition
+     *    and then solve using forward- and reverse-substitution.  This requires
+     *    about `m(m+1)` operations once the `PA=LU` decomposition has been
+     *    computed.
      *
      * @example {@lang javascript}
      * let A = Matrix.create([ 0, -3, -6,  4,  9],
@@ -1898,37 +2104,36 @@ class Matrix extends Array {
      * @return {?Vector} Returns a solution `x`, or `null` if no solution
      *   exists.
      * @throws Will throw an error if `b.length != this.m`.
+     * @see Matrix#PLU
+     * @see Matrix#LDLT
+     * @see Matrix#isEchelon
+     * @see Matrix#isLowerUni
      */
     solve(b, ε=1e-10) {
         if(b.length != this.m)
             throw new Error("Incompatible dimensions of matrix and vector");
-        let {P, L, U, pivots} = this.PLU(ε);
+
+        if(this.isEchelon(ε))
+            return this._solveReverseSubst(b, ε);
+        if(this.isLowerUni(ε))
+            return this._solveForwardSubst(b);
+        if(this.isSymmetric(ε)) {
+            let LDLT = this.LDLT(ε);
+            if(LDLT) {
+                let {L, D} = LDLT;
+                let y = L.solve(b);
+                for(let i = 0; i < this.n; ++i)
+                    y[i] /= D[i];
+                return L.transpose.solve(y);
+            }
+        }
+
+        let {P, L, U} = this.PLU(ε);
         let r = this.rank(ε);
         // Solve LUx = PAx = Pb
         let Pb = Vector.from(range(this.m), i => b[P[i]]);
-        // Solve Ly = Pb by forward-substitution
-        let y = Pb.clone();
-        for(let i = 1; i < this.m; ++i) {
-            for(let ii = 0; ii < i; ++ii)
-                y[i] -= L[i][ii] * y[ii];
-        }
-        // Check if a solution exists
-        for(let i = r; i < this.m; ++i) {
-            if(Math.abs(y[i]) > ε)
-                return null;
-        }
-        // Solve Ux = y by reverse-substitution
-        let x = Vector.zero(this.n);
-        for(let p = r-1; p >= 0; --p) {
-            let [row, col] = pivots[p];
-            x[col] = y[row];
-            for(let pp = p+1; pp < r; ++pp) {
-                let [, col1] = pivots[pp];
-                x[col] -= U[row][col1] * x[col1];
-            }
-            x[col] /= U[row][col];
-        }
-        return x;
+        let y = L.solve(Pb);
+        return U.solve(y, ε);
     }
 
     /**
@@ -2033,6 +2238,10 @@ class Matrix extends Array {
      * Matrix#solve} once `PA=LU` decompositions for `this` and
      * `this.transpose.normal` have been computed.
      *
+     * If the [pseudo-inverse]{@link Matrix#pseudoInverse} `A^+` has been
+     * computed, then this method multiplies by `A^+`.  If you need to run this
+     * method many times, compute `A^+` first.
+     *
      * @example {@lang javascript}
      * let A = Matrix.create([ 0, -3, -6,  4,  9],
      *                       [-1, -2, -1,  3,  1],
@@ -2052,9 +2261,62 @@ class Matrix extends Array {
      * @throws Will throw an error if `b.length != this.m`.
      * @see Matrix#solveLeastSquares
      * @see Matrix#projectRowSpace
+     * @see Matrix#pseudoInverse
      */
     solveLeastSquaresShortest(b, ε=1e-10) {
+        if(this._cache.pinv)
+            return this._cache.pinv.apply(b);
         return this.projectRowSpace(this.solveLeastSquares(b, ε));
+    }
+
+    /**
+     * @summary
+     * Compute the pseudo-inverse matrix.
+     *
+     * @desc
+     * The pseudo-inverse `A^+` of a matrix `A` has the following geometric
+     * description: if `v` is a vector in `R^m`, then `A^+v` is obtained by
+     * projecting onto `Col(A)` to obtain a vector `v1`, then solving `Ax=v1` to
+     * obtain a solution `x`, then projecting `x` onto the row space of `A`.
+     * The resulting vector is simply the shortest least-squares solution of
+     * `Ax=v`: that is, `A^+v = A.solveLeastSquaresShortest(v)`.  Hence to
+     * compute the columns of `A^+`, one has to find the shortest least-squares
+     * solutions of `Ax=ei` for `i=1,...,m` (the unit coordinate vectors).
+     *
+     * This method runs {@link Matrix#solveLeastSquaresShortest} for each of the
+     * `m` unit coordinate vectors in `R^m`.  In practice, the pseudo-inverse is
+     * usually computed by finding the singular value decomposition `A = U Σ
+     * V^T`; then `A^+ = U Σ^+ V^T`, where `Σ^+` is the same as `Σ` with the
+     * nonzero entries inverted.  Since this matrix library does not include a
+     * high-quality SVD algorithm, this method is implemented in the naïve way.
+     *
+     * @example {@lang javascript}
+     * let A = Matrix.create([ 0, -3, -6,  4,  9],
+     *                       [-1, -2, -1,  3,  1],
+     *                       [-2, -3,  0,  3, -1],
+     *                       [ 1,  4,  5, -9, -7]);
+     * let Ap = A.pseudoInverse();
+     * Ap.toString();
+     *   // "[-0.0857 -0.0476 -0.1752 -0.1124]
+     *   //  [-0.1714 -0.0714 -0.2743 -0.1914]
+     *   //  [-0.0857  0.0000 -0.0229 -0.0457]
+     *   //  [-0.2000  0.0000 -0.1200 -0.2400]
+     *   //  [ 0.0857 -0.0238 -0.0533  0.0124]"
+     * A.mult(Ap).equals(A.colSpace().projectionMatrix(), 1e-10);  // true
+     * Ap.mult(A).equals(A.rowSpace().projectionMatrix(), 1e-10);  // true
+     *
+     * @param {number} [ε=1e-10] - Entries smaller than this value are taken
+     *   to be zero for the purposes of pivoting.
+     * @return {Matrix} The pseudo-inverse matrix.
+     * @see Matrix#solveLeastSquaresShortest
+     */
+    pseudoInverse(ε=1e-10) {
+        if(this._cache.pinv) return this._cache.pinv;
+        this._cache.pinv = Matrix.from(
+            range(this.m),
+            i => this.solveLeastSquaresShortest(
+                Vector.e(i, this.m), ε)).transpose;
+        return this._cache.pinv;
     }
 
     /**
@@ -2447,6 +2709,8 @@ class Matrix extends Array {
      * This is essentially a shortcut for
      * `new Subspace(this.leftNullBasis(ε))`.
      *
+     * @param {number} [ε=1e-10] - Entries smaller than this value are taken
+     *   to be zero for the purposes of pivoting.
      * @return {Subspace} The left null space of the matrix.
      */
     leftNullSpace(ε=1e-10) {
@@ -2584,6 +2848,8 @@ class Matrix extends Array {
             }
         }
         let Q = Matrix.from(ui).transpose;
+        if(LD.length === 0)
+            Q.hint({hasONCols: true});
         this._cache.QR = {Q, R, LD};
         this._cache.rank = n - LD.length;
         return this._cache.QR;
@@ -2600,9 +2866,12 @@ class Matrix extends Array {
      * vector `v` with `Av = λv`.  They are the roots of the characteristic
      * polynomial.
      *
+     * This method factors the characteristic polynomial and returns the roots.
+     * This is not how eigenvalues are generally computed in practice.
+     *
      * [Factorization]{@link Polynomial#factor} of polynomials is only
-     * implemented in degrees at most 4; for matrices larger than 4x4, use
-     * {@link Matrix#hintEigenvalues}.
+     * implemented in degrees at most 4; for matrices larger than 4x4, compute
+     * the eigenvalues some other way and use {@link Matrix#hint}.
      *
      * @example {@lang javascript}
      * Matrix.create([1, 1], [1, 1]).eigenvalues();  // [[0, 1], [2, 1]]
@@ -2616,8 +2885,9 @@ class Matrix extends Array {
      *   returned in the order specified in {@link Polynomial#factor}.
      * @throws Will throw an error if the matrix is not square, or if it is
      *   larger than 4x4 and the eigenvalues have not been
-     *   [hinted]{@link Matrix#hintEigenvalues}.
+     *   [hinted]{@link Matrix#hint}.
      * @see Matrix#charpoly
+     * @see Matrix#hint
      * @see Polynomial#factor
      */
     eigenvalues(ε=1e-10) {
@@ -2626,22 +2896,6 @@ class Matrix extends Array {
             throw new Error("Tried to compute the eigenvalues of a non-square matrix");
         this._cache.eigenvalues = this.charpoly.factor(ε);
         return this._cache.eigenvalues;
-    }
-
-    /**
-     * @summary
-     * Cache the (real and complex) eigenvalues of the matrix.
-     *
-     * @desc
-     * This is so that eigenvalue computations such as diagonalization can be
-     * performed for matrices larger than 4x4, assuming you know the eigenvalues
-     * beforehand.
-     *
-     * @param {...Root} eigenvalues - The eigenvalues with algebraic multiplicity.
-     * @return {undefined}
-     */
-    hintEigenvalues(...eigenvalues) {
-        this._cache.eigenvalues = eigenvalues;
     }
 
     /**
@@ -2847,7 +3101,7 @@ class Matrix extends Array {
      * be orthogonal, thus resulting in an orthogonal decomposition `A = CDC^T`.
      *
      * This is only implemented for matrices up to 4x4, unless the eigenvalues
-     * have been [hinted]{@link Matrix#hintEigenvalues}.
+     * have been [hinted]{@link Matrix#hint}.
      *
      * @example {@lang javascript}
      * let A = Matrix.create([11/13, 22/39,  2/39],
@@ -2919,9 +3173,9 @@ class Matrix extends Array {
      *   is not (block) diagonalizable.
      * @throws Will throw an error if the matrix is not square or if the matrix is
      *   larger than 4x4 and the eigenvalues have not been
-     *   [hinted]{@link Matrix#hintEigenvalues}.
+     *   [hinted]{@link Matrix#hint}.
      * @see Matrix#eigenvalues
-     * @see Matrix#hintEigenvalues
+     * @see Matrix#hint
      * @see Matrix#eigenspace
      */
     diagonalize({block=false, ortho=false, ε=1e-10}={}) {
@@ -2979,7 +3233,9 @@ class Matrix extends Array {
      * an orthonormal basis for the row space of `A`, and the last `n-r` columns
      * form an orthonormal basis for the null space.  The first `r` columns of
      * `U` form an orthonormal basis for the column space of `A`, and the last
-     * `m-r` columns form an orthonormal basis for the left null space.
+     * `m-r` columns form an orthonormal basis for the left null space.  If `vi`
+     * is the `i`th column of `V`, with `i <= r`, then `Avi = σi ui`, where
+     * `σi` is the `i`th singular value and `ui` is the `i`th column of `U`.
      *
      * Only the nonzero diagonal entries of the matrix `Σ` are returned.  Use
      * {@link Matrix.diagonal} to turn it into a matrix, as in
@@ -2988,7 +3244,7 @@ class Matrix extends Array {
      * This method will fail if `min(m, n) > 4`, as the eigenvalue computations
      * have not been implemented for matrices larger that 4x4.  This method
      * implements the naïve schoolbook algorithm for computing the SVD, which is
-     * rarely used in practice.
+     * not numerically accurate and is rarely used in practice.
      *
      * @example {@lang javascript}
      * let A = Matrix.create([ 0, -3, -6,  4,  9],
@@ -3060,12 +3316,173 @@ class Matrix extends Array {
         // `r` columns of U, which form a basis for the column space of A.  It
         // remains to compute an orthonormal basis of the left null space.
         ui.push(...this.leftNullSpace(ε).ONbasis(ε).cols());
-        this._cache.SVDData = {
-            U: Matrix.from(ui).transpose,
-            V: Matrix.from(vi).transpose,
-            Σ: Σ
-        };
+        let U = Matrix.from(ui).transpose;
+        let V = Matrix.from(vi).transpose;
+        U.hint({hasONCols: true});
+        V.hint({hasONCols: true});
+        this._cache.SVDData = { U, V, Σ };
         return this._cache.SVDData;
+    }
+
+    /**
+     * @summary
+     * LDLT decomposition data.
+     *
+     * @typedef LDLTData
+     * @type {object}
+     * @property {Matrix} L - An `n`x`n` lower-unitriangular matrix.
+     * @property {Matrix} D - The diagonal entries.
+     */
+
+    /**
+     * @summary
+     * Compute the LDLT decomposition of a symmetric matrix.
+     *
+     * @desc
+     * For a symmetric matrix `A`, this computes a lower-unitriangular matrix
+     * `L` and a diagonal matrix `D` with nonzero entries such that `A = L D
+     * L^T`, if possible.  This should be seen as a variant of Gaussian
+     * elimination that takes advantage of the symmetry of `A`.  It uses about
+     * `n^3/3` operations, which is about twice as fast as Gaussian
+     * elimination.
+     *
+     * The LDLT decomposition exists for symmetric, positive-definite matrices
+     * (e.g. the normal matrix of a matrix with full column rank).  It exists
+     * for some indefinite matrices, and does not exist for singular matrices.
+     *
+     * Only the diagonal entries of the matrix `D` are returned.  Use
+     * {@link Matrix.diagonal} to turn it into a matrix, as in
+     * `Matrix.diagonal(D)`.
+     *
+     * @example {@lang javascript}
+     * let A = Matrix.create([3, 2, 3],
+     *                       [2, 7, 4],
+     *                       [3, 4, 8]);
+     * A.isPosDef();  // true
+     * let {L, D} = A.LDLT();
+     * L.toString();
+     *   // "[1.0000 0.0000 0.0000]
+     *   //  [0.6667 1.0000 0.0000]
+     *   //  [1.0000 0.3529 1.0000]"
+     * let DM = Matrix.diagonal(D);
+     * DM.toString();
+     *   // "[3.0000 0.0000 0.0000]
+     *   //  [0.0000 5.6667 0.0000]
+     *   //  [0.0000 0.0000 4.2941]"
+     * L.mult(DM).mult(L.transpose).toString();
+     *   // "[3.0000 2.0000 3.0000]
+     *   //  [2.0000 7.0000 4.0000]
+     *   //  [3.0000 4.0000 8.0000]"
+     *
+     * @example {@lang javascript}
+     * let A = Matrix.create([1, 2, 3],
+     *                       [2, 5, 4],
+     *                       [3, 4, 2]);
+     * A.isPosDef();  // false
+     * // Not positive-definite, but the LDLT decomposition still exists
+     * let {L, D} = A.LDLT();
+     * L.toString(0);
+     *   // "[1  0 0]
+     *   //  [2  1 0]
+     *   //  [3 -2 1]"
+     * let DM = Matrix.diagonal(D);
+     * DM.toString(0);
+     *   // "[1 0   0]
+     *   //  [0 1   0]
+     *   //  [0 0 -11]"
+     * L.mult(DM).mult(L.transpose).equals(A);  // true
+     *
+     * @example {@lang javascript}
+     * let A = Matrix.create([ 27, -27,  18],
+     *                       [-27,  45,  12],
+     *                       [ 18,  12,  62]);
+     * A.isSingular();  // true
+     * A.LDLT();        // null
+     *
+     * @param {number} [ε=1e-10] - Entries smaller than this are considered to
+     *   be zero.
+     * @return {?LDLTData} The LDLT decomposition, or `null` if it does not exist.
+     * @throws Will throw an error if the matrix is not symmetric.
+     * @see Matrix#cholesky
+     */
+    LDLT(ε=1e-10) {
+        if(this._cache.LDLT !== undefined) return this._cache.LDLT;
+        if(!this.isSymmetric(ε))
+            throw new Error("Tried to compute an LDLT decomposition of a non-symmetric matrix");
+        let n = this.n;
+        let D = new Array(n);
+        let L = Matrix.identity(n);
+        for(let j = 0; j < n; ++j) {
+            D[j] = this[j][j];
+            for(let k = 0; k < j; ++k)
+                D[j] -= L[j][k]*L[j][k]*D[k];
+            if(Math.abs(D[j]) <= ε) {
+                this._cache.LDLT = null;
+                return null;
+            }
+            for(let i = j+1; i < n; ++i) {
+                let l = this[i][j];
+                for(let k = 0; k < j; ++k)
+                    l -= L[i][k]*L[j][k]*D[k];
+                L[i][j] = l / D[j];
+            }
+        }
+        L.hint({isLowerUni: true});
+        L.transpose.hint({isUpperUni: true});
+        this._cache.LDLT = {L, D};
+        return this._cache.LDLT;
+    }
+
+    /**
+     * @summary
+     * Compute the [Cholesky decomposition]{@link https://en.wikipedia.org/wiki/Cholesky_decomposition} of a positive-definite symmetric matrix.
+     *
+     * @desc
+     * For a positive-definite symmetric matrix `A`, this computes a
+     * lower-triangular matrix `L` with positive diagonal entries such that `A =
+     * L L^T`.  These matrices are obtained from an [LDLT decomposition]{@link
+     * Matrix#LDLT} by multiplying the columns of `L` by the square roots of the
+     * corresponding entries of `D`:
+     * > `A = L D L^T = (L D^(1/2)) (L D^(1/2))^T`
+     *
+     * @example {@lang javascript}
+     * let A = Matrix.create([3, 2, 3],
+     *                       [2, 7, 4],
+     *                       [3, 4, 8]);
+     * A.isPosDef();  // true
+     * let L = A.cholesky();
+     * L.toString();
+     *   // "[1.7321 0.0000 0.0000]
+     *   //  [1.1547 2.3805 0.0000]
+     *   //  [1.7321 0.8402 2.0722]"
+     * L.mult(L.transpose).equals(A, 1e-10);  // true
+     *
+     * @example {@lang javascript}
+     * let A = Matrix.create([1, 2, 3],
+     *                       [2, 5, 4],
+     *                       [3, 4, 2]);
+     * A.isPosDef();  // false
+     * A.cholesky();  // null
+     *
+     * @param {number} [ε=1e-10] - Entries smaller than this are considered to
+     *   be zero.
+     * @return {?Matrix} The matrix `L` such that `A = L L^T`, or `null` if the
+     *   matrix is not positive-definite.
+     * @throws Will throw an error if the matrix is not symmetric.
+     * @see Matrix#LDLT
+     */
+    cholesky(ε=1e-10) {
+        let LDLT = this.LDLT(ε);
+        if(!LDLT) return null;
+        let {L, D} = LDLT;
+        L = L.clone();
+        for(let [i, d] of D.entries()) {
+            if(d < 0) return null;
+            d = Math.sqrt(d);
+            for(let j = i; j < this.n; ++j)
+                L[j][i] *= d;
+        }
+        return L;
     }
 };
 

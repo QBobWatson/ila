@@ -23,7 +23,9 @@ should.use(function(should, Assertion) {
         };
         if(which === 'PA=LU') {
             let {P, L, U, E} = this.obj;
+            L.invalidate();
             L.isLowerUni().should.be.true('L is not lower unipotent');
+            U.invalidate();
             U.isEchelon().should.be.true('U is not in echelon form');
             for(let [i, j] of U.leadingEntries())
                 Math.abs(U[i][j]).should.be.above(ε, 'U has small pivots');
@@ -57,6 +59,11 @@ should.use(function(should, Assertion) {
             let {m, n} = A;
             U.mult(Matrix.diagonal(Σ, m, n)).mult(V.transpose).equals(A, ε)
                 .should.be.true();
+        } else if(which === 'LDLT') {
+            let {L, D} = this.obj;
+            L.invalidate();
+            L.isLowerUni().should.be.true();
+            L.mult(Matrix.diagonal(D)).mult(L.transpose).should.resemble(A, ε);
         }
     });
 
@@ -690,6 +697,64 @@ describe('Matrix', () => {
         });
     });
     describe('#solve*()', () => {
+        // Test reverse-substitution in echelon form
+        let testRevSub = [
+            {M: mat([ 1, 0,  6/7],
+                    [ 0, 1, -5/7],
+                    [ 0, 0, 0],
+                    [ 0, 0, 0],
+                    [ 0, 0, 0]),
+             b: vec(7, 3, 0, 0, 0),
+             b2: vec(0, 0, 0, 0, 1)},
+            {M: mat([1, 0, -3, 0,  5],
+                    [0, 1,  2, 0, -3],
+                    [0, 0,  0, 1,  0],
+                    [0, 0,  0, 0,  0]),
+             b: vec(7, 2, 1, 0),
+             b2: vec(0, 0, 0, 1)}
+        ];
+        it('should solve Ax=b using reverse-substitution', () => {
+            for(let {M, b, b2} of testRevSub) {
+                M.solve(b).should.solve(M, b);
+                should(M.solve(b2)).be.null();
+            }
+        });
+        // Test forward-substitution in lower-unitriangular form
+        it('should solve Ax=b using forward-substitution', () => {
+            let M = mat([1, 0, 0, 0], [2, 1, 0, 0], [3, 2, 1, 0], [4, 3, 2, 1]);
+            let b = vec(7, 6, 5, 4);
+            M.solve(b).should.solve(M, b);
+        });
+
+        // Test LDLT solving for positive-definite symmetric matrices
+        let testLDLT = [
+            {M: mat([10,-7,0],
+                    [-3, 2,6],
+                    [ 5,-1,5]),
+             b: vec(1, 2, 3)},
+            {M: mat([2, 1, 1, 0],
+                    [4, 3, 3, 1],
+                    [8, 7, 9, 5],
+                    [6, 7, 9, 8]),
+             b: vec(1, 2, 3, 4)},
+            {M: mat([ 0,  3, -6,  6,  4, -5],
+                    [ 3, -7,  8, -5,  8,  9],
+                    [ 3, -9, 12, -9,  6, 15]).transpose,
+             b: vec(1, 2, 3)},
+            {M: mat([1, 3, 5, 7],
+                    [3, 5, 7, 9],
+                    [5, 7, 9, 1]).transpose,
+             b: vec(1, 2, 3)},
+            {M: mat([1,2,3],[2,7,4],[3,4,8]),
+             b: vec(1, 2, 3)}
+        ];
+        it('should solve Ax=b using LDLT', () => {
+            for(let {M, b} of testLDLT) {
+                if(!M.isSymmetric()) M = M.normal;
+                M.solve(b).should.solve(M, b);
+            }
+        });
+
         let testMats = [
             {M: mat([10,-7,0],
                     [-3, 2,6],
@@ -724,6 +789,8 @@ describe('Matrix', () => {
                 M.nullSpace().isOrthogonalTo(x).should.be.true();
                 M.solveLeastSquares(b).should.solve(M, b);
                 M.solveLeastSquaresShortest(b).equals(x, 1e-10).should.be.true();
+                M.pseudoInverse();
+                M.solveLeastSquaresShortest(b).equals(x, 1e-10).should.be.true();
             }
         });
         let testNoSoln = [
@@ -752,11 +819,53 @@ describe('Matrix', () => {
                 let x = M.solveLeastSquaresShortest(b);
                 x.should.solve(M, b, true);
                 M.nullSpace().isOrthogonalTo(x).should.be.true();
+                M.pseudoInverse();
+                M.solveLeastSquaresShortest(b).equals(x, 1e-10)
+                    .should.be.true();
             }
         });
         it('should throw for incompatible dimensions', () => {
             let M = mat([1,2],[3,4]);
             M.solve.bind(M, vec(1,2,3)).should.throw(/Incompatible/);
+        });
+    });
+    describe('#pseudoInverse()', () => {
+        let testMats = [
+            mat([10,-7,0],
+                [-3, 2,6],
+                [ 5,-1,5]),
+            mat([2, 1, 1, 0],
+                [4, 3, 3, 1],
+                [8, 7, 9, 5],
+                [6, 7, 9, 8]),
+            mat([-1, 0, 1],
+                [ 2, 1, 1],
+                [-1, 2, 0]),
+            mat([ 2, -6,  6],
+                [-4,  5, -7],
+                [ 3,  5, -1],
+                [-6,  4, -8],
+                [ 8, -3,  9]),
+            mat([ 0, -3, -6,  4,  9],
+                [-1, -2, -1,  3,  1],
+                [-2, -3,  0,  3, -1],
+                [ 1,  4,  5, -9, -7]),
+            mat([ 0,  3, -6,  6,  4, -5],
+                [ 3, -7,  8, -5,  8,  9],
+                [ 3, -9, 12, -9,  6, 15]),
+            mat([1, 2, 3, 4],
+                [4, 5, 6, 7],
+                [6, 7, 8, 9]),
+            mat([1, 3, 5, 7],
+                [3, 5, 7, 9],
+                [5, 7, 9, 1])
+        ];
+        it('should compute the pseudoinverse', () => {
+            for(let A of testMats) {
+                let Ap = A.pseudoInverse();
+                A.mult(Ap).should.resemble(A.colSpace().projectionMatrix());
+                Ap.mult(A).should.resemble(A.rowSpace().projectionMatrix());
+            }
         });
     });
     describe('#projectColSpace()', () => {
@@ -1225,6 +1334,47 @@ describe('Matrix', () => {
                 M.SVD(1e-8).should.factorize(M, 'SVD', 1e-8);
             }
         });
+    });
+
+    describe('#LDLT(), #isPosDef(), #cholesky()', () => {
+        // Produce positive-definite symmetric matrices from matrices with full
+        // column rank
+        let testMats = [
+            mat([10,-7,0],
+                [-3, 2,6],
+                [ 5,-1,5]),
+            mat([2, 1, 1, 0],
+                [4, 3, 3, 1],
+                [8, 7, 9, 5],
+                [6, 7, 9, 8]),
+            mat([ 0,  3, -6,  6,  4, -5],
+                [ 3, -7,  8, -5,  8,  9],
+                [ 3, -9, 12, -9,  6, 15]).transpose,
+            mat([1, 3, 5, 7],
+                [3, 5, 7, 9],
+                [5, 7, 9, 1]).transpose,
+            mat([4,2,3],[2,7,4],[3,4,8])
+        ];
+        it('should compute an LDLT decomposition', () => {
+            for(let A of testMats) {
+                if(!A.isSymmetric())
+                    A = A.normal;
+                A.LDLT().should.factorize(A, 'LDLT');
+                A.isPosDef().should.be.true();
+                let L = A.cholesky();
+                L.mult(L.transpose).should.resemble(A);
+            }
+        });
+        it('should detect an indefinite matrix', () =>
+           mat([1,2,3],[2,5,4],[3,4,2]).isPosDef().should.be.false());
+        it('should fail to compute an LDLT decomposition for singular matrices',
+           () => {
+               let A = mat([ 0, -3, -6,  4,  9],
+                           [-1, -2, -1,  3,  1],
+                           [-2, -3,  0,  3, -1],
+                           [ 1,  4,  5, -9, -7]);
+               should(A.normal.LDLT()).be.null();
+           });
     });
 });
 
