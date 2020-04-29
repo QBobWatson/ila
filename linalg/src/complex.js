@@ -1,6 +1,6 @@
 'use strict';
 
-/** @module lib/complex
+/** @module complex
  *
  * @file
  * A class for Complex numbers.

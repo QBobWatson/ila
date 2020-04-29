@@ -1,6 +1,6 @@
 'use strict';
 
-/** @module lib/subspace
+/** @module subspace
  *
  * @file
  * Implements a Subspace class to represent subspaces of `R^n`.

@@ -1,6 +1,6 @@
 'use strict'; // -*- js2 -*-
 
-import { Vector } from "../lib/linalg.js";
+import { Vector } from "../src/linalg.js";
 
 import './lib/resemble.js';
 import should from 'should';

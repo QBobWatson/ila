@@ -1,6 +1,6 @@
 
 import should from 'should';
-import Matrix from '../../lib/matrix.js';
+import Matrix from '../../src/matrix.js';
 
 
 should.use(function(should, Assertion) {

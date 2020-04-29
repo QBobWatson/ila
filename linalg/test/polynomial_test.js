@@ -2,7 +2,7 @@
 
 import './lib/resemble.js';
 
-import { Polynomial, Complex } from "../lib/linalg.js";
+import { Polynomial, Complex } from "../src/linalg.js";
 
 import should from 'should';
 

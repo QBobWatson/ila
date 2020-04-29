@@ -1,6 +1,6 @@
 'use strict';
 
-/** @module lib/matrix
+/** @module matrix
  *
  * @file
  * Implements a Matrix class containing algorithms from basic linear algebra.

@@ -1,6 +1,6 @@
 'use strict'; // -*- js2 -*-
 
-/** @module lib/matrix
+/** @module util
  *
  * @file
  * Utility functions.

@@ -1,6 +1,6 @@
 'use strict'; // -*- js2 -*-
 
-import { Subspace, Vector, Matrix } from "../lib/linalg.js";
+import { Subspace, Vector, Matrix } from "../src/linalg.js";
 
 import should from 'should';
 

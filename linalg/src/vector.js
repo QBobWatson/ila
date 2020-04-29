@@ -1,6 +1,6 @@
 'use strict';
 
-/** @module lib/vector
+/** @module vector
  *
  * @file
  * Implements a Vector class used for doing vector arithmetic.

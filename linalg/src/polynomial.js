@@ -1,6 +1,6 @@
 'use strict';
 
-/** @module lib/polynomial
+/** @module polynomial
  *
  * @file
  * A class for polynomial manipulations.

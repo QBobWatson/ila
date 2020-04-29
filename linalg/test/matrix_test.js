@@ -1,10 +1,6 @@
 'use strict'; // -*- js2 -*-
 
-import Polynomial from "../lib/polynomial.js";
-import Complex from "../lib/complex.js";
-import Vector from "../lib/vector.js";
-import Matrix from "../lib/matrix.js";
-import Subspace from "../lib/subspace.js";
+import { Polynomial, Complex, Vector, Matrix, Subspace } from "../src/linalg.js";
 
 import should from 'should';
 import './lib/resemble.js';

@@ -1,6 +1,6 @@
 'use strict';
 
-import { Complex } from "../lib/linalg.js";
+import { Complex } from "../src/linalg.js";
 
 import should from 'should';
 import './lib/resemble.js';
