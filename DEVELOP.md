@@ -17,7 +17,7 @@ First decide where you want to put all the files.  I have my files in `~/project
 ```
 ~/projects$ git clone https://github.com/QBobWatson/ila.git
 ~/projects$ cd ila
-~/projects/ila$ git submodule update --init --recusrive
+~/projects/ila$ git submodule update --init --recursive
 ```
 This will put this repository in `ila/`, and will clone the submodules `mathbook`, `mathbook-assets`, and `mathbox`, which contain support files needed to build the book.
 
