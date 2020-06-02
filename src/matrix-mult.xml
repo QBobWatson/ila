@@ -569,7 +569,7 @@ the license is included in gfdl.xml.
         Let <m>T\colon\R^n\to\R^m</m> and <m>U\colon\R^p\to\R^n</m> be linear transformations, and let <m>A</m> and <m>B</m> be their standard matrices, respectively.  Recall that <m>T\circ U(x)</m> is the vector obtained by first applying <m>U</m> to <m>x</m>, and then <m>T</m>.
       </p>
       <p>
-        On the matrix side, the standard matrix of <m>T\circ U</m> is the product <m>AB</m>, so <m>T\circ U(x) = (AB)x</m>.  By associativity of matrix multiplication, we have <m>(AB)x = A(Bx)</m>, so the product <m>(AB)x</m> can be computed by first multiplying <m>x</m> by <m>B</m>, <em>then</em> multipyling the product by <m>A</m>.
+        On the matrix side, the standard matrix of <m>T\circ U</m> is the product <m>AB</m>, so <m>T\circ U(x) = (AB)x</m>.  By associativity of matrix multiplication, we have <m>(AB)x = A(Bx)</m>, so the product <m>(AB)x</m> can be computed by first multiplying <m>x</m> by <m>B</m>, <em>then</em> multiplying the product by <m>A</m>.
       </p>
       <p>
         Therefore, matrix multiplication happens in the same order as composition of transformations.  In other words, <em>both matrices and transformations are written in the order opposite from the order in which they act.</em>  But matrix multiplication and composition of transformations are written in the same order as each other: the matrix for <m>T\circ U</m> is <m>AB</m>.
