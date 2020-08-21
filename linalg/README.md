@@ -72,3 +72,9 @@ Read the documentation for the individual classes.  The documentation contains l
 # Source code
 
 The latest source can be found on [GitHub]{@link https://github.com/QBobWatson/ila/tree/duke/linalg}.
+
+# License
+
+Copyright (c) 2020 Joseph Rabinoff
+
+This software is released under the [GNU General Public License]{@link https://www.gnu.org/licenses/}.
