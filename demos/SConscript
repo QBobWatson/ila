@@ -193,6 +193,7 @@ for src in Split('''
                  Axequalsb
                  bestfit
                  bestfit-implicit
+                 bestfit-implicit1
                  compose2d
                  compose3d
                  dynamics
