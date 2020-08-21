@@ -68,3 +68,7 @@ V.perp().toString(1);
 # Recommendations
 
 Read the documentation for the individual classes.  The documentation contains links to the source files: click on them!  There is essentially nothing in the source beyond what one would learn in a basic linear algebra class.
+
+# Source code
+
+The latest source can be found on [GitHub]{@link https://github.com/QBobWatson/ila/tree/duke/linalg}.
