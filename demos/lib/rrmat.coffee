@@ -779,7 +779,7 @@ class RRMatrix extends Controller
                 @_nextState.installVal 'positions'
                 rrmat.state.html[flidx][0] = @_nextState.html[flidx][0]
 
-                rrmat.multFlyerElt.parentElement.style.width = "0px"
+                #rrmat.multFlyerElt.parentElement.style.width = "0px"
                 anim = new TimedAnimation rrmat.positions[0].clock,
                     (elapsed) ->
                         elapsed *= speed
