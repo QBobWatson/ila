@@ -215,8 +215,7 @@ for src in Split('''
                  vector
                  vector-mul
                  vector-sub
-                 rowred1
-                 rowred2
+                 rowred1 rowred2 rowred3
                  rrinter
                  '''):
     demos[src] = env.Mako('$BUILD_DIR/demos/' + src, src)
