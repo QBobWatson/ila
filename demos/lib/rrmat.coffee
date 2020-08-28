@@ -588,7 +588,8 @@ class RRMatrix extends Controller
         for col, row in pivots
             break if col == null
             for i in [row+1...@numRows]
-                return false if state.matrix[i][col] != 0
+                [n, d] = approxFraction(state.matrix[i][col])
+                return false if n != 0
         return true
 
     isRREF: (state=@state) ->
@@ -598,8 +599,10 @@ class RRMatrix extends Controller
         for col, row in pivots
             break if col == null
             for i in [0...row]
-                return false if state.matrix[i][col] != 0
-            return false if state.matrix[row][col] != 1
+                [n, d] = approxFraction(state.matrix[i][col])
+                return false if n != 0
+            [n, d] = approxFraction(state.matrix[row][col])
+            return false if n != 1 or d != 1
         return true
 
     ######################################################################
