@@ -129,6 +129,24 @@ class Matrix extends Array {
 
     /**
      * @summary
+     * Create an `m`x`n` constant Matrix.
+     *
+     * @example {@lang javascript}
+     * Matrix.constant(1, 2, 3).toString(0);
+     *   // "[1 1 1]
+     *   //  [1 1 1]"
+     *
+     * @param {number} c - All entries of the resulting Matrix will be equal to this.
+     * @param {integer} m - The resulting Matrix will have this many rows.
+     * @param {integer} [n=m] - The resulting Matrix will have this many columns.
+     * @return {Matrix} The `m`x`n` zero matrix.
+     */
+    static constant(c, m, n=m) {
+        return Matrix.from(range(m), i => Vector.constant(n, c));
+    }
+
+    /**
+     * @summary
      * Create a diagonal matrix with specified diagonal entries.
      *
      * @desc
