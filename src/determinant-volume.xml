@@ -42,7 +42,7 @@ the license is included in gfdl.xml.
       <p>
         The <term>paralellepiped</term> determined by <m>n</m> vectors <m>v_1, v_2,\ldots,v_n</m> in <m>\R^n</m> is the subset
         <me>
-          P = \bigl\{a_1x_1 + a_2x_2 + \cdots + a_nx_n \bigm| 0 \leq a_1,a_2,\ldots,a_n\leq 1\bigr\}.
+          P = \bigl\{a_1v_1 + a_2v_2 + \cdots + a_nv_n \bigm| 0 \leq a_1,a_2,\ldots,a_n\leq 1\bigr\}.
         </me>
       </p>
     </statement>
