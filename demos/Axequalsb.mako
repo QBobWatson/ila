@@ -33,11 +33,11 @@ ${parent.inline_style()}
 </%block>
 
 <%block name="label1">
-<div class="mathbox-label">Input</div>
+<div class="mathbox-label">Row Picture</div>
 </%block>
 
 <%block name="label2">
-<div class="mathbox-label">Output</div>
+<div class="mathbox-label">Column Picture</div>
 </%block>
 
 
