@@ -243,7 +243,7 @@ the license is included in gfdl.xml.
 	</p>
 
 	<p>
-	 The rank theorem theorem is really the culmination of this chapter, as it gives a strong relationship between the null space of a matrix (the solution set of <m>Ax=0</m>) with the column space (the set of vectors <m>b</m> making <m>Ax=b</m> consistent), our two primary objects of interest.  The more freedom we have in choosing <m>x</m> the less freedom we have in choosing <m>b</m> and vice versa.  
+	 The rank theorem is really the culmination of this chapter, as it gives a strong relationship between the null space of a matrix (the solution set of <m>Ax=0</m>) with the column space (the set of vectors <m>b</m> making <m>Ax=b</m> consistent), our two primary objects of interest.  The more freedom we have in choosing <m>x</m> the less freedom we have in choosing <m>b</m> and vice versa.  
     </p>
 
     <example>
