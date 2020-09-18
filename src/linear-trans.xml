@@ -224,7 +224,7 @@ the license is included in gfdl.xml.
   \end{scope}
 \end{tikzpicture}
           </latex-code>
-          For the second property, <m>cT(u)</m> is the vector obtained by rotating <m>u</m> by the angle <m>\theta</m>, then changing its length by a factor of <m>c</m> (reversing direction of <m>c&lt;0</m>.  On the other hand, <m>T(cu)</m> first changes the length of <m>c</m>, then rotates.  But it does not matter in which order we do these two operations.
+          For the second property, <m>cT(u)</m> is the vector obtained by rotating <m>u</m> by the angle <m>\theta</m>, then changing its length by a factor of <m>c</m> (reversing direction if <m>c&lt;0</m>).  On the other hand, <m>T(cu)</m> first changes the length of <m>c</m>, then rotates.  But it does not matter in which order we do these two operations.
           <latex-code mode="bare">
             \usetikzlibrary{angles}
           </latex-code>
