@@ -439,7 +439,7 @@ the license is included in gfdl.xml.
       <idx><h>Standard coordinate vectors</h><h>and matrix columns</h></idx>
       <idx><h>Matrix-vector product</h><h>with standard coordinate vectors</h></idx>
       <p>
-        If <m>A</m> is an <m>m\times n</m> matrix with columns <m>v_1,v_2,\ldots,v_m</m>, then <m>\color{red}Ae_i = v_i</m> for each <m>i=1,2,\ldots,n</m>:
+        If <m>A</m> is an <m>m\times n</m> matrix with columns <m>v_1,v_2,\ldots,v_n</m>, then <m>\color{red}Ae_i = v_i</m> for each <m>i=1,2,\ldots,n</m>:
         <me>
           \mat{| | ,, |; v_1 v_2 \cdots, v_n; | | ,, |}e_i = v_i.
         </me>
