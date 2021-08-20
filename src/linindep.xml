@@ -209,7 +209,7 @@ Let's explain why the vectors <m>(1,1,0)</m> and <m>(-2,0,1)</m> are linearly in
       This is true if and only if <m>A</m> has a <xref ref="defn-pivot-pos" text="title">pivot position</xref> in every column.
     </p>
     <p>
-      Solving the matrix equatiion <m>Ax=0</m> will either verify that the columns <m>v_1,v_2,\ldots,v_k</m> are linearly independent, or will produce a linear dependence relation by substituting any nonzero values for the free variables.
+      Solving the matrix equation <m>Ax=0</m> will either verify that the columns <m>v_1,v_2,\ldots,v_k</m> are linearly independent, or will produce a linear dependence relation by substituting any nonzero values for the free variables.
     </p>
     </bluebox>
 
