@@ -10,7 +10,7 @@ This is *not* a library for serious computation.  Most of the implementations ar
 
 # Use in a browser
 
-While browsing these documentation pages, simply open a [Javascript console]{@link https://webmasters.stackexchange.com/questions/8525} and start typing commands.  The following classes are available in global scope: {@link Matrix}, {@link Vector}, {@link Subspace}, {@link Polynomial}, {@link Complex}. In addition, `mat` is an alias for {@link Matrix.create}, `vec` is an alias for {@link Vector.create}, `poly` is an alias for {@link Polynomial.create}, and `C(a, b)` is an alias for `new Complex(a, b)`.  For example:
+While browsing these documentation pages, simply open a [Javascript console]{@link https://webmasters.stackexchange.com/questions/8525} and start typing commands.  **This only works while browsing these documentation pages.**  The following classes are available in global scope: {@link Matrix}, {@link Vector}, {@link Subspace}, {@link Polynomial}, {@link Complex}. In addition, `mat` is an alias for {@link Matrix.create}, `vec` is an alias for {@link Vector.create}, `poly` is an alias for {@link Polynomial.create}, and `C(a, b)` is an alias for `new Complex(a, b)`.  For example:
 
 ![Javascript console example](../static/console.png)
 
