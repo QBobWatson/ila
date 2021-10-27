@@ -18,14 +18,14 @@
  * along with linalg.js.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-'use strict';
+import chai from 'chai';
+chai.should();
 
-import { Complex } from "../src/linalg.js";
+import './lib/resemble';
 
-import should from 'should';
-import './lib/resemble.js';
+import Complex from "../src/complex";
 
-const C = (a, b=0) => new Complex(a, b);
+const C = (a: number, b=0) => new Complex(a, b);
 
 
 describe('Complex', () => {
@@ -53,11 +53,11 @@ describe('Complex', () => {
     describe('#equals()', () => {
         let z = C(3, 0), w = C(3.01, 0.01);
         it('should compare equal to a real number if Im==0', () =>
-           z.equals(3).should.be.true());
+           z.equals(3).should.be.true);
         it('should compare not equal to a real number if Im!=0', () =>
-           w.equals(3).should.be.false());
+           w.equals(3).should.be.false);
         it('should compare equal when ε>0', () =>
-           w.equals(3, .05).should.be.true());
+           w.equals(3, .05).should.be.true);
     });
     describe('#toString()', () => {
         let z = C(3, 4);

@@ -18,8 +18,6 @@
  * along with linalg.js.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-'use strict';
-
 /** @module subspace
  *
  * @file

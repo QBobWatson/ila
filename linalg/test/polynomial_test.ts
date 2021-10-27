@@ -18,22 +18,23 @@
  * along with linalg.js.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-'use strict'; // -*- js2 -*-
+import chai from 'chai';
+chai.should();
 
-import './lib/resemble.js';
+import './lib/resemble';
 
-import { Polynomial, Complex } from "../src/linalg.js";
+import Polynomial from "../src/polynomial";
+import Complex from "../src/complex";
 
-import should from 'should';
 
-const poly = Polynomial.create;
+const poly = (...coeffs: number[]) => new Polynomial(...coeffs);
 const fromRoots = Polynomial.fromRoots;
-const C = (a, b=0) => new Complex(a, b);
+const C = (a: number | Complex, b=0) => new Complex(a, b);
 const ζ = new Complex(-1/2, Math.sqrt(3)/2);
 
 
 describe('Polynomial', () => {
-    describe('#create()', () => {
+    describe('#create(), @@iterator()', () => {
         it("should create polynomials of degree 2", () =>
            Array.from(poly(1, 2, 3)).should.eql([1, 2, 3]));
         it("should create polynomials of degree 0", () =>
@@ -43,43 +44,49 @@ describe('Polynomial', () => {
         it("should strip leading zeros", () =>
            Array.from(poly(0, 0, 1, 2)).should.eql([1, 2]));
     });
+    describe('#coeff()', () => {
+        it("should get the correct coefficient", () =>
+            poly(1, 2, 3).coeff(2).should.equal(1));
+        it("should return zero for zero coefficients", () =>
+            poly(1, 2, 3).coeff(4).should.equal(0));
+    });
     describe('#fromRoots()', () => {
         it("should create polynomials with real roots", () => {
-            fromRoots(1, -1).equals(poly(1, 0, -1)).should.be.true();
-            fromRoots(1, 1, 1).equals(poly(1, -3, 3, -1)).should.be.true();
+            fromRoots(1, -1).equals(poly(1, 0, -1)).should.be.true;
+            fromRoots(1, 1, 1).equals(poly(1, -3, 3, -1)).should.be.true;
         });
         it("should create polynomials with complex roots", () => {
             fromRoots(1, C(0,1), C(0,-1)).equals(poly(1, -1, 1, -1))
-                .should.be.true();
+                .should.be.true;
             fromRoots(
                 -1, ζ, ζ.clone().conj(),
                 ζ.clone().mult(-1),
                 ζ.clone().conj().mult(-1))
-                .equals(poly(1, 1, 1, 1, 1, 1), 1e-10).should.be.true();
+                .equals(poly(1, 1, 1, 1, 1, 1), 1e-10).should.be.true;
         });
         it("should create polynomials with multiple roots", () => {
-            fromRoots([1, 4]).equals(poly(1, -4, 6, -4, 1)).should.be.true();
+            fromRoots([1, 4]).equals(poly(1, -4, 6, -4, 1)).should.be.true;
             fromRoots([C(0,1), 2], [C(0,-1), 2], 1)
-                .equals(poly(1, -1, 2, -2, 1, -1)).should.be.true();
+                .equals(poly(1, -1, 2, -2, 1, -1)).should.be.true;
         });
     });
     describe('#legendre()', () => {
         const legendres = [
             poly(1),
             poly(1, 0),
-            poly(3, 0, -1).scale(1/2),
-            poly(5, 0, -3, 0).scale(1/2),
-            poly(35, 0, -30, 0, 3).scale(1/8),
-            poly(63, 0, -70, 0, 15, 0).scale(1/8),
-            poly(231, 0, -315, 0, 105, 0, -5).scale(1/16),
-            poly(429, 0, -693, 0, 315, 0, -35, 0).scale(1/16),
-            poly(6435, 0, -12012, 0, 6930, 0, -1260, 0, 35).scale(1/128),
-            poly(12155, 0, -25740, 0, 18018, 0, -4620, 0, 315, 0).scale(1/128),
-            poly(46189, 0, -109395, 0, 90090, 0, -30030, 0, 3465, 0, -63).scale(1/256)
+            poly(3, 0, -1).mult(1/2),
+            poly(5, 0, -3, 0).mult(1/2),
+            poly(35, 0, -30, 0, 3).mult(1/8),
+            poly(63, 0, -70, 0, 15, 0).mult(1/8),
+            poly(231, 0, -315, 0, 105, 0, -5).mult(1/16),
+            poly(429, 0, -693, 0, 315, 0, -35, 0).mult(1/16),
+            poly(6435, 0, -12012, 0, 6930, 0, -1260, 0, 35).mult(1/128),
+            poly(12155, 0, -25740, 0, 18018, 0, -4620, 0, 315, 0).mult(1/128),
+            poly(46189, 0, -109395, 0, 90090, 0, -30030, 0, 3465, 0, -63).mult(1/256)
         ];
         for(let n = 0; n < legendres.length; ++n) {
             it("should compute the Legendre polynomial of degree " + n, () =>
-               Polynomial.legendre(n).equals(legendres[n]).should.be.true());
+               Polynomial.legendre(n).equals(legendres[n]).should.be.true);
         }
     });
     describe('#deg', () => {
@@ -97,21 +104,21 @@ describe('Polynomial', () => {
     });
     describe('#isZero()', () => {
         it("should know if a polynomial is nonzero", () =>
-           poly(1, 0, 0).isZero().should.be.false());
+           poly(1, 0, 0).isZero().should.be.false);
         it("should know if a polynomial is zero", () =>
-           poly(0, 0, 0).isZero().should.be.true());
+           poly(0, 0, 0).isZero().should.be.true);
     });
     describe('#equals()', () => {
         let p = poly(1, 0.01, -0.01, 0);
         let q = poly(1, 0, 0, 0);
         it("should know if polynomials are not equal", () =>
-           p.equals(q).should.be.false());
+           p.equals(q).should.be.false);
         it("should know if polynomials are equal within a range", () =>
-           p.equals(q, 0.05).should.be.true());
+           p.equals(q, 0.05).should.be.true);
         it("should know if polynomials are equal", () =>
-           q.equals(poly(1, 0, 0, 0)).should.be.true());
+           q.equals(poly(1, 0, 0, 0)).should.be.true);
         it("should test polynomials of different degrees as not equal", () =>
-           q.equals(poly(1, 0, 0)).should.be.false());
+           q.equals(poly(1, 0, 0)).should.be.false);
     });
     describe('#toString()', () => {
         it("should work with different precisions", () => {
@@ -167,6 +174,17 @@ describe('Polynomial', () => {
             poly(1,2,3).mult(poly(4,5,6,7)).should.eql(poly(4, 13, 28, 34, 32, 21));
             poly(4,5,6,7).mult(poly(1,2,3)).should.eql(poly(4, 13, 28, 34, 32, 21));
             poly(1,2,3).mult(poly(2)).should.eql(poly(2,4,6));
+            poly().mult(poly(2,3,4)).should.eql(poly());
+        });
+        it('should scale by a scalar', () => {
+            poly(1,2,3).mult(2).should.eql(poly(2,4,6));
+            poly(1,2,3).mult(0).should.eql(poly());
+        });
+    });
+    describe('#pxPlusA', () => {
+        it('should compute p*x + a', () => {
+            poly(1,2,3).pxPlusA(4).should.eql(poly(1,2,3,4));
+            poly(1,2,3).pxPlusA().should.eql(poly(1,2,3,0));
         });
     });
     describe('#div()', () => {
@@ -190,10 +208,6 @@ describe('Polynomial', () => {
             let p = poly(1,2);
             p.div.bind(p, poly()).should.throw(/zero polynomial/);
         });
-    });
-    describe('#scale()', () => {
-        it('should scale by a scalar', () =>
-           poly(1,2,3).scale(2).should.eql(poly(2,4,6)));
     });
     describe('#monic()', () => {
         it('should scale by the leading coefficient', () =>
@@ -226,8 +240,8 @@ describe('Polynomial', () => {
         });
     });
     describe('#compose()', () => {
-        let p = Polynomial.create(1, 1, 1, 1);
-        let q = Polynomial.create(1, 1, 1);
+        let p = poly(1, 1, 1, 1);
+        let q = poly(1, 1, 1);
         it('should compose correctly', () => {
             p.compose(q).should.eql(poly(1,3,7,9,10,6,4));
             q.compose(p).should.eql(poly(1,2,3,5,4,3,3));

@@ -18,16 +18,14 @@
  * along with linalg.js.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-'use strict';
-
 /** @module vector
  *
  * @file
  * Implements a Vector class used for doing vector arithmetic.
  */
 
-import { range } from "./util.js";
-import Matrix from "./matrix.js";
+import { range } from "./util";
+import Matrix from "./matrix";
 
 /**
  * @summary
@@ -46,23 +44,20 @@ import Matrix from "./matrix.js";
  *
  * @extends Array
  */
-class Vector extends Array {
+class Vector extends Array<number> {
     /**
      * @summary
      * Create a Vector with the given entries.
-     *
-     * @desc
-     * This is an alias for `Vector.of`.
      *
      * @example {@lang javascript}
      * Vector.create(1).toString(1);    // "[1.0]"
      * Vector.create(1, 2).toString(1); // "[1.0 2.0]"
      *
-     * @param {...number} entries - The entries of the resulting Vector.
-     * @return {Vector} The vector with the given entries.
+     * @param entries - The entries of the resulting Vector.
+     * @return The vector with the given entries.
      */
-    static create(...entries) {
-        return Vector.from(entries);
+    static create(...entries: number[]): Vector {
+        return Vector.from(entries) as Vector;
     }
 
     /**
@@ -72,11 +67,11 @@ class Vector extends Array {
      * @example {@lang javascript}
      * Vector.constant(3, 1).toString(1);  // "[1.0 1.0 1.0]"
      *
-     * @param {integer} n - The size of the resulting Vector.
-     * @param {number} c - The value of the entries.
-     * @return {Vector} The vector `[c, c, ..., c]`.
+     * @param n - The size of the resulting Vector, an integer.
+     * @param c - The value of the entries.
+     * @return The vector `[c, c, ..., c]`.
      */
-    static constant(n, c) {
+    static constant(n: number, c: number) {
         return Vector.from(range(n), () => c);
     }
 
@@ -87,10 +82,10 @@ class Vector extends Array {
      * @example {@lang javascript}
      * Vector.zero(3).toString(1);  // "[0.0 0.0 0.0]"
      *
-     * @param {integer} n - The size of the resulting Vector.
-     * @return {Vector} The zero vector of size `n`.
+     * @param n - The size of the resulting Vector, an integer.
+     * @return The zero vector of size `n`.
      */
-    static zero(n) {
+    static zero(n: number) {
         return Vector.constant(n, 0);
     }
 
@@ -105,12 +100,12 @@ class Vector extends Array {
      * @example {@lang javascript}
      * Vector.e(1, 3).toString(1); // "[0.0 1.0 0.0]"
      *
-     * @param {integer} i - The nonzero entry.
-     * @param {integer} n - The size of the resulting Vector.
-     * @param {number} [λ=1] - The nonzero entry is set to this.
-     * @return {Vector} The `i`th unit coordinate vector in `R^n`.
+     * @param i - The nonzero entry, an integer.
+     * @param n - The size of the resulting Vector, an integer.
+     * @param [λ=1] - The nonzero entry is set to this.
+     * @return The `i`th unit coordinate vector in `R^n`.
      */
-    static e(i, n, λ=1) {
+    static e(i: number, n: number, λ=1) {
         return Vector.from(range(n), j => j === i ? λ : 0);
     }
 

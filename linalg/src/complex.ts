@@ -18,15 +18,11 @@
  * along with linalg.js.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-'use strict';
-
 /** @module complex
  *
  * @file
  * A class for Complex numbers.
  */
-
-import Vector from "./vector.js";
 
 
 /**
@@ -43,7 +39,31 @@ import Vector from "./vector.js";
  *
  * @extends Vector
  */
-class Complex extends Vector {
+class Complex {
+    /**
+     * @summary
+     * The real part (first entry) of the complex number.
+     *
+     * @example {@lang javascript}
+     * let z = new Complex(3, 4);
+     * z.Re;           // 3
+     * z.Re = 5;
+     * z.toString(1);  // "5.0 + 4.0 i"
+     */
+    Re: number;
+
+    /**
+     * @summary
+     * The imaginary part part (second entry) of the complex number.
+     *
+     * @example {@lang javascript}
+     * let z = new Complex(3, 4);
+     * z.Im;           // 4
+     * z.Im = 5;
+     * z.toString(1);  // "3.0 + 5.0 i"
+     */
+    Im: number;
+
     /**
      * @summary
      * Create a new Complex number with prescribed polar coordinates.
@@ -56,11 +76,11 @@ class Complex extends Vector {
      * @example {@lang javascript}
      * Complex.fromPolar(1, Math.PI/2);  // Complex.i
      *
-     * @param {number} r - The radial coordinate.
-     * @param {number} θ - The angular coordinate.
-     * @return {Complex} The complex number `r e^{i θ}`.
+     * @param r - The radial coordinate.
+     * @param θ - The angular coordinate.
+     * @return The complex number `r e^{i θ}`.
      */
-    static fromPolar(r, θ) {
+    static fromPolar(r: number, θ: number): Complex {
         return new Complex(r * Math.cos(θ), r * Math.sin(θ));
     }
 
@@ -70,42 +90,25 @@ class Complex extends Vector {
      *
      * @desc
      * This returns a new object each time it is accessed.
-     *
-     * @type {Complex}
      */
-    static get i() {
+    static get i(): Complex {
         return new Complex(0, 1);
     }
 
     /**
      * @summary
-     * The real part (first entry) of the complex number.
+     * The square of the modulus of the complex number.
+     *
+     * @desc
+     * This is the square of the real part plus the square of the imaginary
+     * part.
      *
      * @example {@lang javascript}
-     * let z = new Complex(3, 4);
-     * z.Re;           // 3
-     * z.Re = 5;
-     * z.toString(1);  // "5.0 + 4.0 i"
-     *
-     * @type {number}
+     * new Complex(3, 4).modsq;   // 25
      */
-    get Re() { return this[0]; }
-    set Re(x) { this[0] = x; }
-
-    /**
-     * @summary
-     * The imaginary part part (second entry) of the complex number.
-     *
-     * @example {@lang javascript}
-     * let z = new Complex(3, 4);
-     * z.Im;           // 4
-     * z.Im = 5;
-     * z.toString(1);  // "3.0 + 5.0 i"
-     *
-     * @type {number}
-     */
-    get Im() { return this[1]; }
-    set Im(x) { this[1] = x; }
+    get modsq(): number {
+        return this.Re * this.Re + this.Im * this.Im;
+    }
 
     /**
      * @summary
@@ -116,10 +119,10 @@ class Complex extends Vector {
      *
      * @example {@lang javascript}
      * new Complex(3, 4).mod;  // 5
-     *
-     * @type {number}
      */
-    get mod() { return this.size; }
+    get mod(): number {
+        return Math.sqrt(this.modsq);
+    }
 
     /**
      * @summary
@@ -133,21 +136,33 @@ class Complex extends Vector {
      *
      * @example {@lang javascript}
      * new Complex(1, 1).arg;  // Math.PI/4
-     *
-     * @type {number}
      */
-    get arg() { return Math.atan2(this.Im, this.Re); }
+    get arg(): number { return Math.atan2(this.Im, this.Re); }
 
     /**
-     * @param {number} a - The real part.  If `a` is a Complex number, then this
+     * @param a - The real part.  If `a` is a Complex number, then this
      *   method clones `a`.
-     * @param {number} [b=0] - The imaginary part.
+     * @param [b=0] - The imaginary part.
      */
-    constructor(a, b=0) {
-        if(a instanceof Complex)
-            super(a.Re, a.Im);
-        else
-            super(a, b);
+    constructor(a: number | Complex, b: number=0) {
+        if(a instanceof Complex) {
+            this.Re = a.Re;
+            this.Im = a.Im;
+        }
+        else {
+            this.Re = a;
+            this.Im = b;
+        }
+    }
+
+    /**
+     * @summary
+     * Create a new Complex with the same entries.
+     *
+     * @return The new complex number.
+     */
+    clone(): Complex {
+        return new Complex(this);
     }
 
     /**
@@ -155,22 +170,25 @@ class Complex extends Vector {
      * Test if this complex number is equal to `other`.
      *
      * @desc
-     * This is the same as {@link Vector#equals}, except that if `other` is a
-     * number, it is promoted to a Complex number first.
+     * This checks that `this.Re == other.Re` and `this.Im == other.Im`, except
+     * that if `other` is a number, it is promoted to a Complex number first.
      *
      * @example {@lang javascript}
      * new Complex(1, 0).equals(1);  // true
      *
-     * @param {(Complex|number)} other - The number to compare.
-     * @param {number} [ε=0] - Entries will test as equal if they are within `ε`
+     * @param other - The number to compare.
+     * @param [ε=0] - Entries will test as equal if they are within `ε`
      *   of each other.  This is provided in order to account for rounding
      *   errors.
-     * @return {boolean} True if `this` equals `other`.
+     * @return True if `this` equals `other`.
      */
-    equals(other, ε=0) {
+    equals(other: Complex | number, ε: number=0): boolean {
         if(typeof other === "number")
             other = new Complex(other, 0);
-        return super.equals(other, ε);
+        if(ε == 0)
+            return this.Re == other.Re && this.Im == other.Im;
+        return Math.abs(this.Re - other.Re) < ε &&
+            Math.abs(this.Im - other.Im) < ε;
     }
 
     /**
@@ -180,10 +198,10 @@ class Complex extends Vector {
      * @example {@lang javascript}
      * new Complex(1, 2).toString(2);  // "1.00 + 2.00 i"
      *
-     * @param {integer} [precision=4] - The number of decimal places to include.
-     * @return {string} A string representation of the complex number.
+     * @param [precision=4] - The number of decimal places to include.
+     * @return A string representation of the complex number.
      */
-    toString(precision=4) {
+    toString(precision: number=4): string {
         if(this.Im >= 0)
             return `${this.Re.toFixed(precision)} + ${this.Im.toFixed(precision)} i`;
         return `${this.Re.toFixed(precision)} - ${(-this.Im).toFixed(precision)} i`;
@@ -201,9 +219,9 @@ class Complex extends Vector {
      * z.conj();
      * z.toString(1);  // "1.0 - 2.0 i"
      *
-     * @return {Complex} `this`
+     * @return `this`
      */
-    conj() {
+    conj(): this {
         this.Im *= -1;
         return this;
     }
@@ -213,7 +231,7 @@ class Complex extends Vector {
      * Add another complex number in-place.
      *
      * @desc
-     * This is the same as {@link Vector#add}, except that if `other` is a
+     * Add `other.Re` to `this.Re` and `other.Im` to `this.Im`.  If `other` is a
      * number, it is promoted to a Complex number first.
      *
      * @example {@lang javascript}
@@ -221,17 +239,39 @@ class Complex extends Vector {
      * z.add(1);
      * z.toString(1);  // "2.0 + 2.0 i"
      *
-     * @param {(Complex|number)} other - The number to add.
-     * @param {number} [factor=1] - Add `factor` times `other` instead of just
+     * @param other - The number to add.
+     * @param [factor=1] - Add `factor` times `other` instead of just
      *   adding `other`.
-     * @return {Complex} `this`
+     * @return `this`
      */
-    add(other, factor=1) {
+    add(other: Complex | number, factor: number=1): this {
         if(typeof other === "number") {
             this.Re += other * factor;
-            return this;
+        } else {
+            this.Re += other.Re * factor;
+            this.Im += other.Im * factor;
         }
-        return super.add(other, factor);
+        return this;
+    }
+
+    /**
+     * @summary
+     * Subtract another complex number in-place.
+     *
+     * @desc
+     * Subtract `other.Re` from `this.Re` and `other.Im` from `this.Im`.  If
+     * `other` is a number, it is promoted to a Complex number first.
+     *
+     * @example {@lang javascript}
+     * let z = new Complex(1, 2);
+     * z.sub(1);
+     * z.toString(1);  // "0.0 + 2.0 i"
+     *
+     * @param other - The number to add.
+     * @return `this`
+     */
+    sub(other: Complex | number): this {
+        return this.add(other, -1);
     }
 
     /**
@@ -249,15 +289,17 @@ class Complex extends Vector {
      * z.mult(-2);
      * z.toString(1);  // "10.0 - 20.0 i"
      *
-     * @param {(Complex|number)} other - The number to multiply.
-     * @return {Complex} `this`
+     * @param other - The number to multiply.
+     * @return `this`
      */
-    mult(other) {
-        if(typeof other === "number")
-            return this.scale(other);
-        [this.Re, this.Im] = [
-            this.Re * other.Re - this.Im * other.Im,
-            this.Re * other.Im + this.Im * other.Re];
+    mult(other: Complex | number): this {
+        if(typeof other === "number") {
+            this.Re *= other;
+            this.Im *= other;
+        } else
+            [this.Re, this.Im] = [
+                this.Re * other.Re - this.Im * other.Im,
+                this.Re * other.Im + this.Im * other.Re];
         return this;
     }
 
@@ -273,11 +315,11 @@ class Complex extends Vector {
      * new Complex( 1, 2).pow(2  ).toString(1);  // "-3.0 + 4.0 i"
      * new Complex(-3, 4).pow(1/2).toString(1);  // "1.0 + 2.0 i"
      *
-     * @param {number} x - The exponent.
-     * @return {Complex} A new Complex number equal to the `this` raised to the
+     * @param x - The exponent.
+     * @return A new Complex number equal to the `this` raised to the
      *   power `x`.
      */
-    pow(x) {
+    pow(x: number): Complex {
         return Complex.fromPolar(Math.pow(this.mod, x), x * this.arg);
     }
 
@@ -294,11 +336,11 @@ class Complex extends Vector {
      * z.recip();
      * z.toString();  // "0.1200 - 0.1600 i"
      *
-     * @return {Complex} `this`
-     * @throws Will throw an error if `this` is zero.
+     * @return `this`
+     * @throws Error if `this` is zero.
      */
-    recip() {
-        const s = 1/this.sizesq;
+    recip(): this {
+        const s = 1/this.modsq;
         if(!isFinite(s))
             throw new Error("Tried to divide by zero");
         this.Re *= s;
@@ -319,18 +361,18 @@ class Complex extends Vector {
      * z.div(w);
      * z.toString();  // "0.440 + 0.0800 i"
      *
-     * @param {(Complex|number)} other - The number to divide.
-     * @return {Complex} `this`
-     * @throws Will throw an error if `other` is zero.
+     * @param other - The number to divide.
+     * @return `this`
+     * @throws Error if `other` is zero.
      */
-    div(other) {
+    div(other: Complex | number): this {
         if(typeof other === "number") {
             const s = 1/other;
             if(!isFinite(s))
                 throw new Error("Tried to divide by zero");
-            return this.scale(s);
+            return this.mult(s);
         }
-        const s = 1/other.sizesq;
+        const s = 1/other.modsq;
         if(!isFinite(s))
             throw new Error("Tried to divide by zero");
         [this.Re, this.Im] = [

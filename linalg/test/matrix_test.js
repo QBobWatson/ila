@@ -18,8 +18,6 @@
  * along with linalg.js.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-'use strict'; // -*- js2 -*-
-
 import { Polynomial, Complex, Vector, Matrix, Subspace } from "../src/linalg.js";
 
 import should from 'should';

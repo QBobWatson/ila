@@ -18,8 +18,6 @@
  * along with linalg.js.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-'use strict'; // -*- js2 -*-
-
 import { Vector } from "../src/linalg.js";
 
 import './lib/resemble.js';

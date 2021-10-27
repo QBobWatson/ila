@@ -18,12 +18,10 @@
  * along with linalg.js.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-'use strict';
-
-import Matrix from './matrix.js';
-import Vector from "./vector.js";
-import Complex from "./complex.js";
-import Subspace from "./subspace.js";
-import Polynomial from "./polynomial.js";
+import Matrix from './matrix';
+import Vector from "./vector";
+import Complex from "./complex";
+import Subspace from "./subspace";
+import Polynomial from "./polynomial";
 
 export { Matrix, Vector, Subspace, Polynomial, Complex };

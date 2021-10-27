@@ -18,8 +18,6 @@
  * along with linalg.js.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-'use strict'; // -*- js2 -*-
-
 /** @module util
  *
  * @file
@@ -30,7 +28,7 @@
  * @summary
  * Iterable over a range of values.
  */
-export function* range(a, b=undefined, step=1) {
+export function* range(a: number, b?: number, step=1) {
     let min, max;
     if(b === undefined)
         [min, max] = [0, a];

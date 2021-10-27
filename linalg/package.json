@@ -2,18 +2,26 @@
     "name": "ila-demos",
     "version": "1.0.0",
     "description": "only for the test suite",
-    "type": "module",
-    "main": "index.js",
-    "dependencies": {},
+    "main": "index.ts",
     "devDependencies": {
+        "@types/chai": "^4.2.22",
+        "@types/mocha": "^9.0.0",
+        "chai": "^4.3.4",
         "foodoc": "0.0.9",
         "jsdoc": "^3.6.3",
         "mocha": "^7.1.1",
-        "should": "^13.2.3"
+        "ts-node": "^10.4.0",
+        "typescript": "^4.4.4"
     },
     "scripts": {
-        "test": "mocha",
+        "test": "TS_NODE_COMPILER_OPTIONS='{\"module\": \"commonjs\"}' mocha",
         "doc": "jsdoc -c jsdoc.json"
+    },
+    "mocha": {
+        "require": "ts-node/register",
+        "extension": [
+            "ts"
+        ]
     },
     "author": "Joe Rabinoff",
     "license": "GPL-3.0"

@@ -18,23 +18,196 @@
  * along with linalg.js.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-'use strict';
-
 /** @module matrix
  *
  * @file
  * Implements a Matrix class containing algorithms from basic linear algebra.
  */
 
-import Vector from "./vector.js";
-import Complex from "./complex.js";
-import Subspace from "./subspace.js";
-import Polynomial from "./polynomial.js";
+import Vector from "./vector";
+import Complex from "./complex";
+import Subspace from "./subspace";
+import Polynomial from "./polynomial";
 
-import { range } from "./util.js";
+import { range } from "./util";
 
 // TODO:
 //  * PCA?
+
+/**
+ * @summary
+ * A pivot position is recorded as a pair `[row, column]`.
+ */
+type Pivot = [number, number];
+
+/**
+ * @summary
+ * The core data computed by Gaussian elimination.
+ *
+ * @desc
+ * When performing Gaussian elimination on a computer, it is easy to keep
+ * track of the row operations performed, and various other data.
+ *
+ * @see Matrix#PLU
+ */
+interface PLUData {
+    /**
+     * A permutation of the numbers `1...m-1` by {@link Matrix.permutation}.
+     */
+    P: number[];
+
+    /**
+     * An `m`x`m` lower-triangular matrix with ones on the diagonal.
+     */
+    L: Matrix;
+
+    /**
+     * An `m`x`n` matrix in row echelon form.
+     */
+    U: Matrix;
+
+    /**
+     * An `m`x`m` invertible matrix equal to `L^(-1)P`, so `EA = U`.
+     */
+    E: Matrix;
+
+    /**
+     * An array of pivot positions.
+     */
+    pivots: Pivot[];
+
+    /**
+     * The determinant of the matrix (only set for square matrices).
+     */
+    det?: number;
+};
+
+/**
+ * @summary
+ * The data computed in the Gram&ndash;Schmidt algorithm.
+ *
+ * @desc
+ * This primarily consists of an `m`x`n` matrix `Q` with orthogonal
+ * columns and an upper-triangular `n`x`n` matrix `R` such that `A = QR`.
+ * Also included is a list of which columns of `Q` are zero.
+ */
+interface QRData {
+    /** An `m`x`n` matrix with orthogonal columns. */
+    Q: Matrix;
+
+    /** An `n`x`n` upper-triangular matrix. */
+    R: Matrix;
+
+    /** A list of the zero columns of `Q`. */
+    LD: number[];
+};
+
+/**
+ * @summary
+ * Diagonalizability data: `this = CDC^(-1)`.
+ */
+interface Diagonalization {
+    /** An `n`x`n` upper-triangular matrix. */
+    C: Matrix;
+
+    /**
+     * An `n`x`n` diagonal matrix, or a block diagonal matrix in the case of
+     * block diagonalization.
+     */
+    D: Matrix;
+};
+
+/**
+ * @summary
+ * Singular value decomposition data.
+ */
+interface SVDData {
+    /** An `m`x`m` orthogonal matrix. */
+    U: Matrix;
+
+    /** An `n`x`n` orthogonal matrix. */
+    V: Matrix;
+
+    /** The singular values. */
+    Σ: number[];
+};
+
+/**
+ * @summary
+ * LDLT decomposition data.
+ */
+interface LDLTData {
+    /** An `n`x`n` lower-unitriangular matrix. */
+    L: Matrix;
+    /** The diagonal entries. */
+    D: number[];
+}
+
+/**
+ * @private
+ *
+ * @summary
+ * Matrix cache object.
+ */
+interface _Cache {
+    /** Transpose matrix. */
+    transpose?: Matrix;
+    /** The rank of the matrix. */
+    rank?: number;
+    /** PLU factorization; computed in `PLU()`. */
+    PLU?: PLUData;
+    /** Reduced row echelon form. */
+    rref?: Matrix;
+    /** Matrix such that `E*this = rref`. */
+    E?: Matrix;
+    /** Transpose matrix of cofactors. */
+    adjugate?: Matrix;
+    /** The normal matrix `A^TA`. */
+    normal?: Matrix;
+    /** Basis for the null space. */
+    nullBasis?: Vector[];
+    /** The null space. */
+    nullSpace?: Subspace;
+    /** Basis for the column space. */
+    colBasis?: Vector[];
+    /** The column space. */
+    colSpace?: Subspace;
+    /** Basis for the row space. */
+    rowBasis?: Vector[];
+    /** The row space. */
+    rowSpace?: Subspace;
+    /** Basis for the left null space. */
+    leftNullBasis?: Vector[];
+    /** The left null space. */
+    leftNullSpace?: Subspace;
+    /** QR factorization; computed in `QR()`. */
+    QR?: QRData;
+    /** Characteristic polynomial. */
+    charpoly?: Polynomial;
+    /** Eigenvalues. */
+    eigenvalues?: Root[];
+    /** Real eigenspaces. */
+    eigenspaces?: Map<number, Subspace>;
+    /** Complex eigenspaces. */
+    cplxEigenspaces?: Map<Complex, Array<Complex[]>>;
+    /** The pseudo-inverse. */
+    pinv?: Matrix;
+    /** Whether the matrix is symmetric. */
+    isSymmetric?: boolean;
+    /** Whether the matrix is upper-triangular. */
+    isUpperTri?: boolean;
+    /** Whether the matrix is upper-unitriangular. */
+    isUpperUni?: boolean;
+    /** Whether the matrix is lower-triangular. */
+    isLowerTri?: boolean;
+    /** Whether the matrix is lower-unitriangular. */
+    isLowerUni?: boolean;
+    /** Whether the matrix is in row-echelon form. */
+    isEchelon?: boolean;
+    /** Whether the matrix has orthonormal columns. */
+    hasONCols?: boolean;
+};
+
 
 /**
  * @summary
@@ -57,7 +230,9 @@ import { range } from "./util.js";
  *
  * @extends Array
  */
-class Matrix extends Array {
+class Matrix extends Array<Vector> {
+    private _cache: _Cache = {};
+
     /**
      * @summary
      * Create a Matrix.
@@ -72,13 +247,12 @@ class Matrix extends Array {
      *   //  [3 4]
      *   //  [5 6]"
      *
-     * @param {...(Array<number>|Vector)} rows - The rows of the matrix.  Arrays
-     *   will be promoted to Vector instances.  All rows must have the same
-     *   length.
-     * @return {Matrix} The new matrix.
-     * @throws Will throw an error if the rows do not have the same length.
+     * @param rows - The rows of the matrix.  Arrays will be promoted to Vector
+     *   instances.  All rows must have the same length.
+     * @return The new matrix.
+     * @throws Error if the rows do not have the same length.
      */
-    static create(...rows) {
+    static create(...rows: (number[] | Vector)[]): Matrix {
         if(rows.length === 0)
             return new Matrix();
         let ret = Matrix.from(
@@ -86,7 +260,7 @@ class Matrix extends Array {
         let n = ret[0].length;
         if(ret.some(row => row.length !== n))
             throw new Error("Matrix rows must have the same length.");
-        return ret;
+        return ret as Matrix;
     }
 
     /**
@@ -102,12 +276,12 @@ class Matrix extends Array {
      *   //  [0 1 0]
      *   //  [0 0 1]"
      *
-     * @param {integer} n - The resulting Matrix will have this many rows and columns.
-     * @param {number} [λ=1] - The diagonal entries will be equal to `λ`.
-     * @return {Matrix} The `n`x`n` (scaled) identity matrix.
+     * @param n - The resulting Matrix will have this many rows and columns.
+     * @param [λ=1] - The diagonal entries will be equal to `λ`.
+     * @return The `n`x`n` (scaled) identity matrix.
      */
-    static identity(n, λ=1) {
-        return Matrix.from(range(n), i => Vector.e(i, n, λ));
+    static identity(n: number, λ: number=1): Matrix {
+        return Matrix.from(range(n), i => Vector.e(i, n, λ)) as Matrix;
     }
 
     /**
@@ -119,12 +293,12 @@ class Matrix extends Array {
      *   // "[0 0 0]
      *   //  [0 0 0]"
      *
-     * @param {integer} m - The resulting Matrix will have this many rows.
-     * @param {integer} [n=m] - The resulting Matrix will have this many columns.
-     * @return {Matrix} The `m`x`n` zero matrix.
+     * @param m - The resulting Matrix will have this many rows.
+     * @param [n=m] - The resulting Matrix will have this many columns.
+     * @return The `m`x`n` zero matrix.
      */
-    static zero(m, n=m) {
-        return Matrix.from(range(m), i => Vector.zero(n));
+    static zero(m: number, n: number=m): Matrix {
+        return Matrix.from(range(m), _ => Vector.zero(n)) as Matrix;
     }
 
     /**
@@ -136,13 +310,13 @@ class Matrix extends Array {
      *   // "[1 1 1]
      *   //  [1 1 1]"
      *
-     * @param {number} c - All entries of the resulting Matrix will be equal to this.
-     * @param {integer} m - The resulting Matrix will have this many rows.
-     * @param {integer} [n=m] - The resulting Matrix will have this many columns.
-     * @return {Matrix} The `m`x`n` zero matrix.
+     * @param c - All entries of the resulting Matrix will be equal to this.
+     * @param m - The resulting Matrix will have this many rows.
+     * @param [n=m] - The resulting Matrix will have this many columns.
+     * @return The `m`x`n` zero matrix.
      */
-    static constant(c, m, n=m) {
-        return Matrix.from(range(m), i => Vector.constant(n, c));
+    static constant(c: number, m: number, n: number=m): Matrix {
+        return Matrix.from(range(m), _ => Vector.constant(n, c)) as Matrix;
     }
 
     /**
@@ -171,15 +345,16 @@ class Matrix extends Array {
      *  //  [0 2 0 0]
      *  //  [0 0 3 0]"
      *
-     * @param {number[]} entries - The diagonal entries of the resulting Matrix.
-     * @param {integer} [m=entries.length] - The resulting Matrix will have this
-     *   many rows.
-     * @param {integer} [n=entries.length] - The resulting Matrix will have this
-     *   many columns.
-     * @return {Matrix} The `m`x`n` diagonal matrix with `entries` along the
-     *   main diagonal.
+     * @param entries - The diagonal entries of the resulting Matrix.
+     * @param [m=entries.length] - The resulting Matrix will have this many
+     *   rows.
+     * @param [n=entries.length] - The resulting Matrix will have this many
+     *   columns.
+     * @return The `m`x`n` diagonal matrix with `entries` along the main
+     *   diagonal.
      */
-    static diagonal(entries, m=entries.length, n=entries.length) {
+    static diagonal(entries: number[], m: number=entries.length,
+                    n: number=entries.length): Matrix {
         let ret = Matrix.zero(m, n);
         for(let i = 0; i < Math.min(m, n, entries.length); ++i)
             ret[i][i] = entries[i];
@@ -205,53 +380,14 @@ class Matrix extends Array {
      *   //  [1 0 0]
      *   //  [0 1 0]"
      *
-     * @param {number[]} vals - If `n` numbers are given, these should be a
-     *   permutation of the set `{0,1,...,n-1}`.
-     * @return {Matrix} The permutation matrix `M` with the property that the
-     *   `i`th entry of `M.apply(v)` is the `vals[i]`th entry of `v`.
+     * @param vals - If `n` numbers are given, these should be a permutation of
+     *   the set `{0,1,...,n-1}`.
+     * @return The permutation matrix `M` with the property that the `i`th entry
+     *   of `M.apply(v)` is the `vals[i]`th entry of `v`.
      */
-    static permutation(vals) {
+    static permutation(vals: number[]): Matrix {
         let n = vals.length;
-        return Matrix.from(range(n), i => Vector.e(vals[i], n));
-    }
-
-    /**
-     * @private
-     *
-     * @type {object}
-     * @property {Matrix} transpose - Transpose matrix.
-     * @property {integer} rank - The rank of the matrix.
-     * @property {PLUData} PLU - PLU factorization; computed in `PLU()`.
-     * @property {Matrix} rref - Reduced row echelon form.
-     * @property {Matrix} E - Matrix such that `E*this = rref`.
-     * @property {Matrix} adjugate - Transpose matrix of cofactors.
-     * @property {Matrix} normal - The normal matrix `A^TA`.
-     * @property {Vector[]} nullBasis - Basis for the null space.
-     * @property {Subspace} nullSpace - The null space.
-     * @property {Vector[]} colBasis - Basis for the column space.
-     * @property {Subspace} nullSpace - The column space.
-     * @property {Vector[]} rowBasis - Basis for the row space.
-     * @property {Subspace} rowSpace - The row space.
-     * @property {Vector[]} leftNullBasis - Basis for the left null space.
-     * @property {Subspace} leftNullSpace - The left null space.
-     * @property {QRData} QR - QR factorization; computed in `QR()`.
-     * @property {Polynomial} charpoly - Characteristic polynomial.
-     * @property {Root[]} eigenvalues - Eigenvalues.
-     * @property {Map.<number, Subspace>} eigenspaces - Real eigenspaces.
-     * @property {Map.<Complex, Array.<Complex[]>>} cplxEigenspaces - Complex
-     *   eigenspaces.
-     * @property {Matrix} pinv - The pseudo-inverse.
-     * @property {boolean} isSymmetric - Whether the matrix is symmetric.
-     * @property {boolean} isUpperTri - Whether the matrix is upper-triangular.
-     * @property {boolean} isUpperUni - Whether the matrix is upper-unitriangular.
-     * @property {boolean} isLowerTri - Whether the matrix is lower-triangular.
-     * @property {boolean} isLowerUni - Whether the matrix is lower-unitriangular.
-     * @property {boolean} isEchelon - Whether the matrix is in row-echelon form.
-     * @property {boolean} hasONCols - Whether the matrix has orthonormal columns.
-     */
-    get _cache() {
-        if(!this.__cache) this.__cache = {};
-        return this.__cache;
+        return Matrix.from(range(n), i => Vector.e(vals[i], n)) as Matrix;
     }
 
     /**
@@ -260,10 +396,8 @@ class Matrix extends Array {
      *
      * @example {@lang javascript}
      * Matrix.create([1, 2], [3, 4], [5, 6]).m;  // 3
-     *
-     * @type {integer}
      */
-    get m() { return this.length; }
+    get m(): number { return this.length; }
 
     /**
      * @summary
@@ -271,10 +405,8 @@ class Matrix extends Array {
      *
      * @example {@lang javascript}
      * Matrix.create([1, 2], [3, 4], [5, 6]).n;  // 2
-     *
-     * @type {integer}
      */
-    get n() { return this.length === 0 ? 0 : this[0].length; }
+    get n(): number { return this.length === 0 ? 0 : this[0].length; }
 
     /**
      * @summary
@@ -287,12 +419,10 @@ class Matrix extends Array {
      * Matrix.create([1, 2], [3, 4], [5, 6]).transpose.toString(0);
      *   // "[1 3 5]
      *   //  [2 4 6]"
-     *
-     * @type {Matrix}
      */
-    get transpose() {
+    get transpose(): Matrix {
         if(this._cache.transpose) return this._cache.transpose;
-        this._cache.transpose = Matrix.from(this.cols());
+        this._cache.transpose = Matrix.from(this.cols()) as Matrix;
         return this._cache.transpose;
     }
 
@@ -308,10 +438,8 @@ class Matrix extends Array {
      * Matrix.create([1, 2], [3, 4], [5, 6]).normal.toString(0);
      *   // "[35 44]
      *   //  [44 56]"
-     *
-     * @type {Matrix}
      */
-    get normal() {
+    get normal(): Matrix {
         if(this._cache.normal) return this._cache.normal;
         this._cache.normal = this.transpose.mult(this);
         this._cache.normal.hint({isSymmetric: true});
@@ -326,16 +454,14 @@ class Matrix extends Array {
      * Matrix.create([1, 2],
      *               [3, 4],
      *               [5, 6]).trace;  // 1 + 4
-     *
-     * @type {number}
      */
-    get trace() {
+    get trace(): number {
         let acc = 0;
         for(const d of this.diag()) acc += d;
         return acc;
     }
 
-    _fadeev_leverrier() {
+    _fadeev_leverrier(): {charpoly: Polynomial, adjugate: Matrix} {
         let n = this.n;
         let ret = Polynomial.create(1);
         let AM = Matrix.zero(n), adjugate;
@@ -353,6 +479,7 @@ class Matrix extends Array {
         if(n % 2 === 0) adjugate.scale(-1);
         this._cache.charpoly = ret;
         this._cache.adjugate = adjugate;
+        return {charpoly: ret, adjugate: adjugate};
     }
 
     /**
@@ -380,15 +507,14 @@ class Matrix extends Array {
      *               [2,-1,3],
      *               [5, 0,1]).charpoly.toString(0);  // "-x^3 + x^2 + 33 x + 97"
      *
-     * @type {Polynomial}
-     * @throws Will throw an error if the matrix is not square.
+     * @throws Error if the matrix is not square.
      */
-    get charpoly() {
+    get charpoly(): Polynomial {
         if(!this.isSquare())
             throw new Error("Tried to compute the characteristic polynomial of a non-square matrix");
         if(this._cache.charpoly) return this._cache.charpoly;
-        this._fadeev_leverrier();
-        return this._cache.charpoly;
+        let { charpoly } = this._fadeev_leverrier();
+        return charpoly;
     }
 
     /**
@@ -431,15 +557,15 @@ class Matrix extends Array {
      *   //  [ 0  0 97]"
      * A.det();  // 97
      *
-     * @type {Matrix}
-     * @throws Will throw an error if the matrix is not square.
+     * @throws Error if the matrix is not square.
      * @see Matrix#charpoly
      */
-    get adjugate() {
+    get adjugate(): Matrix {
         if(!this.isSquare())
             throw new Error("Tried to compute the adjugate of a non-square matrix");
-        this._fadeev_leverrier(); // Computes the adjugate
-        return this._cache.adjugate;
+        if(this._cache.adjugate) return this._cache.adjugate;
+        let { adjugate } = this._fadeev_leverrier(); // Computes the adjugate
+        return adjugate;
     }
 
 
@@ -449,11 +575,9 @@ class Matrix extends Array {
      *
      * @desc
      * Call this after modifying any matrix entries.
-     *
-     * @return {undefined}
      */
-    invalidate() {
-        if(this.__cache) delete this.__cache;
+    invalidate(): void {
+        this._cache = {};
     }
 
     /**
@@ -464,16 +588,15 @@ class Matrix extends Array {
      * This is provided so that the methods in this class can select the best
      * algorithm depending on special properties of the matrix.
      *
-     * @param {Object} hints - Hinted properties.
-     * @param {boolean} hints.isSymmetric - Whether the matrix is symmetric.
-     * @param {boolean} hints.isUpperTri - Whether the matrix is upper-triangular.
-     * @param {boolean} hints.isUpperUni - Whether the matrix is upper-unitriangular.
-     * @param {boolean} hints.isLowerTri - Whether the matrix is lower-triangular.
-     * @param {boolean} hints.isLowerUni - Whether the matrix is lower-unitriangular.
-     * @param {boolean} hints.isEchelon - Whether the matrix is in row-echelon form.
-     * @param {boolean} hints.hasONCols - Whether the matrix has orthonormal columns.
-     * @param {Root[]} hints.eigenvalues - The eigenvalues of the matrix.
-     * @return {undefined}
+     * @param hints - Hinted properties.
+     * @param hints.isSymmetric - Whether the matrix is symmetric.
+     * @param hints.isUpperTri - Whether the matrix is upper-triangular.
+     * @param hints.isUpperUni - Whether the matrix is upper-unitriangular.
+     * @param hints.isLowerTri - Whether the matrix is lower-triangular.
+     * @param hints.isLowerUni - Whether the matrix is lower-unitriangular.
+     * @param hints.isEchelon - Whether the matrix is in row-echelon form.
+     * @param hints.hasONCols - Whether the matrix has orthonormal columns.
+     * @param hints.eigenvalues - The eigenvalues of the matrix.
      */
     hint({isSymmetric,
           isUpperTri,
@@ -482,7 +605,16 @@ class Matrix extends Array {
           isLowerUni,
           isEchelon,
           hasONCols,
-          eigenvalues}) {
+          eigenvalues} :
+         {isSymmetric?: boolean,
+          isUpperTri?: boolean,
+          isUpperUni?: boolean,
+          isLowerTri?: boolean,
+          isLowerUni?: boolean,
+          isEchelon?: boolean,
+          hasONCols?: boolean,
+          eigenvalues?: Root[]}
+        ): void {
         if(isSymmetric !== undefined)
             this._cache.isSymmetric = isSymmetric;
         if(hasONCols !== undefined) {
@@ -530,12 +662,12 @@ class Matrix extends Array {
      *   //  [0 0 1 1 0]
      *   //  [0 0 0 0 0]"
      *
-     * @param {integer} i - The row to insert.
-     * @param {integer} j - The column to insert.
-     * @param {Matrix} M - The submatrix.
-     * @return {Matrix} `this`, after modification.
+     * @param i - The row to insert.
+     * @param j - The column to insert.
+     * @param M - The submatrix.
+     * @return `this`, after modification.
      */
-    insertSubmatrix(i, j, M) {
+    insertSubmatrix(i: number, j: number, M: Matrix): this {
         for(let ii = 0; ii < M.m; ++ii)
             this[ii+i].splice(j, M.n, ...M[ii]);
         return this;
@@ -557,13 +689,13 @@ class Matrix extends Array {
      * A.equals(B, 0.05);           // true
      * A.equals(Matrix.zero(3, 2)); // false
      *
-     * @param {Matrix} other - The matrix to compare.
-     * @param {number} [ε=0] - Entries will test as equal if they are within `ε`
+     * @param other - The matrix to compare.
+     * @param [ε=0] - Entries will test as equal if they are within `ε`
      *   of each other.  This is provided in order to account for rounding
      *   errors.
-     * @return {boolean} True if the matrices are equal.
+     * @return True if the matrices are equal.
      */
-    equals(other, ε=0) {
+    equals(other: Matrix, ε: number=0): boolean {
         if(this.m !== other.m || this.n !== other.n)
             return false;
         return this.every((v, i) => v.equals(other[i], ε));
@@ -573,10 +705,10 @@ class Matrix extends Array {
      * @summary
      * Create a new Matrix with the same entries.
      *
-     * @return {Matrix} The new matrix.
+     * @return The new matrix.
      */
-    clone() {
-        return Matrix.from(this, row => row.clone());
+    clone(): Matrix {
+        return Matrix.from(this, row => row.clone()) as Matrix;
     }
 
     /**
@@ -589,10 +721,10 @@ class Matrix extends Array {
      *   //  [3.0 4.0]
      *   //  [5.0 6.0]"
      *
-     * @param {integer} [precision=4] - The number of decimal places to include.
-     * @return {string} A string representation of the matrix.
+     * @param [precision=4] - The number of decimal places to include.
+     * @return A string representation of the matrix.
      */
-    toString(precision=4) {
+    toString(precision: number=4): string {
         let strings = Array.from(
             this, row => Array.from(row, v => v.toFixed(precision)));
         let colLens = Array.from(
@@ -610,10 +742,10 @@ class Matrix extends Array {
      * @example {@lang javascript}
      * Matrix.create([1, 2], [3, 4], [5, 6]).row(1).toString(0);  // "[3 4]"
      *
-     * @param {integer} i - The row to return.
-     * @return {Vector} The `i`th row of `this`.
+     * @param i - The row to return.
+     * @return The `i`th row of `this`.
      */
-    row(i) {
+    row(i: number): Vector {
         return this[i];
     }
 
@@ -625,10 +757,8 @@ class Matrix extends Array {
      * let A = Matrix.create([1, 2], [3, 4], [5, 6]);
      * Array.from(A.rows(), row => row.toString(0));
      *   // ["[1 2]", "[3 4]", "[5 6]"]
-     *
-     * @return {Iterable.<Vector>} An iterable over the rows.
      */
-    rows() {
+    rows(): Iterable<Vector> {
         return this[Symbol.iterator]();
     }
 
@@ -639,10 +769,10 @@ class Matrix extends Array {
      * @example {@lang javascript}
      * Matrix.create([1, 2], [3, 4], [5, 6]).col(1).toString(0);  // "[2 4 6]"
      *
-     * @param {integer} j - The column to return.
-     * @return {Vector} The `j`th column of `this`.
+     * @param j - The column to return.
+     * @return The `j`th column of `this`.
      */
-    col(j) {
+    col(j: number): Vector {
         return Vector.from(this, row => row[j]);
     }
 
@@ -655,9 +785,9 @@ class Matrix extends Array {
      * Array.from(A.cols(), col => col.toString(0));
      *   // ["[1 3 5]", "[2 4 6]"]
      *
-     * @return {Iterable.<Vector>} An iterable over the columns.
+     * @return An iterable over the columns.
      */
-    cols() {
+    cols(): Iterable<Vector> {
         let self = this;
         return (function*() {
             for(let j = 0; j < self.n; ++j)
@@ -673,9 +803,9 @@ class Matrix extends Array {
      * let A = Matrix.create([1, 2], [3, 4], [5, 6]);
      * Array.from(A.diag());  // [1, 4]
      *
-     * @return {Iterable.<number>} An iterable over the diagonal entries.
+     * @return An iterable over the diagonal entries.
      */
-    diag() {
+    diag(): Iterable<number> {
         let self = this;
         return (function*() {
             for(let j = 0; j < Math.min(self.m, self.n); ++j)
@@ -699,12 +829,12 @@ class Matrix extends Array {
      *  // "[4 6]
      *  //  [7 9]"
      *
-     * @param {integer} i - The row to delete.
-     * @param {integer} j - The column to delete.
-     * @return {Matrix} The `(i, j)` minor.
+     * @param i - The row to delete.
+     * @param j - The column to delete.
+     * @return The `(i, j)` minor.
      * @see Matrix#cofactor
      */
-    minor(i, j) {
+    minor(i: number, j: number): Matrix {
         let ret = this.clone();
         ret.splice(i, 1);
         ret.forEach(row => row.splice(j, 1));
@@ -725,23 +855,16 @@ class Matrix extends Array {
      *                       [7, 8, 9]);
      * A.cofactor(0, 1);  // 6
      *
-     * @param {integer} i - The row.
-     * @param {integer} j - The column.
-     * @return {number} The `(i, j)` cofactor.
-     * @throws Will throw an error if the matrix is not square.
+     * @param i - The row.
+     * @param j - The column.
+     * @return The `(i, j)` cofactor.
+     * @throws Error if the matrix is not square.
      * @see Matrix#minor
      * @see Matrix#adjugate
      */
-    cofactor(i, j) {
+    cofactor(i: number, j: number): number {
         return this.minor(i, j).det() * ((i + j) % 2 === 0 ? 1 : -1);
     }
-
-    /**
-     * @summary
-     * A pivot position is recorded as a pair `[row, column]`.
-     *
-     * @typedef {number[]} Pivot
-     */
 
     /**
      * @summary
@@ -756,12 +879,11 @@ class Matrix extends Array {
      *               [0, 0, 0],
      *               [0, 0, 2]).leadingEntries();  // [[1, 1], [3, 2]]
      *
-     * @param {number} [ε=0] - Entries smaller than this value are taken
-     *   to be zero.
-     * @return {Pivot[]}
+     * @param [ε=0] - Entries smaller than this value are taken to be zero.
+     * @return The pivot positions
      */
-    leadingEntries(ε=0) {
-        let entries = [];
+    leadingEntries(ε: number=0): Pivot[] {
+        let entries: Pivot[] = [];
         for(let [i, row] of this.entries()) {
             for(let j = 0; j < this.n; ++j) {
                 if(Math.abs(row[j]) > ε) {
@@ -787,9 +909,9 @@ class Matrix extends Array {
      * Matrix.create([1, 2], [3, 4]).isSquare();          // true
      * Matrix.create([1, 2], [3, 4], [5, 6]).isSquare();  // false
      *
-     * @return {boolean} True if the matrix is square.
+     * @return True if the matrix is square.
      */
-    isSquare() {
+    isSquare(): boolean {
         return this.m == this.n;
     }
 
@@ -805,11 +927,10 @@ class Matrix extends Array {
      * Matrix.create([0, 0], [0, 0.01]).isZero();     // false
      * Matrix.create([0, 0], [0, 0.01]).isZero(0.02); // true
      *
-     * @param {number} [ε=0] - Entries smaller than this value are assumed
-     *   to be zero.
-     * @return {boolean} True if the matrix is zero.
+     * @param [ε=0] - Entries smaller than this value are assumed to be zero.
+     * @return True if the matrix is zero.
      */
-    isZero(ε=0) {
+    isZero(ε: number=0): boolean {
         return this.every(row => row.isZero(ε));
     }
 
@@ -832,12 +953,12 @@ class Matrix extends Array {
      *               [0, 1, 1],
      *               [0, 2, 1]).isUpperTri(); // false
      *
-     * @param {number} [ε=0] - Entries smaller than this value are assumed
+     * @param [ε=0] - Entries smaller than this value are assumed
      *   to be zero.
-     * @return {boolean} True if the matrix is upper-triangular.
+     * @return True if the matrix is upper-triangular.
      * @see Matrix#isLowerTri
      */
-    isUpperTri(ε=0) {
+    isUpperTri(ε: number=0): boolean {
         if(this._cache.isUpperTri !== undefined)
             return this._cache.isUpperTri;
         for(let i = 1; i < this.m; ++i) {
@@ -874,12 +995,12 @@ class Matrix extends Array {
      *               [0, 1, 1],
      *               [0, 0, 2]).isUpperUni(); // false
      *
-     * @param {number} [ε=0] - Entries smaller than this value are assumed
+     * @param [ε=0] - Entries smaller than this value are assumed
      *   to be zero.
-     * @return {boolean} True if the matrix is upper-unipotent.
+     * @return True if the matrix is upper-unipotent.
      * @see Matrix#isLowerUni
      */
-    isUpperUni(ε=0) {
+    isUpperUni(ε: number=0): boolean {
         for(let d of this.diag()) {
             if(Math.abs(d - 1) > ε)
                 return false;
@@ -906,11 +1027,10 @@ class Matrix extends Array {
      *               [1, 1, 2],
      *               [1, 1, 1]).isLowerTri(); // false
      *
-     * @param {number} [ε=0] - Entries smaller than this value are assumed
-     *   to be zero.
-     * @return {boolean} True if the matrix is lower-triangular.
+     * @param [ε=0] - Entries smaller than this value are assumed to be zero.
+     * @return True if the matrix is lower-triangular.
      */
-    isLowerTri(ε=0) {
+    isLowerTri(ε: number=0): boolean {
         if(this._cache.isLowerTri !== undefined)
             return this._cache.isLowerTri;
         for(let i = 0; i < this.m; ++i) {
@@ -947,12 +1067,12 @@ class Matrix extends Array {
      *               [1, 1, 0],
      *               [1, 1, 2]).isLowerUni(); // false
      *
-     * @param {number} [ε=0] - Entries smaller than this value are assumed
+     * @param [ε=0] - Entries smaller than this value are assumed
      *   to be zero.
-     * @return {boolean} True if the matrix is lower-unipotent.
+     * @return True if the matrix is lower-unipotent.
      * @see Matrix#isUpperUni
      */
-    isLowerUni(ε=0) {
+    isLowerUni(ε: number=0): boolean {
         for(let d of this.diag()) {
             if(Math.abs(d - 1) > ε)
                 return false;
@@ -982,11 +1102,11 @@ class Matrix extends Array {
      *               [0, 1, 2],
      *               [0, 0, 1]).isDiagonal(); // false
      *
-     * @param {number} [ε=0] - Entries smaller than this value are assumed
+     * @param [ε=0] - Entries smaller than this value are assumed
      *   to be zero.
-     * @return {boolean} True if the matrix is diagonal.
+     * @return True if the matrix is diagonal.
      */
-    isDiagonal(ε=0) {
+    isDiagonal(ε: number=0): boolean {
         return this.isLowerTri(ε) && this.isUpperTri(ε);
     }
 
@@ -1025,11 +1145,11 @@ class Matrix extends Array {
      *               [2,  1]).isEchelon();             // false
      * Matrix.create([0,1,0,0]).transpose.isEchelon(); // false
      *
-     * @param {number} [ε=0] - Entries smaller than this value are assumed
+     * @param [ε=0] - Entries smaller than this value are assumed
      *   to be zero.
-     * @return {boolean} True if the matrix is in row echelon form.
+     * @return True if the matrix is in row echelon form.
      */
-    isEchelon(ε=0) {
+    isEchelon(ε: number=0): boolean {
         if(this._cache.isEchelon) return this._cache.isEchelon;
         let i0 = -1;
         let j0 = -1;
@@ -1079,11 +1199,11 @@ class Matrix extends Array {
      *               [2,  1]).isRREF();             // false
      * Matrix.create([0,1,0,0]).transpose.isRREF(); // false
      *
-     * @param {number} [ε=0] - Entries smaller than this value are assumed
+     * @param [ε=0] - Entries smaller than this value are assumed
      *   to be zero.
-     * @return {boolean} True if the matrix is in reduced row-echelon form.
+     * @return True if the matrix is in reduced row-echelon form.
      */
-    isRREF(ε=0) {
+    isRREF(ε: number=0): boolean {
         let i0 = -1;
         let j0 = -1;
         for(let [i, j] of this.leadingEntries(ε)) {
@@ -1123,12 +1243,12 @@ class Matrix extends Array {
      *               [0,  0, 2, 1],
      *               [0,  0, 0, 0]).isFullRowRank();  // false
      *
-     * @param {number} [ε=1e-10] - Entries smaller than this value are taken
+     * @param [ε=1e-10] - Entries smaller than this value are taken
      *   to be zero for the purposes of pivoting and projecting.
-     * @return {boolean} True if the matrix has full row rank.
+     * @return True if the matrix has full row rank.
      * @see Matrix#rank
      */
-    isFullRowRank(ε=1e-10) {
+    isFullRowRank(ε: number=1e-10): boolean {
         if(this.m > this.n) return false; // Don't need to row reduce
         return this.rank(ε) == this.m;
     }
@@ -1157,12 +1277,12 @@ class Matrix extends Array {
      *               [0,  0, 2],
      *               [0,  0, 0]).isFullColRank();  // false
      *
-     * @param {number} [ε=1e-10] - Entries smaller than this value are taken
+     * @param [ε=1e-10] - Entries smaller than this value are taken
      *   to be zero for the purposes of pivoting and projecting.
-     * @return {boolean} True if the matrix has full column rank.
+     * @return True if the matrix has full column rank.
      * @see Matrix#rank
      */
-    isFullColRank(ε=1e-10) {
+    isFullColRank(ε: number=1e-10): boolean {
         if(this.m < this.n) return false; // Don't need to row reduce
         return this.rank(ε) == this.n;
     }
@@ -1194,12 +1314,12 @@ class Matrix extends Array {
      *               [0,  0, 2, 1],
      *               [0,  0, 0, 3]).isInvertible();  // false
      *
-     * @param {number} [ε=1e-10] - Entries smaller than this value are taken
+     * @param [ε=1e-10] - Entries smaller than this value are taken
      *   to be zero for the purposes of pivoting and projecting.
-     * @return {boolean} True if the matrix is invertible.
+     * @return True if the matrix is invertible.
      * @see Matrix#inverse
      */
-    isInvertible(ε=1e-10) {
+    isInvertible(ε: number=1e-10): boolean {
         return this.isFullRowRank(ε) && this.isFullColRank(ε);
     }
 
@@ -1207,12 +1327,12 @@ class Matrix extends Array {
      * @summary
      * Alias for `!this.isInvertible()`.
      *
-     * @param {number} [ε=1e-10] - Entries smaller than this value are taken
+     * @param [ε=1e-10] - Entries smaller than this value are taken
      *   to be zero for the purposes of pivoting and projecting.
-     * @return {boolean} True if the matrix is not invertible.
+     * @return True if the matrix is not invertible.
      * @see Matrix#isInvertible
      */
-    isSingular(ε=1e-10) {
+    isSingular(ε: number=1e-10): boolean {
         return !this.isInvertible(ε);
     }
 
@@ -1228,11 +1348,11 @@ class Matrix extends Array {
      *               [0, 1],
      *               [0, 0]).hasONCols(); // true
      *
-     * @param {number} [ε=1e-10] - Numbers smaller than this value are taken
+     * @param [ε=1e-10] - Numbers smaller than this value are taken
      *   to be zero.
-     * @return {boolean} True if the matrix has orthonormal columns.
+     * @return True if the matrix has orthonormal columns.
      */
-    hasONCols(ε=1e-10) {
+    hasONCols(ε: number=1e-10): boolean {
         if(this._cache.hasONCols) return this._cache.hasONCols;
         this._cache.hasONCols =
             this.normal.equals(Matrix.identity(this.n), ε);
@@ -1258,11 +1378,11 @@ class Matrix extends Array {
      *               [0, 1],
      *               [0, 0]).isOrthogonal();        // false
      *
-     * @param {number} [ε=1e-10] - Numbers smaller than this value are taken
+     * @param [ε=1e-10] - Numbers smaller than this value are taken
      *   to be zero.
-     * @return {boolean} True if the matrix is orthogonal.
+     * @return True if the matrix is orthogonal.
      */
-    isOrthogonal(ε=1e-10) {
+    isOrthogonal(ε: number=1e-10): boolean {
         return this.isSquare() && this.hasONCols(ε);
     }
 
@@ -1284,11 +1404,11 @@ class Matrix extends Array {
      * Matrix.create([1, 2, 3],
      *               [2, 4, 5]).isSymmetric();  // false
      *
-     * @param {number} [ε=1e-10] - Entries will test as equal if they are within
+     * @param [ε=1e-10] - Entries will test as equal if they are within
      *   `ε` of each other.
-     * @return {boolean} True if the matrix is symmetric.
+     * @return True if the matrix is symmetric.
      */
-    isSymmetric(ε=1e-10) {
+    isSymmetric(ε: number=1e-10): boolean {
         if(this._cache.isSymmetric) return this._cache.isSymmetric;
         this._cache.isSymmetric = this.equals(this.transpose, ε);
         return this._cache.isSymmetric;
@@ -1321,16 +1441,16 @@ class Matrix extends Array {
      * let v = Vector.create(-7, 2, 1);
      * v.dot(A.apply(v));  // -11
      *
-     * @param {number} [ε=1e-10] - Entries are considered to be zero if they are
+     * @param [ε=1e-10] - Entries are considered to be zero if they are
      *   smaller than this.
-     * @return {boolean} True if the matrix is positive-definite.
-     * @throws Will throw an error if the matrix is not symmetric.
+     * @return True if the matrix is positive-definite.
+     * @throws Error if the matrix is not symmetric.
      * @see Matrix#LDLT
      */
-    isPosDef(ε=1e-10) {
+    isPosDef(ε: number=1e-10): boolean {
         if(!this.isSymmetric())
             throw new Error("Tried to test positive-definiteness of a non-symmetric matrix.");
-        let LDLT = this.LDLT();
+        let LDLT = this.LDLT(ε);
         if(!LDLT) return false;
         return LDLT.D.every(x => x > 0);
     }
@@ -1353,12 +1473,12 @@ class Matrix extends Array {
      *               [-4/13, 83/39,  4/39],
      *               [ 5/13,  7/78, 34/39]).isDiagonalizable();  // false
      *
-     * @param {number} [ε=1e-10] - Rounding factor.
-     * @return {boolean} True if the matrix is diagonalizable.
-     * @throws Will throw an error if the matrix is not square.
+     * @param [ε=1e-10] - Rounding factor.
+     * @return True if the matrix is diagonalizable.
+     * @throws Error if the matrix is not square.
      * @see Matrix#diagonalize
      */
-    isDiagonalizable(ε=1e-10) {
+    isDiagonalizable(ε: number=1e-10): boolean {
         if(this.isSymmetric(ε))
             return true;
         return !!this.diagonalize({ε});
@@ -1382,13 +1502,13 @@ class Matrix extends Array {
      *   // "[3 3]
      *   //  [7 7]"
      *
-     * @param {Matrix} other - The matrix to add.
-     * @param {number} [factor=1] - Add `factor` times `other` instead of just
-     *   adding `other`.
-     * @return {Matrix} `this`
-     * @throws Will throw an error if the matrices have different sizes.
+     * @param other - The matrix to add.
+     * @param [factor=1] - Add `factor` times `other` instead of just adding
+     *   `other`.
+     * @return `this`
+     * @throws Error if the matrices have different sizes.
      */
-    add(other, factor=1) {
+    add(other: Matrix, factor: number=1): this {
         if(this.m !== other.m || this.n !== other.n)
             throw new Error('Tried to add matrices of different sizes');
         this.forEach((row, i) => row.add(other[i], factor));
@@ -1410,11 +1530,11 @@ class Matrix extends Array {
      *   // "[-1 1]
      *   //  [-1 1]"
      *
-     * @param {Matrix} other - The matrix to subtract.
-     * @return {Matrix} `this`
-     * @throws Will throw an error if the matrices have different sizes.
+     * @param other - The matrix to subtract.
+     * @return `this`
+     * @throws Error if the matrices have different sizes.
      */
-    sub(other) {
+    sub(other: Matrix): this {
         return this.add(other, -1);
     }
 
@@ -1432,10 +1552,10 @@ class Matrix extends Array {
      *   // "[2 4]
      *   //  [6 8]"
      *
-     * @param {number} c - The number to multiply.
-     * @return {Matrix} `this`
+     * @param c - The number to multiply.
+     * @return `this`
      */
-    scale(c) {
+    scale(c: number): this {
         this.forEach(row => row.scale(c));
         return this;
     }
@@ -1463,17 +1583,16 @@ class Matrix extends Array {
      *   //  [19 26 33]
      *   //  [29 40 51]"
      *
-     * @param {Matrix} other - The matrix to multiply.
-     * @return {Matrix} The matrix product.
-     * @throws Will throw an error if the matrices have incompatible
-     *   dimensions.
+     * @param other - The matrix to multiply.
+     * @return The matrix product.
+     * @throws Error if the matrices have incompatible dimensions.
      */
-    mult(other) {
+    mult(other: Matrix): Matrix {
         if(other.m !== this.n)
             throw new Error('Cannot multiply matrices of incompatible dimensions');
         return Matrix.from(this,
             row => Vector.from(range(other.n), i => row.reduce(
-                (a, v, j) => a + v * other[j][i], 0)));
+                (a, v, j) => a + v * other[j][i], 0))) as Matrix;
     }
 
     /**
@@ -1492,16 +1611,16 @@ class Matrix extends Array {
      * let A = Matrix.create([1, 2, 3], [4, 5, 6]);
      * B.apply(Vector.create(1, -1, 1)).toString(0); // "[2 5]"
      *
-     * @param {Vector|number[]} v - The vector to multiply.  An array of numbers
+     * @param v - The vector to multiply.  An array of numbers
      *   is promoted to a vector.
-     * @return {Vector} The matrix-vector product.
-     * @throws Will throw an error if the matrix and vector have incompatible
+     * @return The matrix-vector product.
+     * @throws Error if the matrix and vector have incompatible
      *   dimensions.
      */
-    apply(v) {
+    apply(v: Vector | number[]): Vector {
         if(v.length !== this.n)
             throw new Error('Cannot multiply matrix and vector of incompatible dimensions');
-        return Vector.from(this, row => row.dot(v));
+        return Vector.from(this, row => row.dot(v)) as Vector;
     }
 
 
@@ -1538,14 +1657,13 @@ class Matrix extends Array {
      *   //  [0.0 1.0 0.0]
      *   //  [0.0 0.0 1.0]"
      *
-     * @param {number} [ε=1e-10] - Entries smaller than this value are taken
+     * @param [ε=1e-10] - Entries smaller than this value are taken
      *   to be zero for the purposes of pivoting.
-     * @return {Matrix} The inverse matrix.
-     * @throws Will throw an error if the matrix is not square or not
-     *   invertible.
+     * @return The inverse matrix.
+     * @throws Error if the matrix is not square or not invertible.
      * @see Matrix#rowOps
      */
-    inverse(ε=1e-10) {
+    inverse(ε: number=1e-10): Matrix {
         if(!this.isSquare())
             throw new Error("Tried to invert a non-square matrix");
         let E = this.rowOps(ε);
@@ -1576,14 +1694,14 @@ class Matrix extends Array {
      *   //  [8 10 12]
      *   //  [7  8  9]"
      *
-     * @param {integer} i - The row to scale.
-     * @param {number} c - The scaling factor.
-     * @param {integer} [start=0] - Only scale the entries `start...this.n`.
+     * @param i - The row to scale.
+     * @param c - The scaling factor.
+     * @param [start=0] - Only scale the entries `start...this.n`.
      *   Provided for optimizations when the entries before `start` are known to
      *   be zero.
-     * @return {Matrix} `this`
+     * @return `this`
      */
-    rowScale(i, c, start=0) {
+    rowScale(i: number, c: number, start: number=0): this {
         this[i].scale(c, start);
         return this;
     }
@@ -1606,15 +1724,15 @@ class Matrix extends Array {
      *   //  [-3 -3 -3]
      *   //  [ 7  8  9]"
      *
-     * @param {integer} i1 - The row to replace.
-     * @param {integer} i2 - The row to add.
-     * @param {number} c - The scaling factor.
-     * @param {integer} [start=0] - Only add the entries `start...this.n`.
+     * @param i1 - The row to replace.
+     * @param i2 - The row to add.
+     * @param c - The scaling factor.
+     * @param [start=0] - Only add the entries `start...this.n`.
      *   Provided for optimizations when the entries before `start` are known to
      *   be zero.
-     * @return {Matrix} `this`
+     * @return `this`
      */
-    rowReplace(i1, i2, c, start=0) {
+    rowReplace(i1: number, i2: number, c: number, start: number=0): this {
         this[i1].add(this[i2], c, start);
         return this;
     }
@@ -1637,41 +1755,17 @@ class Matrix extends Array {
      *   //  [1 2 3]
      *   //  [7 8 9]"
      *
-     * @param {integer} i1 - The first row.
-     * @param {integer} i2 - The second row.
-     * @return {Matrix} `this`
+     * @param i1 - The first row.
+     * @param i2 - The second row.
+     * @return `this`
      */
-    rowSwap(i1, i2) {
+    rowSwap(i1: number, i2: number): this {
         [this[i1], this[i2]] = [this[i2], this[i1]];
         return this;
     }
 
 
     // Gaussian elimination
-
-    /**
-     * @summary
-     * The core data computed by Gaussian elimination.
-     *
-     * @desc
-     * When performing Gaussian elimination on a computer, it is easy to keep
-     * track of the row operations performed, and various other data.
-     *
-     * @typedef PLUData
-     * @type {Object}
-     * @property {number[]} P - A permutation of the numbers `1...m-1`.
-     *   by {@link Matrix.permutation}.
-     * @property {Matrix} L - An `m`x`m` lower-triangular matrix with ones on
-     *   the diagonal.
-     * @property {Matrix} U - An `m`x`n` matrix in row echelon form.
-     * @property {Matrix} E - An `m`x`m` invertible matrix equal to `L^(-1)P`,
-     *   so `EA = U`.
-     * @property {Pivot[]} pivots - An array of pivot positions.
-     * @property {number} det - The determinant of the matrix (only set for
-     *   square matrices).
-     *
-     * @see Matrix#PLU
-     */
 
     /**
      * @summary
@@ -1737,17 +1831,18 @@ class Matrix extends Array {
      *   //  [ 1.00  4.00  5.00 -9.00 -7.00]
      *   //  [-1.00 -2.00 -1.00  3.00  1.00]"
      *
-     * @param {number} [ε=1e-10] - Entries smaller than this value are taken
-     *   to be zero for the purposes of pivoting.
-     * @return {PLUData} The `PA=LU` factorization, along with other data
-     *   computed at the same time.
+     * @param [ε=1e-10] - Entries smaller than this value are taken to be zero
+     *   for the purposes of pivoting.
+     * @return The `PA=LU` factorization, along with other data computed at the
+     *   same time.
+     *
      * @see Matrix#isEchelon
      * @see Matrix#isLowerUni
      * @see Matrix.permutation
      * @see Matrix#rref
      * @see Matrix#det
      */
-    PLU(ε=1e-10) {
+    PLU(ε: number=1e-10): PLUData {
         if(this._cache.PLU) return this._cache.PLU;
 
         let P = Array.from(range(this.m));
@@ -1755,7 +1850,7 @@ class Matrix extends Array {
         let E = Matrix.identity(this.m);
         let U = this.clone();
         let {m, n} = this;
-        let pivots = [];
+        let pivots: Pivot[] = [];
         let signP = 1;
         let det = 1;
 
@@ -1830,13 +1925,14 @@ class Matrix extends Array {
      *   //  [ 0.0000  0.0000  0.0000  0.0000  0.0000]"
      * A.pivots();  // [[0, 0], [1, 1], [2, 3]]
      *
-     * @param {number} [ε=1e-10] - Entries smaller than this value are taken
-     *   to be zero for the purposes of pivoting.
-     * @return {Pivot[]} The pivot positions.
+     * @param [ε=1e-10] - Entries smaller than this value are taken to be zero
+     *   for the purposes of pivoting.
+     * @return The pivot positions.
+     *
      * @see Matrix#PLU
      * @see Matrix#leadingEntries
      */
-    pivots(ε=1e-10) {
+    pivots(ε: number=1e-10): Pivot[] {
         return this.PLU(ε).pivots;
     }
 
@@ -1865,13 +1961,14 @@ class Matrix extends Array {
      * A.pivots();  // [[0, 0], [1, 1], [2, 3]]
      * A.rank();    // 3
      *
-     * @param {number} [ε=1e-10] - Entries smaller than this value are taken
-     *   to be zero for the purposes of pivoting.
-     * @return {integer} The rank of the matrix.
+     * @param [ε=1e-10] - Entries smaller than this value are taken to be zero
+     *   for the purposes of pivoting.
+     * @return The rank of the matrix.
+     *
      * @see Matrix#PLU
      * @see Matrix#QR
      */
-    rank(ε=1e-10) {
+    rank(ε: number=1e-10): number {
         if(this._cache.rank === undefined) // Hasn't been computed yet
             this._cache.rank = this.pivots(ε).length;
         return this._cache.rank;
@@ -1898,12 +1995,13 @@ class Matrix extends Array {
      * A.nullity(); // 2
      * A.rank();    // 3
      *
-     * @param {number} [ε=1e-10] - Entries smaller than this value are taken
+     * @param [ε=1e-10] - Entries smaller than this value are taken
      *   to be zero for the purposes of pivoting.
-     * @return {integer} The nullity of the matrix.
+     * @return The nullity of the matrix.
+     *
      * @see Matrix#rank
      */
-    nullity(ε=1e-10) {
+    nullity(ε: number=1e-10): number {
         return this.n - this.rank(ε);
     }
 
@@ -1940,13 +2038,14 @@ class Matrix extends Array {
      * A.det();             // -2.0000000000000018
      * A.charpoly.eval(0);  // -2
      *
-     * @param {number} [ε=1e-10] - Entries smaller than this value are taken
+     * @param [ε=1e-10] - Entries smaller than this value are taken
      *   to be zero for the purposes of pivoting.
-     * @return {number} The matrix determinant.
-     * @throws Will throw an error if the matrix is not square.
+     * @return The matrix determinant.
+     * @throws Error if the matrix is not square.
+     *
      * @see Matrix#PLU
      */
-    det(ε) {
+    det(ε: number=1e-10): number {
         if(!this.isSquare())
             throw new Error("Tried to compute the determinant of a non-square matrix");
         return this.PLU(ε).det;
@@ -1978,13 +2077,14 @@ class Matrix extends Array {
      *   //  [0.0 0.0  0.0 0.0  0.0]"
      * R.isRREF();  // true
      *
-     * @param {number} [ε=1e-10] - Entries smaller than this value are taken
-     *   to be zero for the purposes of pivoting.
-     * @return {Matrix} The reduced row-echelon form of the matrix.
+     * @param [ε=1e-10] - Entries smaller than this value are taken to be zero
+     *   for the purposes of pivoting.
+     * @return The reduced row-echelon form of the matrix.
+     *
      * @see Matrix#PLU
      * @see Matrix#isRREF
      */
-    rref(ε=1e-10) {
+    rref(ε: number=1e-10): Matrix {
         if(this._cache.rref) return this._cache.rref;
         let {U, E, pivots} = this.PLU(ε);
         let rowOps = E.clone();
@@ -2762,22 +2862,6 @@ class Matrix extends Array {
 
     /**
      * @summary
-     * The data computed in the Gram&ndash;Schmidt algorithm.
-     *
-     * @desc
-     * This primarily consists of an `m`x`n` matrix `Q` with orthogonal
-     * columns and an upper-triangular `n`x`n` matrix `R` such that `A = QR`.
-     * Also included is a list of which columns of `Q` are zero.
-     *
-     * @typedef QRData
-     * @type {object}
-     * @property {Matrix} Q - An `m`x`n` matrix with orthogonal columns.
-     * @property {Matrix} R - An `n`x`n` upper-triangular matrix.
-     * @property {number[]} LD - A list of the zero columns of `Q`.
-     */
-
-    /**
-     * @summary
      * Compute a QR decomposition.
      *
      * @desc
@@ -3107,17 +3191,6 @@ class Matrix extends Array {
 
     /**
      * @summary
-     * Diagonalizability data: `this = CDC^(-1)`.
-     *
-     * @typedef Diagonalization
-     * @type {object}
-     * @property {Matrix} C - An `n`x`n` invertible matrix.
-     * @property {Matrix} D - An `n`x`n` diagonal matrix, or a block diagonal
-     *   matrix in the case of block diagonalization.
-     */
-
-    /**
-     * @summary
      * Diagonalize the matrix.
      *
      * @desc
@@ -3250,17 +3323,6 @@ class Matrix extends Array {
 
     /**
      * @summary
-     * Singular value decomposition data.
-     *
-     * @typedef SVDData
-     * @type {object}
-     * @property {Matrix} U - An `m`x`m` orthogonal matrix.
-     * @property {Matrix} V - An `n`x`n` orthogonal matrix.
-     * @property {number[]} Σ - The singular values.
-     */
-
-    /**
-     * @summary
      * Singular Value decomposition.
      *
      * @desc
@@ -3361,16 +3423,6 @@ class Matrix extends Array {
         this._cache.SVDData = { U, V, Σ };
         return this._cache.SVDData;
     }
-
-    /**
-     * @summary
-     * LDLT decomposition data.
-     *
-     * @typedef LDLTData
-     * @type {object}
-     * @property {Matrix} L - An `n`x`n` lower-unitriangular matrix.
-     * @property {Matrix} D - The diagonal entries.
-     */
 
     /**
      * @summary
