@@ -22,6 +22,7 @@ import { expect, Assertion } from 'chai';
 
 // import Matrix from '../../src/matrix';
 import Complex from '../../src/complex';
+import Vector from '../../src/vector';
 
 
 declare global {
@@ -34,15 +35,18 @@ declare global {
 
 
 function approximate(obj: any, other: any, ε: number): void {
-    if (typeof obj === "number")
+    if(typeof obj === "number")
         expect(obj).to.be.approximately(other, ε);
-    /* else if (obj instanceof Matrix) { */
+    /* else if(obj instanceof Matrix) { */
     /*     expect(other).to.be.an.instanceOf(Matrix); */
     /*     expect(obj.m).to.equal(other.m); */
     /*     expect(obj.n).to.equal(other.n); */
     /*     approximate([...obj.rows()], [...other.rows()], ε); */
     /* }  */
-    else if (obj instanceof Complex) {
+    else if(obj instanceof Vector) {
+        expect(other).to.be.an.instanceOf(Vector);
+        approximate([...obj], [...other], ε);
+    } else if(obj instanceof Complex) {
         expect(other).to.be.an.instanceOf(Complex);
         approximate([obj.Re, obj.Im], [other.Re, other.Im], ε);
     } else {

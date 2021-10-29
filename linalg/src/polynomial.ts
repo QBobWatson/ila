@@ -393,7 +393,7 @@ class Polynomial implements Iterable<number> {
      * Iterate over the coefficients, from highest-order to lowest.
      *
      * @example {@lang javascript}
-     * let p = new Polynomial(1, 2, 1).toString(1);
+     * let p = new Polynomial(1, 2, 1);
      * [...p]; // [1, 2, 1]
      */
     [Symbol.iterator](): IterableIterator<number> {
