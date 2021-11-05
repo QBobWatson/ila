@@ -40,7 +40,7 @@ import { range } from "./util";
  *
  * @extends Array
  */
-class Vector {
+class Vector implements Iterable<number> {
     /**
      * @summary
      * The entries of the vector.
