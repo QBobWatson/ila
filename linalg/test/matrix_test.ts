@@ -23,12 +23,17 @@ should();
 
 import './lib/resemble';
 
-import Vector from "../src/vector";
 import Matrix from "../src/matrix3";
 import { SquareMatrix, PLUData, QRData, JordanData } from "../src/matrix3";
+import Vector from "../src/vector";
+import Polynomial from '../src/polynomial';
+import Complex from '../src/complex';
 
 const mat = Matrix.create;
+const smat = mat as (...rows: (number[] | Vector)[]) => SquareMatrix;
 const vec = (...entries: number[]) => new Vector(...entries);
+const poly = (...coeffs: number[]) => new Polynomial(...coeffs);
+const C = (a: number | Complex, b=0) => new Complex(a, b);
 
 
 type Factorization = 'PA=LU' | 'QR' | 'SVD' | 'LDLT';
@@ -592,9 +597,10 @@ describe('Matrix', () => {
 
         it('should factorize PA=LU correctly', () => {
             for(let test of testMats) {
-                let M = test.M;
+                let { M, C } = test;
                 test.PLU = M.PLU();
                 test.PLU.should.factorize(M, 'PA=LU');
+                M.rank(test.PLU).should.equal(C.length);
             }
         });
         it('should compute the rref and row ops correctly', () => {
@@ -691,6 +697,7 @@ describe('Matrix', () => {
                 /* x.should.solve(M, b); */
                 /* M.nullSpace().isOrthogonalTo(x).should.be.true(); */
                 M.solveLeastSquares(b).should.solve(M, b);
+                M.solveLeastSquares(b, {QR: M.QR()}).should.solve(M, b);
                 /* M.solveLeastSquaresShortest(b).equals(x, 1e-10).should.be.true(); */
                 /* M.pseudoInverse(); */
                 /* M.solveLeastSquaresShortest(b).equals(x, 1e-10).should.be.true(); */
@@ -718,6 +725,7 @@ describe('Matrix', () => {
         it('should have a least-squares solution', () => {
             for(let {M, b} of testNoSoln) {
                 M.solveLeastSquares(b).should.solve(M, b, true);
+                M.solveLeastSquares(b, {QR: M.QR()}).should.solve(M, b, true);
                 /* let x = M.solveLeastSquaresShortest(b); */
                 /* x.should.solve(M, b, true); */
                 /* M.nullSpace().isOrthogonalTo(x).should.be.true(); */
@@ -757,8 +765,11 @@ describe('Matrix', () => {
                 [  2,   1, -5,  -7])
         ];
         it('should factorize matrices correctly', () => {
-            for(let M of testMats)
-                M.QR().should.factorize(M, 'QR', 1e-15);
+            for(let M of testMats) {
+                let QR = M.QR();
+                QR.should.factorize(M, 'QR', 1e-15);
+                M.rank(QR).should.equal(M.rank());
+            }
         });
         let testMats2 = [
             mat([ 0, -3, -6,  4,  9],
@@ -772,12 +783,210 @@ describe('Matrix', () => {
                 [ 8, -3,  9])
         ];
         it('should factorize matrices with linearly dependent columns', () => {
-            for(let M of testMats2)
-                M.QR().should.factorize(M, 'QR');
+            for(let M of testMats2) {
+                let QR = M.QR();
+                QR.should.factorize(M, 'QR');
+                M.rank(QR).should.equal(M.rank());
+            }
         });
     });
 });
 
+
+describe('SquareMatrix', () => {
+
+    /***********************************************************************/
+    /* Traits                                                              */
+    /***********************************************************************/
+
+    describe('#isOrthogonal()', () => {
+        it('detects orthogonal matrices', () =>
+            smat([1,1],[1,-1]).scale(1/Math.sqrt(2)).isOrthogonal()
+                .should.be.true);
+        it('detects non-orthogonal matrices', () =>
+            smat([1/Math.sqrt(2), 1],[1/Math.sqrt(2), 0]).isOrthogonal()
+                .should.be.false);
+    });
+    describe('#isSymmetric()', () => {
+        it('detects symmetric matrices', () =>
+            smat([1,2,3],[2,4,5],[3,5,6]).isSymmetric().should.be.true);
+        it('detects non-symmetric square matrices', () =>
+            smat([1,2,3],[4,5,6],[7,8,9]).isSymmetric().should.be.false);
+    });
+
+    /***********************************************************************/
+    /* Solving Ax=b                                                        */
+    /***********************************************************************/
+
+    describe('#solveForwardSubst(), #solveReverseSubst1()', () => {
+        it('should solve Ax=b using forward-substitution', () => {
+            let M = smat([1, 0, 0, 0],
+                         [2, 1, 0, 0],
+                         [3, 2, 1, 0],
+                         [4, 3, 2, 1]);
+            let b = vec(7, 6, 5, 4);
+            M.solveForwardSubst(b).should.solve(M, b);
+        });
+        it('should solve Ax=b using reverse-substitution', () => {
+            let M = smat([2, 1, 3, 4],
+                         [0, 5, 1, 1],
+                         [0, 0, 1, 1],
+                         [0, 0, 0, 2]);
+            let b = vec(7, 6, 5, 4);
+            M.solveReverseSubst1(b).should.solve(M, b);
+        });
+    });
+
+    /***********************************************************************/
+    /* Determinants and Eigenvalues                                        */
+    /***********************************************************************/
+
+    describe('#det', () => {
+        it('should compute the determinant (1x1)', () =>
+           Matrix.identity(1, 3).det().should.equal(3));
+        it('should compute the determinant (2x2)', () =>
+           smat([3, 4], [5, 6]).det().should.be.approximately(-2, 1e-10));
+        it('should compute the determinant (3x3#1)', () =>
+           smat([0,  1, 2],
+                [1,  0, 3],
+                [4, -3, 8]).det().should.be.approximately(-2, 1e-10));
+        it('should compute the determinant (3x3#2)', () =>
+           smat([ 1, -2, -1],
+                [-1,  5,  6],
+                [ 5, -4,  5]).det().should.equal(0));
+        it('should compute the determinant (4x4)', () =>
+           smat([ 1,  7,  4, 2],
+                [ 3, 11,  9, 5],
+                [-2, -3,  3, 3],
+                [ 7,  8, -8, 9]).det().should.be.approximately(-1329, 1e-10));
+    });
+    describe('#inverse(), #adjugate()', () => {
+        let testMats = [
+            smat([3, 4],
+                 [5, 6]),
+            smat([0,  1, 2],
+                 [1,  0, 3],
+                 [4, -3, 8]),
+            smat([ 1,  7,  4, 2],
+                 [ 3, 11,  9, 5],
+                 [-2, -3,  3, 3],
+                 [ 7,  8, -8, 9])
+        ];
+        it('should compute the inverse', () => {
+            for(let M of testMats) {
+                let I = M.inverse();
+                expect(I).not.to.be.null;
+                M.mult(I!).equals(Matrix.identity(M.n), 1e-10).should.be.true;
+            }
+        });
+        it('should compute the adjugate', () => {
+            for(let M of testMats) {
+                M.inverse()!.scale(M.det()).equals(M.adjugate, 1e-10)
+                    .should.be.true;
+            }
+        });
+        it('should return null for singular matrices', () => {
+            let M = smat([ 1, -2, -1],
+                         [-1,  5,  6],
+                         [ 5, -4,  5]);
+            expect(M.inverse()).to.be.null;
+        });
+
+    });
+    describe('#charpoly', () => {
+        it('should compute the characteristic polynomial of a 1x1 matrix', () => {
+            smat([3]).charpoly.should.eql(poly(-1, 3));
+        });
+        it('should compute the characteristic polynomial of a 2x2 matrix', () => {
+            smat([1,2],[3,4]).charpoly.should.eql(poly(1, -5, -2));
+        });
+        it('should compute the characteristic polynomial of a 3x3 matrix', () => {
+            smat([1, 6,4],
+                 [2,-1,3],
+                 [5, 0,1]).charpoly.should.eql(poly(-1, 1, 33, 97));
+        });
+        it('should compute the characteristic polynomial of a 4x4 matrix', () => {
+            smat([2, 1, 1, 0],
+                 [4, 3, 3, 1],
+                 [8, 7, 9, 5],
+                 [6, 7, 9, 8]).charpoly.should.eql(poly(1, -22, 78, -50, 8));
+        });
+
+    });
+    describe('#eigenvalues()', () => {
+        it('should compute eigenvalues for 1x1 matrices', () =>
+            smat([3]).eigenvalues().should.eql([[3, 1]]));
+        it('should compute eigenvalues for 2x2 matrices', () => {
+            smat([1,1],[1,1]).eigenvalues().should.eql([[0, 1], [2, 1]]);
+            smat([1,1],[0,1]).eigenvalues().should.eql([[1, 2]]);
+            smat([1,1],[-1,1]).eigenvalues()
+                .should.resemble([[C(1, 1), 1], [C(1, -1), 1]]);
+        });
+        it('should compute eigenvalues for 3x3 matrices', () => {
+            Matrix.identity(3, 3).eigenvalues().should.resemble([[3, 3]]);
+            smat([11/13, 22/39,  2/39],
+                 [-4/13, 83/39,  4/39],
+                 [-1/13, 11/39, 40/39]).eigenvalues(1e-7)
+                     .should.resemble([[1, 2], [2, 1]]);
+            smat([    1,   1/2,     0],
+                 [-4/13, 83/39,  4/39],
+                 [ 5/13,  7/78, 34/39]).eigenvalues(1e-7)
+                     .should.resemble([[1, 2], [2, 1]]);
+            smat([23/13,  53/78, -10/39],
+                 [-4/13, 122/39,   4/39],
+                 [-4/13,  49/78,  43/39]).eigenvalues()
+                     .should.resemble([1, 2, 3].map(x => [x, 1]));
+            smat([43/13,   7/13, -88/13],
+                 [ 6/13,  17/13, -28/13],
+                 [24/13, -23/13,  57/13]).eigenvalues()
+                     .should.resemble([1, C(4, 3), C(4, -3)].map(x => [x, 1]));
+        });
+        it('should compute eigenvalues for 4x4 matrices', () => {
+            Matrix.identity(4, 3).eigenvalues().should.resemble([[3, 4]]);
+            smat([-140,    325,   -730,   -964],
+                 [  88,   -202,    457,    607],
+                 [ 127, -585/2, 1317/2, 1741/2],
+                 [ -45,  207/2, -465/2, -613/2]).eigenvalues()
+                     .should.resemble([1, 2, 3, 4].map(x => [x, 1]));
+            smat([-95,    220,   -490,   -634],
+                 [ 22,    -48,    105,    123],
+                 [ 73, -333/2,  741/2,  949/2],
+                 [-33,  151/2, -337/2, -437/2]).eigenvalues()
+                     .should.resemble([[1, 2], [3, 1], [4, 1]]);
+            smat([-635,    1462,   -3298,   -4414],
+                 [ 282,    -646,    1457,    1943],
+                 [ 453, -2081/2,  4693/2,  6269/2],
+                 [-153,   703/2, -1585/2, -2117/2]).eigenvalues()
+                     .should.resemble([[1, 3], [4, 1]]);
+            smat([-1229,  5651/2, -12725/2, -16955/2],
+                 [  568, -2605/2,   5865/2,   7799/2],
+                 [  871,   -2000,     4503,     5994],
+                 [ -285,  1309/2,  -2947/2,  -3923/2]).eigenvalues()
+                     .should.resemble([[1, 2], [4, 2]]);
+            smat([-76, 345/2, -771/2, -983/2],
+                 [ 10,   -18,     39,     33],
+                 [ 60,  -134,    299,    377],
+                 [-30,    68,   -152,   -196]).eigenvalues()
+                     .should.resemble([C(1,1), C(1,-1), 3, 4].map(x => [x, 1]));
+            smat([-1272,    2921,   -6584,   -8783],
+                 [  582, -2665/2,  6007/2,  7997/2],
+                 [  892,   -2046,    4611,    6145],
+                 [ -290,  1331/2, -2999/2, -3997/2]).eigenvalues()
+                     .should.resemble([[C(1,1), 1], [C(1,-1), 1], [3, 2]]);
+            smat([ 3440,  -7907,    17832,    23865],
+                 [ -722, 3329/2,  -7515/2, -10105/2],
+                 [-1294, 5955/2, -13435/2, -18013/2],
+                 [  232,   -534,     1205,     1617]).eigenvalues()
+                     .should.resemble([C(1, 1), C(1, -1)].map(x => [x, 2]));
+            smat([1996, -9177/2, 20695/2, 27703/2],
+                 [ -26,      65,    -150,    -226],
+                 [-276,     638,   -1441,   -1947],
+                 [ -90,     206,    -464,    -616]).eigenvalues()
+                     .should.resemble([C(1, 1), C(1, -1), C(1, 2), C(1, -2)]
+                                          .map(x => [x, 1]));
+        });
+    });
+});
 
 /* // Test LDLT solving for positive-definite symmetric matrices */
 /* let testLDLT = [ */
@@ -809,8 +1018,3 @@ describe('Matrix', () => {
 /*     } */
 /* }); */
 /* // Test forward-substitution in lower-unitriangular form */
-/* it('should solve Ax=b using forward-substitution', () => { */
-/*     let M = mat([1, 0, 0, 0], [2, 1, 0, 0], [3, 2, 1, 0], [4, 3, 2, 1]); */
-/*     let b = vec(7, 6, 5, 4); */
-/*     M.solve(b).should.solve(M, b); */
-/* }); */

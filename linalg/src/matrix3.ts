@@ -27,6 +27,7 @@
 // TODO: MatrixError, and the like in the other modules
 
 import Vector from "./vector";
+import Polynomial from "./polynomial";
 
 import { range } from "./util";
 
@@ -118,6 +119,13 @@ class Matrix {
     /* Constructors                                                        */
     /***********************************************************************/
 
+    static from<T>(entries: Iterable<T> | ArrayLike<T>,
+                   mapfn?: (x: T, k: number) => number[] | Vector)
+    : Matrix | SquareMatrix {
+        mapfn = mapfn || ((x, _) => (x as any));
+        return Matrix.create(...Array.from(entries, mapfn));
+    }
+
     static create(...rows: (number[] | Vector)[]): Matrix | SquareMatrix {
         const row = rows[0];
         if(rows.length === (row ?
@@ -140,18 +148,15 @@ class Matrix {
     }
 
     static identity(n: number, λ: number=1): SquareMatrix {
-        return new SquareMatrix(
-            ...Array.from(range(n), i => Vector.e(i, n, λ)));
+        return Matrix.from(range(n), i => Vector.e(i, n, λ)) as SquareMatrix;
     }
 
     static zero(m: number, n: number=m): Matrix | SquareMatrix {
-        return Matrix.create(
-            ...Array.from(range(m), _ => Vector.zero(n)));
+        return Matrix.from(range(m), _ => Vector.zero(n));
     }
 
     static constant(c: number, m: number, n: number=m): Matrix | SquareMatrix {
-        return Matrix.create(
-            ...Array.from(range(m), _ => Vector.constant(n, c)));
+        return Matrix.from(range(m), _ => Vector.constant(n, c));
     }
 
     static diagonal(entries: number[], m: number=entries.length,
@@ -164,8 +169,7 @@ class Matrix {
 
     static permutation(vals: number[]): SquareMatrix {
         let n = vals.length;
-        return new SquareMatrix(
-            ...Array.from(range(n), i => Vector.e(vals[i], n)));
+        return Matrix.from(range(n), i => Vector.e(vals[i], n)) as SquareMatrix;
     }
 
     clone(): this {
@@ -206,7 +210,7 @@ class Matrix {
     }
 
     col(j: number): Vector {
-        return new Vector(...Array.from(this.rows, row => row[j]));
+        return Vector.from(this.rows, row => row[j]);
     }
 
     get cols(): Iterable<Vector> {
@@ -389,18 +393,17 @@ class Matrix {
     mult(other: Matrix): Matrix | SquareMatrix {
         if(other.m !== this.n)
             throw new Error('Cannot multiply matrices of incompatible dimensions');
-        return Matrix.create(
-            ...Array.from(
-                this.rows,
-                row => new Vector(...Array.from(
-                    range(other.n), i => [...row].reduce(
-                        (a, v, j) => a + v * other[j][i], 0)))));
+        return Matrix.from(
+            this.rows,
+            row => Vector.from(
+                range(other.n), i => [...row].reduce(
+                    (a, v, j) => a + v * other[j][i], 0)));
     }
 
     apply(v: Vector): Vector {
         if(v.size !== this.n)
             throw new Error('Cannot multiply matrix and vector of incompatible dimensions');
-        return new Vector(...Array.from(this.rows, row => row.dot(v)));
+        return Vector.from(this.rows, row => row.dot(v));
     }
 
 
@@ -578,8 +581,7 @@ class Matrix {
         const { ε, PLU } = hints;
         const { P, L, U, pivots } = PLU || this.PLU(ε);
         // Solve LUx = PAx = Pb
-        const Pb = new Vector(
-            ...Array.from(range(this.m), i => b[P[i]]));
+        const Pb = Vector.from(range(this.m), i => b[P[i]]);
         const y = L.solveForwardSubst(Pb);
         return U.solveReverseSubst(y, pivots, ε);
     }
@@ -619,8 +621,14 @@ class Matrix {
         return PLU.pivots;
     }
 
-    rank(PLU: PLUData=this.PLU()): number {
-        return PLU.pivots.length;
+    rank(PLU?: PLUData): number;
+    rank(QR?: QRData): number;
+    rank(x?: PLUData | QRData): number {
+        if(x === undefined)
+            x = this.PLU();
+        if("P" in x)
+            return x.pivots.length;
+        return this.n - x.LD.length;
     }
 
     nullity(PLU: PLUData=this.PLU()): number {
@@ -671,6 +679,11 @@ class SquareMatrix extends Matrix {
             throw new Error("Tried to create a non-square SquareMatrix.");
     }
 
+
+    /***********************************************************************/
+    /* Traits                                                              */
+    /***********************************************************************/
+
     isOrthogonal(ε: number=1e-10): boolean {
         return this.hasONCols(ε);
     }
@@ -678,6 +691,11 @@ class SquareMatrix extends Matrix {
     isSymmetric(ε: number=1e-10): boolean {
         return this.equals(this.transpose, ε);
     }
+
+
+    /***********************************************************************/
+    /* Solving Ax=b                                                        */
+    /***********************************************************************/
 
     solveForwardSubst(b: Vector): Vector {
         let x = b.clone();
@@ -713,6 +731,56 @@ class SquareMatrix extends Matrix {
         }
 
         return super.solve(b, hints);
+    }
+
+
+    /***********************************************************************/
+    /* Determinants and Eigenvalues                                        */
+    /***********************************************************************/
+
+    det(PLU: PLUData=this.PLU()): number {
+        return PLU.det!;
+    }
+
+    inverse(JD: JordanData=this.jordanSubst()): SquareMatrix | null {
+        if(this.rank(JD) < this.n)
+            return null;
+        return JD.rowOps;
+    }
+
+    fadeevLeverrier(): {charpoly: Polynomial, adjugate: SquareMatrix} {
+        const n = this.n;
+        let ret = [1];
+        let AM = Matrix.zero(n) as SquareMatrix;
+        let adjugate: SquareMatrix;
+        let c = 1;
+        for(let k = 1; k <= n; ++k) {
+            for(let i = 0; i < n; ++i)
+                AM[i][i] += c;
+            if(k == n) adjugate = AM;
+            AM = this.mult(AM) as SquareMatrix;
+            c = -AM.trace/k;
+            ret.push(c);
+        }
+        // This is det(λI - A); multiply by (-1)^n now
+        if(n % 2 === 1) {
+            for(let i = 0; i < ret.length; ++i)
+                ret[i] *= -1;
+        }
+        if(n % 2 === 0) adjugate!.scale(-1);
+        return {charpoly: new Polynomial(...ret), adjugate: adjugate!};
+    }
+
+    get charpoly(): Polynomial {
+        return this.fadeevLeverrier().charpoly;
+    }
+
+    get adjugate(): SquareMatrix {
+        return this.fadeevLeverrier().adjugate;
+    }
+
+    eigenvalues(ε=1e-10) {
+        return this.charpoly.factor(ε);
     }
 }
 

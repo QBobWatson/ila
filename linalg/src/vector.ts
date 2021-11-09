@@ -25,7 +25,8 @@
  */
 
 import { range } from "./util";
-// import Matrix from "./matrix";
+import Matrix from "./matrix3";
+
 
 /**
  * @summary
@@ -64,6 +65,27 @@ class Vector implements Iterable<number> {
 
     /**
      * @summary
+     * Create a Vector with the given entries using the given map function.
+     *
+     * @desc
+     * This is a convenience method meant to mirror `Array.from`.
+     *
+     * @example {@lang javascript}
+     * Vector.from([1,2,3], k => k*2).toString(0);  // "[2 4 6]"
+     *
+     * @param entries - The entries to pass through the map function.
+     * @param mapfn - The map function to pass the entries through (by default
+     *   the identity function)
+     * @return The new Vector.
+     */
+    static from<T>(entries: Iterable<T> | ArrayLike<T>,
+                   mapfn?: (x: T, k: number) => number): Vector {
+        mapfn = mapfn || ((x, _) => (x as any) as number);
+        return new Vector(...Array.from(entries, mapfn));
+    }
+
+    /**
+     * @summary
      * Create a Vector with `n` entries equal to `c`.
      *
      * @example {@lang javascript}
@@ -74,7 +96,7 @@ class Vector implements Iterable<number> {
      * @return The vector `[c, c, ..., c]`.
      */
     static constant(n: number, c: number): Vector {
-        return new Vector(...(Array.from(range(n), () => c)));
+        return Vector.from(range(n), () => c);
     }
 
     /**
@@ -108,7 +130,7 @@ class Vector implements Iterable<number> {
      * @return The `i`th unit coordinate vector in `R^n`.
      */
     static e(i: number, n: number, λ=1): Vector {
-        return new Vector(...Array.from(range(n), j => j === i ? λ : 0));
+        return Vector.from(range(n), j => j === i ? λ : 0);
     }
 
     /**
@@ -131,18 +153,18 @@ class Vector implements Iterable<number> {
      *      new Vector(0, 1, 0),
      *      new Vector(1, 1, 0)]);  // false
      *
-     * @param {Vector[]} vecs - The vectors to check.
-     * @param {number} [ε=1e-10] - Entries smaller than this value are taken
-     *   to be zero for the purposes of pivoting.
-     * @return {boolean} True if the vectors are linearly independent.
-     * @throws Will throw an error if the vectors do not have the same size.
+     * @param vecs - The vectors to check.
+     * @param [ε=1e-10] - Entries smaller than this value are taken to be zero
+     *   for the purposes of pivoting.
+     * @return True if the vectors are linearly independent.
+     * @throws Error if the vectors do not have the same size.
      */
-    /* static isLinearlyIndependent(vecs, ε=1e-10) { */
-    /*     let M = Matrix.from(vecs); */
-    /*     // Tall matrices never have linearly independent rows. */
-    /*     if(M.m > M.n) return false; */
-    /*     return M.rank(ε) == vecs.length; */
-    /* } */
+    static isLinearlyIndependent(vecs: Vector[], ε: number=1e-10): boolean {
+        let M = Matrix.create(...vecs);
+        // Tall matrices never have linearly independent rows.
+        if(M.m > M.n) return false;
+        return M.rank(M.PLU(ε)) == vecs.length;
+    }
 
     /**
      * @summary
@@ -161,15 +183,15 @@ class Vector implements Iterable<number> {
      *      new Vector(0, 1, 0),
      *      new Vector(1, 1, 0)]);  // true
      *
-     * @param {Vector[]} vecs - The vectors to check.
-     * @param {number} [ε=1e-10] - Entries smaller than this value are taken
+     * @param vecs - The vectors to check.
+     * @param [ε=1e-10] - Entries smaller than this value are taken
      *   to be zero for the purposes of pivoting.
-     * @return {boolean} True if the vectors are linearly dependent.
-     * @throws Will throw an error if the vectors do not have the same size.
+     * @return True if the vectors are linearly dependent.
+     * @throws Error if the vectors do not have the same size.
      */
-    /* static isLinearlyDependent(vecs, ε=1e-10) { */
-    /*     return !Vector.isLinearlyIndependent(vecs, ε); */
-    /* } */
+    static isLinearlyDependent(vecs: Vector[], ε: number=1e-10): boolean {
+        return !Vector.isLinearlyIndependent(vecs, ε);
+    }
 
     /**
      * @summary
@@ -191,10 +213,11 @@ class Vector implements Iterable<number> {
      * @return {Vector[]} A linearly independent subset of `vecs`.
      * @throws Will throw an error if the vectors do not have the same size.
      */
-    /* static linearlyIndependentSubset(vecs, ε=1e-10) { */
-    /*     return Array.from(Matrix.from(vecs).transpose.pivots(ε), */
-    /*                       ([,j]) => vecs[j]); */
-    /* } */
+    static linearlyIndependentSubset(vecs: Vector[],
+                                     ε: number=1e-10): Vector[] {
+        let M = Matrix.create(...vecs).transpose;
+        return Array.from(M.pivots(M.PLU(ε)), ([,j]) => vecs[j]);
+    }
 
     /**
      * @summary
@@ -217,12 +240,11 @@ class Vector implements Iterable<number> {
      * @throws Error if the vectors do not have the same size,
      *   or if `coeffs` is empty.
      */
-    static linearCombination(coeffs: number[], vecs: Vector[]) {
+    static linearCombination(coeffs: number[], vecs: Vector[]): Vector {
         return coeffs.reduce(
             (a, c, i) => a.add(vecs[i].clone().scale(c)),
             Vector.zero(vecs[0].size));
     }
-
 
     /**
      * @summary
@@ -253,13 +275,14 @@ class Vector implements Iterable<number> {
         return Math.sqrt(this.lensq);
     }
 
+
     /**
      * @summary
      * Create a Vector with the given entries.
      *
      * @example {@lang javascript}
-     * Vector.create(1).toString(1);    // "[1.0]"
-     * Vector.create(1, 2).toString(1); // "[1.0 2.0]"
+     * new Vector(1).toString(1);    // "[1.0]"
+     * new Vector(1, 2).toString(1); // "[1.0 2.0]"
      *
      * @param entries - The entries of the resulting Vector.
      */

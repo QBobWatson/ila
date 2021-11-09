@@ -18,6 +18,11 @@
  * along with linalg.js.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+// TODO:
+//  * fadeev-laterveer
+//  * jordanSubst
+//  * overloads
+
 import { Polynomial, Complex, Vector, Matrix, Subspace } from "../src/linalg.js";
 
 import should from 'should';

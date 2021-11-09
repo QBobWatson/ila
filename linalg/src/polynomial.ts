@@ -331,6 +331,8 @@ function descartes(b: number, c: number, d: number, e: number,
  * Polynomials can be added and scaled like Vectors, but can also be multiplied
  * and evaluated at a number.
  *
+ * Polynomials are immutable: do not change the coefficients.
+ *
  * @example {@lang javascript}
  * new Polynomial(1, 2, 1).toString(1); // "x^2 + 2.0 x + 1.0"
  */
