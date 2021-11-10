@@ -30,6 +30,15 @@ const π = Math.PI;
 import Complex from './complex';
 import { range } from "./util";
 
+
+class PolynomialError extends Error {
+    constructor(message: string) {
+        super(message);
+        this.name = "PolynomialError";
+    }
+}
+
+
 // Convenience
 const C = (a: number | Complex, b: number=0) => new Complex(a, b);
 
@@ -712,13 +721,15 @@ class Polynomial implements Iterable<number> {
      *   in order to account for rounding errors.
      * @return An array `[Q, R]`, where `Q` is the quotient of
      *   `this` by `P` and `R` is the remainder.
-     * @throws Error if `P` has larger degree or is the zero polynomial.
+     * @throws PolynomialError if `P` has larger degree or is the zero polynomial.
      */
     div(P: Polynomial, ε: number=0): Polynomial[] {
         if(P.deg > this.deg)
-            throw new Error("Tried to divide by a polynomial of larger degree");
+            throw new PolynomialError(
+                "Tried to divide by a polynomial of larger degree");
         if(P.isZero())
-            throw new Error("Tried to divide by the zero polynomial");
+            throw new PolynomialError(
+                "Tried to divide by the zero polynomial");
         if(this.isZero())
             return [new Polynomial(), new Polynomial()];
         let ret = [...this];
@@ -898,11 +909,12 @@ class Polynomial implements Iterable<number> {
      * @param [ε=1e-10] - If certain discriminant quantities are
      *   smaller than this, then multiple roots have been found.
      * @return The roots found.
-     * @throws Error if the degree is not 1, 2, 3, or 4.
+     * @throws PolynomialError if the degree is not 1, 2, 3, or 4.
      */
     factor(ε: number=1e-10): MultRoot[] {
         if(this.isZero())
-            throw new Error("The zero polynomial does not have discrete roots");
+            throw new PolynomialError(
+                "The zero polynomial does not have discrete roots");
         const [a, b, c, d, e] = this;
         if(this.deg === 1)
             return [[-b/a, 1]];
@@ -912,7 +924,8 @@ class Polynomial implements Iterable<number> {
             return cardano(b/a, c/a, d/a, ε);
         if(this.deg === 4)
             return descartes(b/a, c/a, d/a, e/a, ε);
-        throw new Error("Root finding is not implemented for degrees greater than 4");
+        throw new PolynomialError(
+            "Root finding is not implemented for degrees greater than 4");
     }
 }
 

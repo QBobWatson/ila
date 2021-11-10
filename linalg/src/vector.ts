@@ -28,6 +28,14 @@ import { range } from "./util";
 import Matrix from "./matrix3";
 
 
+class VectorError extends Error {
+    constructor(message: string) {
+        super(message);
+        this.name = "VectorError";
+    }
+}
+
+
 /**
  * @summary
  * Class representing a vector.
@@ -157,7 +165,7 @@ class Vector implements Iterable<number> {
      * @param [ε=1e-10] - Entries smaller than this value are taken to be zero
      *   for the purposes of pivoting.
      * @return True if the vectors are linearly independent.
-     * @throws Error if the vectors do not have the same size.
+     * @throws VectorError if the vectors do not have the same size.
      */
     static isLinearlyIndependent(vecs: Vector[], ε: number=1e-10): boolean {
         let M = Matrix.create(...vecs);
@@ -187,7 +195,7 @@ class Vector implements Iterable<number> {
      * @param [ε=1e-10] - Entries smaller than this value are taken
      *   to be zero for the purposes of pivoting.
      * @return True if the vectors are linearly dependent.
-     * @throws Error if the vectors do not have the same size.
+     * @throws VectorError if the vectors do not have the same size.
      */
     static isLinearlyDependent(vecs: Vector[], ε: number=1e-10): boolean {
         return !Vector.isLinearlyIndependent(vecs, ε);
@@ -237,7 +245,7 @@ class Vector implements Iterable<number> {
      * @param coeffs - A non-empty array of coefficients.
      * @param vecs - A non-empty array of vectors, of the same size as `coeffs`.
      * @return The sum of the vectors scaled by the coefficients.
-     * @throws Error if the vectors do not have the same size,
+     * @throws VectorError if the vectors do not have the same size,
      *   or if `coeffs` is empty.
      */
     static linearCombination(coeffs: number[], vecs: Vector[]): Vector {
@@ -402,12 +410,12 @@ class Vector implements Iterable<number> {
      * v.toString(2); // "[0.60 0.80]"
      *
      * @return `this`
-     * @throws Error if `this` is the zero vector.
+     * @throws VectorError if `this` is the zero vector.
      */
     normalize(): this {
         const s = 1/this.len;
         if(!isFinite(s))
-            throw new Error("Tried to normalize the zero vector");
+            throw new VectorError("Tried to normalize the zero vector");
         return this.scale(s);
     }
 
@@ -430,11 +438,11 @@ class Vector implements Iterable<number> {
      *   Provided for optimizations when the entries of `other` before `start`
      *   are known to be zero.
      * @return `this`
-     * @throws Error if the vectors have different sizes.
+     * @throws VectorError if the vectors have different sizes.
      */
     add(other: Vector, factor: number=1, start: number=0): this {
         if(this.size !== other.size)
-            throw new Error(
+            throw new VectorError(
                 'Tried to add vectors of different sizes');
         for(let i = start; i < this.size; ++i)
             this[i] += factor*other[i];
@@ -458,7 +466,7 @@ class Vector implements Iterable<number> {
      *   Provided for optimizations when the entries of `other` before `start`
      *   are known to be zero.
      * @return `this`
-     * @throws Error if the vectors have different sizes.
+     * @throws VectorError if the vectors have different sizes.
      */
     sub(other: Vector, start: number=0): this {
         return this.add(other, -1, start);
@@ -502,11 +510,11 @@ class Vector implements Iterable<number> {
      *
      * @param other - The vector to dot.
      * @return The dot product.
-     * @throws Error if the vectors have different sizes.
+     * @throws VectorError if the vectors have different sizes.
      */
     dot(other: Vector): number {
         if(this.size !== other.size)
-            throw new Error(
+            throw new VectorError(
                 'Tried to take the dot product of vectors of different sizes');
         let a = 0;
         for(let i = 0; i < this.size; ++i)

@@ -32,6 +32,14 @@ import Vector from "./vector";
 import { range } from "./util";
 
 
+class SubspaceError extends Error {
+    constructor(message: string) {
+        super(message);
+        this.name = "SubspaceError";
+    }
+}
+
+
 class Subspace {
     readonly n: number;
     readonly Q: Matrix | null;
@@ -51,7 +59,8 @@ class Subspace {
                     n = generators[0].length;
             }
             else
-                throw new Error("Cannot determine the ambient R^n from zero generators");
+                throw new SubspaceError(
+                    "Cannot determine the ambient R^n from zero generators");
         }
         if(generators instanceof Matrix)
             return new Subspace(generators, n, isON);
@@ -147,7 +156,7 @@ class Subspace {
 
     add(other: Subspace, ε=1e-10): Subspace {
         if(this.n != other.n)
-            throw new Error("Tried to add subspaces of different R^n");
+            throw new SubspaceError("Tried to add subspaces of different R^n");
         if(this.isZero())
             return other.clone();
         if(other.isZero())
@@ -160,7 +169,7 @@ class Subspace {
 
     intersect(other: Subspace, ε=1e-10): Subspace {
         if(this.n != other.n)
-            throw new Error("Tried to add subspaces of different R^n");
+            throw new SubspaceError("Tried to add subspaces of different R^n");
         if(this.isZero() || other.isZero())
             return Subspace.zero(this.n);
         if(this.isMaximal())
@@ -191,7 +200,7 @@ class Subspace {
         if(!(v instanceof Vector))
             v = new Vector(...v);
         if(this.n != v.size)
-            throw new Error("Vector has the wrong number of entries");
+            throw new SubspaceError("Vector has the wrong number of entries");
         if(this.isMaximal())
             return true; // Nothing to check!
         if(this.isZero())
@@ -201,7 +210,7 @@ class Subspace {
 
     isOrthogonalTo(v: Vector, ε=1e-10): boolean {
         if(this.n != v.size)
-            throw new Error("Vector has the wrong number of entries");
+            throw new SubspaceError("Vector has the wrong number of entries");
         if(this.isMaximal())
             return v.isZero(ε); // Nothing to check!
         if(this.isZero())
@@ -212,7 +221,8 @@ class Subspace {
 
     isSubspaceOf(other: Subspace, ε=1e-10): boolean {
         if(this.n != other.n)
-            throw new Error("Tried to test containment of subspaces in different R^n");
+            throw new SubspaceError(
+                "Tried to test containment of subspaces in different R^n");
         if(this.dim > other.dim)
             return false;
         if(this.isZero() || other.isMaximal())
@@ -228,7 +238,8 @@ class Subspace {
 
     equals(other: Subspace, ε=1e-10): boolean {
         if(this.n != other.n)
-            throw new Error("Tried to test equality of subspaces in different R^n");
+            throw new SubspaceError(
+                "Tried to test equality of subspaces in different R^n");
         if(this.dim !== other.dim)
             return false;
         return this.isSubspaceOf(other, ε);

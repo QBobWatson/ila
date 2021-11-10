@@ -25,6 +25,14 @@
  */
 
 
+class ComplexError extends Error {
+    constructor(message: string) {
+        super(message);
+        this.name = "ComplexError";
+    }
+}
+
+
 /**
  * @summary
  * Class representing a complex number.
@@ -36,8 +44,6 @@
  *
  * @example {@lang javascript}
  * new Complex(1, 2).toString(1); // "1.0 + 2.0 i"
- *
- * @extends Vector
  */
 class Complex {
     /**
@@ -337,12 +343,12 @@ class Complex {
      * z.toString();  // "0.1200 - 0.1600 i"
      *
      * @return `this`
-     * @throws Error if `this` is zero.
+     * @throws ComplexError if `this` is zero.
      */
     recip(): this {
         const s = 1/this.modsq;
         if(!isFinite(s))
-            throw new Error("Tried to divide by zero");
+            throw new ComplexError("Tried to divide by zero");
         this.Re *= s;
         this.Im *= -s;
         return this;
@@ -363,18 +369,18 @@ class Complex {
      *
      * @param other - The number to divide.
      * @return `this`
-     * @throws Error if `other` is zero.
+     * @throws ComplexError if `other` is zero.
      */
     div(other: Complex | number): this {
         if(typeof other === "number") {
             const s = 1/other;
             if(!isFinite(s))
-                throw new Error("Tried to divide by zero");
+                throw new ComplexError("Tried to divide by zero");
             return this.mult(s);
         }
         const s = 1/other.modsq;
         if(!isFinite(s))
-            throw new Error("Tried to divide by zero");
+            throw new ComplexError("Tried to divide by zero");
         [this.Re, this.Im] = [
             ( this.Re * other.Re + this.Im * other.Im) * s,
             (-this.Re * other.Im + this.Im * other.Re) * s

@@ -24,14 +24,22 @@
  * Implements a Matrix class containing algorithms from basic linear algebra.
  */
 
-// TODO: MatrixError, and the like in the other modules
 
 import Vector from "./vector";
+import Subspace from "./subspace";
 import Polynomial from "./polynomial";
 import { Root, MultRoot } from  "./polynomial";
 import Complex from "./complex";
 
 import { range } from "./util";
+
+
+class MatrixError extends Error {
+    constructor(message: string) {
+        super(message);
+        this.name = "MatrixError";
+    }
+}
 
 
 type Pivot = [number, number];
@@ -157,13 +165,13 @@ class Matrix {
 
     protected constructor(...rows: (number[] | Vector)[]) {
         if(rows.length === 0)
-            throw new Error("A matrix must have at least one row.")
+            throw new MatrixError("A matrix must have at least one row.")
         let rows2 = rows.map(r => r instanceof Vector
             ? r : new Vector(...r)) as Vector[];
         this.m = rows2.length;
         this.n = rows2[0]!.size;
         if(rows2.some(v => v.size !== this.n))
-            throw new Error("Matrix rows must have the same length.");
+            throw new MatrixError("Matrix rows must have the same length.");
         for(let i = 0; i < this.m; ++i)
             this[i] = rows2[i];
     }
@@ -395,7 +403,7 @@ class Matrix {
 
     add(other: Matrix, factor: number=1): this {
         if(this.m !== other.m || this.n !== other.n)
-            throw new Error('Tried to add matrices of different sizes');
+            throw new MatrixError('Tried to add matrices of different sizes');
         for(let i = 0; i < this.m; ++i)
             this[i].add(other[i], factor);
         return this;
@@ -413,7 +421,8 @@ class Matrix {
 
     mult(other: Matrix): Matrix | SquareMatrix {
         if(other.m !== this.n)
-            throw new Error('Cannot multiply matrices of incompatible dimensions');
+            throw new MatrixError(
+                'Cannot multiply matrices of incompatible dimensions');
         return Matrix.from(
             this.rows,
             row => Vector.from(
@@ -423,7 +432,8 @@ class Matrix {
 
     apply(v: Vector): Vector {
         if(v.size !== this.n)
-            throw new Error('Cannot multiply matrix and vector of incompatible dimensions');
+            throw new MatrixError(
+                'Cannot multiply matrix and vector of incompatible dimensions');
         return Vector.from(this.rows, row => row.dot(v));
     }
 
@@ -551,13 +561,25 @@ class Matrix {
         return basis;
     }
 
+    nullSpace(JD: JordanData=this.jordanSubst(), ε: number=1e-10): Subspace {
+        return Subspace.spanOf(this.nullBasis(JD), {n: this.n, ε});
+    }
+
     colBasis(PLU: PLUData=this.PLU()): Vector[] {
         return Array.from(PLU.pivots, ([, j]) => this.col(j));
+    }
+
+    colSpace(PLU: PLUData=this.PLU(), ε: number=1e-10): Subspace {
+        return Subspace.spanOf(this.colBasis(PLU), {n: this.m, ε});
     }
 
     rowBasis(PLU: PLUData=this.PLU()): Vector[] {
         const { pivots, U } = PLU;
         return pivots.map(([i,]) => U[i].clone());
+    }
+
+    rowSpace(PLU: PLUData=this.PLU(), ε: number=1e-10): Subspace {
+        return Subspace.spanOf(this.rowBasis(PLU), {n: this.n, ε});
     }
 
     leftNullBasis(PLU: PLUData=this.PLU()): Vector[] {
@@ -567,6 +589,10 @@ class Matrix {
         for(let i = r; i < this.m; ++i)
             ret[i - r] = E[i].clone();
         return ret;
+    }
+
+    leftNullSpace(PLU: PLUData=this.PLU(), ε: number=1e-10): Subspace {
+        return Subspace.spanOf(this.leftNullBasis(PLU), {n: this.m, ε});
     }
 
     solveReverseSubst(b: Vector, pivots?: Pivot[],
@@ -596,7 +622,7 @@ class Matrix {
         ε?: number}): Vector | null {
 
         if(b.size != this.m)
-            throw new Error("Incompatible dimensions of matrix and vector");
+            throw new MatrixError("Incompatible dimensions of matrix and vector");
 
         hints = {ε: 1e-10, ...hints};
         const { ε, PLU } = hints;
@@ -633,6 +659,42 @@ class Matrix {
         return this.normal.solve(this.transpose.apply(b), {ε})!;
     }
 
+    projectColSpace(b: Vector, hints?: {
+        QR?: QRData, ε?: number}): Vector {
+        return this.apply(this.solveLeastSquares(b, hints));
+    }
+
+    projectRowSpace(b: Vector, hints?: {
+        transposeQR?: QRData, ε?: number}): Vector {
+        if(!hints) hints = {};
+        return this.transpose.projectColSpace(
+            b, {QR: hints.transposeQR, ε: hints.ε});
+    }
+
+    solveShortest(b: Vector, hints?: {
+        PLU?: PLUData, transposeQR?: QRData, ε?: number}): Vector | null {
+        let x = this.solve(b, hints);
+        if(x === null) return null;
+        if(!hints) hints = {}
+        return this.projectRowSpace(x, hints);
+    }
+
+    solveLeastSquaresShortest(b: Vector, hints?: {
+        QR?: QRData, transposeQR?: QRData, ε?: number}): Vector {
+        return this.projectRowSpace(this.solveLeastSquares(b, hints), hints);
+    }
+
+    pseudoInverse(hints?: {QR?: QRData, transposeQR?:
+                           QRData, ε?: number}): Matrix | SquareMatrix {
+        let { QR, transposeQR, ε } = {ε: 1e-10, ...hints};
+        if(!QR) QR = this.QR(ε);
+        if(!transposeQR) transposeQR = this.transpose.QR(ε);
+        return Matrix.from(
+            range(this.m),
+            i => this.solveLeastSquaresShortest(
+                Vector.e(i, this.m), { QR, transposeQR, ε })).transpose;
+    }
+
 
     /***********************************************************************/
     /* Convenience                                                         */
@@ -654,6 +716,28 @@ class Matrix {
 
     nullity(PLU: PLUData=this.PLU()): number {
         return this.n - PLU.pivots.length;
+    }
+
+    hasFullRowRank(PLU?: PLUData): boolean;
+    hasFullRowRank(QR?: QRData): boolean;
+    hasFullRowRank(x?: PLUData | QRData): boolean {
+        if(x === undefined)
+            x = this.PLU();
+        let r = "P" in x ? this.rank(x) : this.rank(x);
+        return r == this.m;
+    }
+
+    hasFullColRank(PLU?: PLUData): boolean;
+    hasFullColRank(QR?: QRData): boolean;
+    hasFullColRank(x?: PLUData | QRData): boolean {
+        if(x === undefined)
+            x = this.PLU();
+        let r = "P" in x ? this.rank(x) : this.rank(x);
+        return r == this.n;
+    }
+
+    rref(JD: JordanData=this.jordanSubst()): Matrix {
+        return JD.rref;
     }
 
 
@@ -712,10 +796,12 @@ class Matrix {
                     ([λ, m]) => {
                         if(typeof λ == "number") {
                             if(λ <= ε)
-                                throw new Error("Singular values must be positive");
+                                throw new MatrixError(
+                                    "Singular values must be positive");
                             return [λ*λ, m];
                         }
-                        throw new Error("Singular values must be real")
+                        throw new MatrixError(
+                            "Singular values must be real")
                     });
             (eigenvals as [number, number][]).sort(
                 ([λ1, _m1], [λ2, _m2]) => λ1-λ2);
@@ -727,17 +813,20 @@ class Matrix {
             eigenvals = ATA.eigenvalues(ε);
             let sumams = eigenvals.reduce((acc, [_, m]) => acc + m, 0);
             if(sumams < n)
-                throw new Error("Eigenvalue computation failed for normal matrix");
+                throw new MatrixError(
+                    "Eigenvalue computation failed for normal matrix");
         }
         let Σ: number[] = [], ui: Vector[] = [], vi: Vector[] = [];
         for(let i = eigenvals.length - 1; i >= 0; --i) {
             let [λ, m] = eigenvals[i];
             if(λ instanceof Complex || λ < -ε)
-                throw new Error("Eigenvalue computation failed for normal matrix");
+                throw new MatrixError(
+                    "Eigenvalue computation failed for normal matrix");
             let σ = Math.sqrt(λ);
             let B = ATA.eigenspaceBasis(λ, ε) as Vector[];
             if(B.length < m)
-                throw new Error("Eigenspace computation failed for normal matrix");
+                throw new MatrixError(
+                    "Eigenspace computation failed for normal matrix");
             let Q = B.length > 1
                 ? [...Matrix.from(B).transpose.QR(ε).Q.cols]
                 : [B[0].normalize()];
@@ -761,7 +850,8 @@ class Matrix {
             else
                 ui.push(...Matrix.from(B).transpose.QR(ε).Q.cols);
             if(ui.length < m)
-                throw new Error("Left null space computation failed");
+                throw new MatrixError(
+                    "Left null space computation failed");
         }
         let U = Matrix.from(ui).transpose as SquareMatrix;
         let V = Matrix.from(vi).transpose as SquareMatrix;
@@ -776,7 +866,8 @@ class SquareMatrix extends Matrix {
     constructor(...rows: (number[] | Vector)[]) {
         super(...rows);
         if(this.m !== this.n)
-            throw new Error("Tried to create a non-square SquareMatrix.");
+            throw new MatrixError(
+                "Tried to create a non-square SquareMatrix.");
     }
 
 
@@ -834,18 +925,27 @@ class SquareMatrix extends Matrix {
     }
 
 
+    inverse(JD: JordanData=this.jordanSubst()): SquareMatrix | null {
+        if(this.rank(JD) < this.n)
+            return null;
+        return JD.rowOps;
+    }
+
+    isInvertible(JD: JordanData=this.jordanSubst()): boolean {
+        return !!this.inverse(JD);
+    }
+
+    isSingular(JD: JordanData=this.jordanSubst()): boolean {
+        return !this.isInvertible(JD);
+    }
+
+
     /***********************************************************************/
     /* Determinants and Eigenvalues                                        */
     /***********************************************************************/
 
     det(PLU: PLUData=this.PLU()): number {
         return PLU.det!;
-    }
-
-    inverse(JD: JordanData=this.jordanSubst()): SquareMatrix | null {
-        if(this.rank(JD) < this.n)
-            return null;
-        return JD.rowOps;
     }
 
     fadeevLeverrier(): {charpoly: Polynomial, adjugate: SquareMatrix} {
@@ -915,7 +1015,7 @@ class SquareMatrix extends Matrix {
         let AmlI = this.clone().sub(Matrix.identity(this.n, λ));
         let B = AmlI.nullBasis(AmlI.jordanSubst(AmlI.PLU(ε)));
         if(B.length == 0)
-            throw new Error("λ is not an eigenvalue of this matrix");
+            throw new MatrixError("λ is not an eigenvalue of this matrix");
         return B;
     }
 
@@ -958,7 +1058,7 @@ class SquareMatrix extends Matrix {
         }
 
         if(pivots.length == n)
-            throw new Error("λ is not an eigenvalue of this matrix");
+            throw new MatrixError("λ is not an eigenvalue of this matrix");
 
         // Transform into rref
         for(let k = pivots.length-1; k >= 0; --k) {
@@ -977,7 +1077,7 @@ class SquareMatrix extends Matrix {
             U[row][col].Im = 0;
         }
 
-        // Now extract the null basisa
+        // Now extract the null basis
         let basis: [Vector, Vector][] = [], previous: Pivot[] = [];
         for(let j = 0; j < n; ++j) {
             if(pivots.length && pivots[0][1] === j) {
@@ -996,6 +1096,10 @@ class SquareMatrix extends Matrix {
         }
 
         return basis;
+    }
+
+    eigenspace(λ: number, ε: number=1e-10) {
+        return Subspace.spanOf(this._realEigenspaceBasis(λ, ε));
     }
 
     diagonalize(hints?: {block?: boolean, ortho?:
@@ -1038,6 +1142,11 @@ class SquareMatrix extends Matrix {
         }
         let C = Matrix.from(eigenbasis).transpose as SquareMatrix;
         return { C, D };
+    }
+
+    isDiagonalizable(hints?: {block?: boolean, ortho?:
+                              boolean, ε?: number}): boolean {
+        return !!this.diagonalize(hints);
     }
 
     LDLT(ε: number=1e-10): LDLTData | null {

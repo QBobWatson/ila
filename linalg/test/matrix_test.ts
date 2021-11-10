@@ -27,6 +27,7 @@ import Matrix from "../src/matrix3";
 import { SquareMatrix, PLUData, QRData, SVDData,
          JordanData, LDLTData } from "../src/matrix3";
 import Vector from "../src/vector";
+import Subspace from "../src/subspace";
 import Polynomial from '../src/polynomial';
 import Complex from '../src/complex';
 
@@ -302,14 +303,14 @@ describe('Matrix', () => {
         it('should return the second column', () =>
             M.col(1).should.eql(vec(2, 4)));
     });
-    describe('#rows() and #cols()', () => {
+    describe('#rows and #cols', () => {
         let M = mat([1, 2], [3, 4]);
         it('should iterate over the rows', () =>
             Array.from(M.rows).should.eql([vec(1, 2), vec(3, 4)]));
         it('should iterate over the columns', () =>
             Array.from(M.cols).should.eql([vec(1, 3), vec(2, 4)]));
     });
-    describe('#diag()', () => {
+    describe('#diag', () => {
         it('should iterate over diagonal entries of square matrices', () =>
             Array.from(mat([1, 2, 3], [4, 5, 6], [7, 8, 9]).diag)
                 .should.eql([1, 5, 9]));
@@ -551,7 +552,7 @@ describe('Matrix', () => {
         JD?: JordanData,
     };
 
-    describe('#PLU(), #jordanSubst(), #{null,col,row,leftNull}Basis()', () => {
+    describe('#PLU(), #jordanSubst(), #*Basis(), #hasFull#Rank()', () => {
         let testMats: TestMats[] = [
             {M: mat(
                 [10,-7,0],
@@ -693,30 +694,46 @@ describe('Matrix', () => {
                 rowOps.mult(M).equals(test.rref, 1e-10).should.be.true;
             }
         });
-        it('should compute a basis of the null space', () => {
-            for(let { M, N, JD } of testMats)
+        it('should compute the null space', () => {
+            for(let { M, N, JD } of testMats) {
                 M.nullBasis(JD!).should.resemble(N);
+                M.nullSpace(JD!).equals(Subspace.spanOf(N, {n: M.n}))
+                    .should.be.true;
+            }
         });
-        it('should compute a basis of the column space', () => {
-            for(let { M, C, PLU } of testMats)
+        it('should compute the column space', () => {
+            for(let { M, C, PLU } of testMats) {
                 M.colBasis(PLU!).should.resemble(C);
+                M.colSpace(PLU!).equals(Subspace.spanOf(C, {n: M.m}))
+                    .should.be.true;
+            }
         });
-        it('should compute a basis of the row space', () => {
+        it('should compute the row space', () => {
             for(let { M, N, PLU } of testMats) {
                 let R = M.rowBasis(PLU!);
                 R.length.should.equal(PLU!.pivots.length);
                 let RR = Matrix.create(...R);
                 // The row space is orthogonal to the null space
                 N.every(v => RR.apply(v).isZero(1e-10)).should.be.true;
+                M.rowSpace().equals(Subspace.spanOf(R, {n: M.n}))
+                    .should.be.true;
             }
         });
-        it('should compute a basis of the left null space', () => {
+        it('should compute the left null space', () => {
             for(let { M, PLU } of testMats) {
                 let B = M.leftNullBasis(PLU!);
                 B.length.should.equal(M.m - PLU!.pivots.length);
                 // The left null space is orthogonal to the column space
                 let MT = M.transpose;
                 B.every(v => MT.apply(v).isZero(1e-10)).should.be.true;
+                M.leftNullSpace().equals(Subspace.spanOf(B, {n: M.m}))
+                    .should.be.true;
+            }
+        });
+        it('should know whether the matrix has foll row and column rank', () => {
+            for(let {M, N, C} of testMats) {
+                M.hasFullRowRank().should.equal(C.length == M.m);
+                M.hasFullColRank().should.equal(N.length == 0);
             }
         });
     });
@@ -744,7 +761,7 @@ describe('Matrix', () => {
             }
         });
     });
-    describe('#solve(), #solveLeastSquares()', () => {
+    describe('#solve(), #solveLeastSquares(), #solve*Shortest()', () => {
         let testMats = [
             {M: mat([10,-7,0],
                     [-3, 2,6],
@@ -774,14 +791,15 @@ describe('Matrix', () => {
         it('should solve Mx=b', () => {
             for(let {M, b} of testMats) {
                 expect(M.solve(b)).to.solve(M, b);
-                /* let x = M.solveShortest(b); */
-                /* x.should.solve(M, b); */
-                /* M.nullSpace().isOrthogonalTo(x).should.be.true(); */
+                let x = M.solveShortest(b);
+                expect(x).not.to.be.null;
+                x!.should.solve(M, b);
+                M.nullSpace().isOrthogonalTo(x!).should.be.true;
                 M.solveLeastSquares(b).should.solve(M, b);
                 M.solveLeastSquares(b, {QR: M.QR()}).should.solve(M, b);
-                /* M.solveLeastSquaresShortest(b).equals(x, 1e-10).should.be.true(); */
-                /* M.pseudoInverse(); */
-                /* M.solveLeastSquaresShortest(b).equals(x, 1e-10).should.be.true(); */
+                M.solveLeastSquaresShortest(b).equals(x!, 1e-10).should.be.true;
+                let P = M.pseudoInverse();
+                P.apply(b).equals(x!, 1e-10).should.be.true;
             }
         });
         let testNoSoln = [
@@ -807,12 +825,11 @@ describe('Matrix', () => {
             for(let {M, b} of testNoSoln) {
                 M.solveLeastSquares(b).should.solve(M, b, true);
                 M.solveLeastSquares(b, {QR: M.QR()}).should.solve(M, b, true);
-                /* let x = M.solveLeastSquaresShortest(b); */
-                /* x.should.solve(M, b, true); */
-                /* M.nullSpace().isOrthogonalTo(x).should.be.true(); */
-                /* M.pseudoInverse(); */
-                /* M.solveLeastSquaresShortest(b).equals(x, 1e-10) */
-                /*     .should.be.true(); */
+                let x = M.solveLeastSquaresShortest(b);
+                x.should.solve(M, b, true);
+                M.nullSpace().isOrthogonalTo(x).should.be.true;
+                let P = M.pseudoInverse();
+                P.apply(b).equals(x, 1e-10).should.be.true;
             }
         });
         it('should throw for incompatible dimensions', () => {
@@ -848,6 +865,62 @@ describe('Matrix', () => {
                 let LDLT = A.LDLT();
                 expect(LDLT).not.to.be.null;
                 expect(A.solve(b, {LDLT: LDLT!})).to.solve(A, b);
+            }
+        });
+    });
+    describe('#projectColSpace()', () => {
+        let A = Matrix.create([ 0, -3, -6,  4,  9],
+                              [-1, -2, -1,  3,  1],
+                              [-2, -3,  0,  3, -1],
+                              [ 1,  4,  5, -9, -7]);
+        let bs = [[1, 0, 0, 0],
+                  [0, 1, 0, 0],
+                  [0, 0, 1, 0],
+                  [0, 0, 0, 1]].map(x => Vector.from(x));
+        let CS = A.colSpace();
+        it('should project onto the column space', () => {
+            for(let b of bs)
+                A.projectColSpace(b).should.resemble(CS.project(b));
+        });
+    });
+    describe('#pseudoInverse()', () => {
+        let testMats = [
+            mat([10,-7,0],
+                [-3, 2,6],
+                [ 5,-1,5]),
+            mat([2, 1, 1, 0],
+                [4, 3, 3, 1],
+                [8, 7, 9, 5],
+                [6, 7, 9, 8]),
+            mat([-1, 0, 1],
+                [ 2, 1, 1],
+                [-1, 2, 0]),
+            mat([ 2, -6,  6],
+                [-4,  5, -7],
+                [ 3,  5, -1],
+                [-6,  4, -8],
+                [ 8, -3,  9]),
+            mat([ 0, -3, -6,  4,  9],
+                [-1, -2, -1,  3,  1],
+                [-2, -3,  0,  3, -1],
+                [ 1,  4,  5, -9, -7]),
+            mat([ 0,  3, -6,  6,  4, -5],
+                [ 3, -7,  8, -5,  8,  9],
+                [ 3, -9, 12, -9,  6, 15]),
+            mat([1, 2, 3, 4],
+                [4, 5, 6, 7],
+                [6, 7, 8, 9]),
+            mat([1, 3, 5, 7],
+                [3, 5, 7, 9],
+                [5, 7, 9, 1])
+        ];
+        it('should compute the pseudoinverse', () => {
+            for(let A of testMats) {
+                let Ap = A.pseudoInverse();
+                A.mult(Ap).equals(A.colSpace().projectionMatrix, 1e-10)
+                    .should.be.true;
+                Ap.mult(A).equals(A.rowSpace().projectionMatrix, 1e-10)
+                    .should.be.true;
             }
         });
     });
@@ -941,7 +1014,13 @@ describe('Matrix', () => {
         ];
         it('should compute the SVD', () => {
             for(let M of testMats) {
-                M.SVD({ε: 1e-8}).should.factorize(M, 'SVD', 1e-8);
+                let SVD = M.SVD({ε: 1e-8});
+                SVD.should.factorize(M, 'SVD', 1e-8);
+                let { U, Σ, V } = SVD;
+                let { m, n } = M;
+                V.mult(Matrix.diagonal(Σ.map(x => 1/x), n, m))
+                    .mult(U.transpose).equals(M.pseudoInverse(), 1e-8)
+                    .should.be.true;
             }
         });
         it('should compute the SVD with hinted σ\'s', () => {
@@ -951,9 +1030,15 @@ describe('Matrix', () => {
                         [ 0, 2, 4, 9, 1],
                         [ 2, 3, 5, 1, 4],
                         [11,-2, 1, 3, 1]);
-            let Σ = [17.14227310360927, 10.964896741297425, 7.807316494659619,
-                     3.844355328489229, 2.860114255495985];
-            M.SVD({singularValues: Σ}).should.factorize(M, 'SVD');
+            let Σ1 = [17.14227310360927, 10.964896741297425, 7.807316494659619,
+                      3.844355328489229, 2.860114255495985];
+            let SVD = M.SVD({singularValues: Σ1});
+            SVD.should.factorize(M, 'SVD');
+            let { U, Σ, V } = SVD;
+            let { m, n } = M;
+            V.mult(Matrix.diagonal(Σ.map(x => 1/x), n, m))
+                .mult(U.transpose).equals(M.pseudoInverse(), 1e-8)
+                .should.be.true;
         })
     });
 });
@@ -1187,13 +1272,15 @@ describe('SquareMatrix', () => {
                                           .map(x => [x, 1]));
         });
     });
-    describe('#eigenspaceBasis()', () => {
+    describe('#eigenspaceBasis(), #eigenspace()', () => {
         it('should work for 1x1 matrices', () =>
             smat([3]).eigenspaceBasis(3).should.have.eigenvectors(smat([3]), 3, 1));
         it('should work for 2x2 matrices with distinct eigenvalues', () => {
             let M = smat([1, 1], [1, 1]);
             M.eigenspaceBasis(0).should.have.eigenvectors(M, 0, 1);
             M.eigenspaceBasis(2).should.have.eigenvectors(M, 2, 1);
+            M.eigenspace(0).equals(Subspace.spanOf([[1,-1]])).should.be.true;
+            M.eigenspace(2).equals(Subspace.spanOf([[1, 1]])).should.be.true;
             M.eigenspaceBasis.bind(M, 2.001).should.throw(/not an eigenvalue/);
         });
         it('should work for 2x2 matrices with a complex eigenvalue', () => {
@@ -1211,9 +1298,11 @@ describe('SquareMatrix', () => {
             let M = smat([1,1],[0,1]);
             let B = M.eigenspaceBasis(1);
             B.should.have.eigenvectors(M, 1, 1);
+            M.eigenspace(1).equals(Subspace.spanOf([[1, 0]])).should.be.true;
             M = smat([2,0],[0,2]);
             B = M.eigenspaceBasis(2);
             B.should.have.eigenvectors(M, 2, 2);
+            M.eigenspace(2).equals(Subspace.Rn(2)).should.be.true;
         });
         it('should work for 3x3 matrices with distinct eigenvalues', () => {
             let M = smat([23/13,  53/78, -10/39],
@@ -1222,6 +1311,12 @@ describe('SquareMatrix', () => {
             M.eigenspaceBasis(1).should.have.eigenvectors(M, 1, 1);
             M.eigenspaceBasis(2).should.have.eigenvectors(M, 2, 1);
             M.eigenspaceBasis(3).should.have.eigenvectors(M, 3, 1);
+            M.eigenspace(1).equals(Subspace.spanOf([[1, 0, 3]]))
+                .should.be.true;
+            M.eigenspace(2).equals(Subspace.spanOf([[7, 2, -1]]))
+                .should.be.true;
+            M.eigenspace(3).equals(Subspace.spanOf([[2, 4, 1]]))
+                .should.be.true;
         });
         it('should work for 3x3 matrices with repeated eigenvalues', () => {
             let M = smat([11/13, 22/39,  2/39],
@@ -1229,13 +1324,21 @@ describe('SquareMatrix', () => {
                          [-1/13, 11/39, 40/39]);
             M.eigenspaceBasis(1).should.have.eigenvectors(M, 1, 2);
             M.eigenspaceBasis(2).should.have.eigenvectors(M, 2, 1);
+            M.eigenspace(1).equals(Subspace.spanOf(
+                [[1, 0, 3], [7, 2, -1]])).should.be.true;
+            M.eigenspace(2).equals(Subspace.spanOf([[2, 4, 1]])).should.be.true;
             M = smat([    1,   1/2,     0],
                      [-4/13, 83/39,  4/39],
                      [ 5/13,  7/78, 34/39]);
             M.eigenspaceBasis(1).should.have.eigenvectors(M, 1, 1);
             M.eigenspaceBasis(2).should.have.eigenvectors(M, 2, 1);
+            M.eigenspace(1).equals(Subspace.spanOf([[1, 0, 3]]))
+                .should.be.true;
+            M.eigenspace(2).equals(Subspace.spanOf([[2, 4, 1]]))
+                .should.be.true;
             M = Matrix.identity(3, 3);
             M.eigenspaceBasis(3).should.have.eigenvectors(M, 3, 3);
+            M.eigenspace(3).equals(Subspace.Rn(3)).should.be.true;
         });
         it('should work for 3x3 matrices with a complex eigenvalue', () => {
             let M = smat([33, -23,   9],
@@ -1291,6 +1394,10 @@ describe('SquareMatrix', () => {
             M.eigenspaceBasis(λ).should.have.eigenvectors(M, λ, 1);
             M.eigenspaceBasis(3).should.have.eigenvectors(M, 3, 1);
             M.eigenspaceBasis(4).should.have.eigenvectors(M, 4, 1);
+            M.eigenspace(3).equals(Subspace.spanOf([[4,9,0,-3]]))
+                .should.be.true;
+            M.eigenspace(4).equals(Subspace.spanOf([[3,-3,2,-3]]))
+                .should.be.true;
 
             M = smat([  363,    -8,   200,  -72],
                      [ 2463,  -162, -1536, 1601],
@@ -1301,6 +1408,8 @@ describe('SquareMatrix', () => {
             λ.conj();
             M.eigenspaceBasis(λ).should.have.eigenvectors(M, λ, 1);
             M.eigenspaceBasis(3).should.have.eigenvectors(M, 3, 1);
+            M.eigenspace(3).equals(Subspace.spanOf([[4,9,0,-3]]))
+                .should.be.true;
 
             M.eigenspaceBasis.bind(M, C(3, 5)).should.throw(/not an eigenvalue/);
         });
