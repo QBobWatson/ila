@@ -20,7 +20,6 @@
 
 import { expect, Assertion } from 'chai';
 
-// import Matrix from '../../src/matrix';
 import Complex from '../../src/complex';
 import Vector from '../../src/vector';
 
@@ -35,14 +34,10 @@ declare global {
 
 
 function approximate(obj: any, other: any, ε: number): void {
-    if(typeof obj === "number")
+    if(obj === null || obj === undefined)
+        expect.fail(obj, other, "expected a non-null value");
+    else if(typeof obj === "number")
         expect(obj).to.be.approximately(other, ε);
-    /* else if(obj instanceof Matrix) { */
-    /*     expect(other).to.be.an.instanceOf(Matrix); */
-    /*     expect(obj.m).to.equal(other.m); */
-    /*     expect(obj.n).to.equal(other.n); */
-    /*     approximate([...obj.rows()], [...other.rows()], ε); */
-    /* }  */
     else if(obj instanceof Vector) {
         expect(other).to.be.an.instanceOf(Vector);
         approximate([...obj], [...other], ε);

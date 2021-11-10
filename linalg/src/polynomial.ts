@@ -900,7 +900,7 @@ class Polynomial implements Iterable<number> {
      * @return The roots found.
      * @throws Error if the degree is not 1, 2, 3, or 4.
      */
-    factor(ε: number=1e-10): Root[] {
+    factor(ε: number=1e-10): MultRoot[] {
         if(this.isZero())
             throw new Error("The zero polynomial does not have discrete roots");
         const [a, b, c, d, e] = this;
@@ -919,3 +919,4 @@ class Polynomial implements Iterable<number> {
 legendres = [new Polynomial(1), new Polynomial(1, 0)];
 
 export default Polynomial;
+export type { MultRoot, Root };

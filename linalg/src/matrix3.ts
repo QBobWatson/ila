@@ -28,6 +28,8 @@
 
 import Vector from "./vector";
 import Polynomial from "./polynomial";
+import { MultRoot } from  "./polynomial";
+import Complex from "./complex";
 
 import { range } from "./util";
 
@@ -102,6 +104,14 @@ export interface QRData {
     /** A list of the zero columns of `Q` / zero rows of `R`. */
     LD: number[];
 };
+
+export interface DiagonalizationData {
+    /** An `n`x`n` invertible matrix. */
+    C: SquareMatrix;
+
+    /** An `n`x`n` (block-)diagonal matrix. */
+    D: SquareMatrix;
+}
 
 
 class Matrix {
@@ -672,6 +682,7 @@ class Matrix {
 
 
 class SquareMatrix extends Matrix {
+    [x: string]: any;
 
     constructor(...rows: (number[] | Vector)[]) {
         super(...rows);
@@ -779,8 +790,147 @@ class SquareMatrix extends Matrix {
         return this.fadeevLeverrier().adjugate;
     }
 
-    eigenvalues(ε=1e-10) {
+    eigenvalues(ε: number=1e-10): MultRoot[] {
         return this.charpoly.factor(ε);
+    }
+
+    eigenspaceBasis(λ: number | Complex,
+                    ε: number=1e-10): Vector[] | [Vector, Vector][] {
+        if(λ instanceof Complex) {
+            if(Math.abs(λ.Im) > ε)
+                return this._complexEigenspaceBasis(λ, ε);
+            λ = λ.Re;
+        }
+        return this._realEigenspaceBasis(λ, ε);
+    }
+
+    _realEigenspaceBasis(λ: number, ε: number=1e-10): Vector[] {
+        let AmlI = this.clone().sub(Matrix.identity(this.n, λ));
+        let B = AmlI.nullBasis(AmlI.jordanSubst(AmlI.PLU(ε)));
+        if(B.length == 0)
+            throw new Error("λ is not an eigenvalue of this matrix");
+        return B;
+    }
+
+    _complexEigenspaceBasis(λ: Complex, ε=1e-10): [Vector, Vector][] {
+        // The row reduction algorithm in PLU() won't work for complex
+        // matrices.  We implement a simplified version here.
+        let { m, n } = this;
+        let pivots: Pivot[] = [];
+        let U = Array.from(
+            this.rows, row => Array.from(row, x => new Complex(x)));
+        for(let i = 0; i < n; ++i) U[i][i].sub(λ);
+
+        for(let curRow = 0, curCol = 0; curRow < m && curCol < n; ++curCol) {
+            // Find maximal pivot
+            let pivot = U[curRow][curCol], row = curRow;
+            for(let i = curRow+1; i < m; ++i) {
+                if(U[i][curCol].modsq > pivot.modsq) {
+                    pivot = U[i][curCol];
+                    row = i;
+                }
+            }
+            if(pivot.modsq > ε*ε) {
+                // curCol is a pivot column
+                [U[row], U[curRow]] = [U[curRow], U[row]];
+                // Eliminate
+                for(let i = curRow+1; i < m; ++i) {
+                    let l = U[i][curCol].clone().div(pivot).mult(-1);
+                    U[i][curCol].Re = U[i][curCol].Im = 0;
+                    for(let j = curCol+1; j < n; ++j)
+                        U[i][j].add(U[curRow][j].clone().mult(l));
+                }
+                pivots.push([curRow, curCol]);
+                curRow++;
+
+            } else {
+                // Clear the column so U is really upper-triangular
+                for(let i = curRow; i < m; ++i)
+                    U[i][curCol].Re = U[i][curCol].Im = 0;
+            }
+        }
+
+        if(pivots.length == n)
+            throw new Error("λ is not an eigenvalue of this matrix");
+
+        // Transform into rref
+        for(let k = pivots.length-1; k >= 0; --k) {
+            let [row, col] = pivots[k];
+            let pivot = U[row][col];
+            for(let i = 0; i < row; ++i) {
+                let l = U[i][col].clone().div(pivot).mult(-1);
+                for(let j = col+1; j < n; ++j)
+                    U[i][j].add(U[row][j].clone().mult(l));
+                U[i][col].Re = U[i][col].Im = 0;
+            }
+            let l = pivot.recip();
+            for(let j = col+1; j < n; ++j)
+                U[row][j].mult(l);
+            U[row][col].Re = 1;
+            U[row][col].Im = 0;
+        }
+
+        // Now extract the null basisa
+        let basis: [Vector, Vector][] = [], previous: Pivot[] = [];
+        for(let j = 0; j < n; ++j) {
+            if(pivots.length && pivots[0][1] === j) {
+                // Pivot column
+                previous.push(pivots.shift()!);
+                continue;
+            }
+            // Free column
+            let Re_v = Vector.zero(n), Im_v = Vector.zero(n);
+            for(let [row, col] of previous) {
+                Re_v[col] = -U[row][j].Re;
+                Im_v[col] = -U[row][j].Im;
+            }
+            Re_v[j] = 1;
+            basis.push([Re_v, Im_v]);
+        }
+
+        return basis;
+    }
+
+    diagonalize(hints?: {block?: boolean, ortho?:
+                         boolean, ε?: number}): DiagonalizationData | null {
+        let { block, ortho, ε }
+            = {block: false, ortho: false, ε:1e-10, ...hints};
+        let eigenbasis: Vector[] = [];
+        let D = Matrix.zero(this.n) as SquareMatrix;
+        let i = 0;
+        // Only use one of a conjugate pair of eigenvalues
+        for(let [λ,m] of this.eigenvalues(ε).filter(
+            ([λ,]) => !(λ instanceof Complex) || λ.Im >= 0)) {
+            if(λ instanceof Complex) {
+                if(!block) return null;
+                let B = this.eigenspaceBasis(λ, ε) as [Vector, Vector][];
+                if(B.length < m) // Impossible for matrices <= 3x3
+                    return null;
+                for(let j = 0; j < m; ++j, i += 2) {
+                    // The columns are the real and complex parts of the eigenvectors
+                    eigenbasis.push(...B[j]);
+                    D.insertSubmatrix(i, i, new Matrix([λ.Re, λ.Im], [-λ.Im, λ.Re]));
+                }
+            } else {
+                let B = this.eigenspaceBasis(λ, ε) as Vector[];
+                if(B.length < m)
+                    return null;
+                if(ortho) {
+                    if(B.length == 1)
+                        B[0].normalize();
+                    else {
+                        let M = Matrix.from(B).transpose;
+                        B = [...M.QR().Q.cols];
+                    }
+                }
+                for(let j = 0; j < m; ++j, ++i) {
+                    D[i][i] = λ;
+                    eigenbasis[i] = B[j];
+                }
+            }
+        }
+        let C = Matrix.from(eigenbasis).transpose as SquareMatrix;
+        return { C, D };
     }
 }
 

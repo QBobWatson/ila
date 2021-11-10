@@ -44,17 +44,22 @@ Assertion.addMethod(
         switch (which) {
             case 'PA=LU':
                 let { P, L, U, E, pivots } = this._obj as PLUData;
-                expect(L.isLowerUni(), `L = \n${L.toString(2)}\nis not lower unipotent`).to.be.true;
-                expect(U.isREF(), `U =\n${U.toString(2)}\nis not in REF`).to.be.true;
+                expect(L.isLowerUni(),
+                       `L = \n${L.toString(2)}`
+                       + `\nis not lower unipotent`).to.be.true;
+                expect(U.isREF(),
+                       `U =\n${U.toString(2)}\nis not in REF`).to.be.true;
                 expect(U.leadingEntries()).to.eql(pivots);
                 let PA = Matrix.permutation(P).mult(A);
                 let LU = L.mult(U);
                 expect(PA.equals(LU, ε),
-                       `Matrix is not correctly factored: PA =\n${PA.toString(2)}\nLU =\n${LU.toString(2)}`)
+                       `Matrix is not correctly factored:`
+                       + ` PA =\n${PA.toString(2)}\nLU =\n${LU.toString(2)}`)
                         .to.be.true;
                 let EA = E.mult(A);
                 expect(EA.equals(U, ε),
-                       `Matrix is not correctly factored: EA =\n${EA.toString(2)}\nU =\n${U.toString(2)}`)
+                       `Matrix is not correctly factored:`
+                       + ` EA =\n${EA.toString(2)}\nU =\n${U.toString(2)}`)
                         .to.be.true;
                 break;
 
@@ -66,15 +71,18 @@ Assertion.addMethod(
                 let QTQ = Q.transpose.mult(Q);
                 // Might not have orthonormal cols since some are zero
                 expect(QTQ.isDiagonal(ε),
-                       `Q does not have orthogonal columns: Q=\n${Q.toString(2)}\nQTQ=\n${QTQ.toString(2)}`)
+                       `Q does not have orthogonal columns:`
+                       + ` Q=\n${Q.toString(2)}\nQTQ=\n${QTQ.toString(2)}`)
                         .to.be.true;
                 for(let j = 0; j < QTQ.n; ++j) {
                     if(LD.includes(j)) {
                         expect(Q.col(j).isZero(ε),
-                               `Column ${j} of Q should be zero: LD=${LD}, Q=\n${Q.toString(2)}`)
+                               `Column ${j} of Q should be zero:`
+                               + ` LD=${LD}, Q=\n${Q.toString(2)}`)
                             .to.be.true;
                         expect(R.row(j).isZero(ε),
-                               `Row ${j} of R should be zero: LD=${LD}, R=\n${R.toString(2)}`)
+                               `Row ${j} of R should be zero:`
+                               + ` LD=${LD}, R=\n${R.toString(2)}`)
                             .to.be.true;
                     } else {
                         expect(QTQ[j][j]).to.be.approximately(1, ε);
@@ -83,34 +91,77 @@ Assertion.addMethod(
                 }
                 let QR = Q.mult(R);
                 expect(QR.equals(A, ε),
-                       `Matrix is not correctly factored: QR =\n${QR.toString(2)}\nA =\n${A.toString(2)}`)
+                       `Matrix is not correctly factored:`
+                       + ` QR =\n${QR.toString(2)}\nA =\n${A.toString(2)}`)
                         .to.be.true;
                 break;
         }
-    });
+    }
+);
 
 Assertion.addMethod(
     'solve', function(this: typeof Assertion, M: Matrix, b: Vector,
                       leastSquares: boolean=false, ε: number=1e-10) {
         let x = this._obj;
-        expect(x, 'A solution was not found when one was expected').not.to.be.null;
+        expect(x, 'A solution was not found when one was expected')
+            .not.to.be.null;
         let Mx = M.apply(x);
         if(!leastSquares)
             expect(Mx.equals(b, ε),
-                   `Mx != b:\nx = ${x.toString(2)}\nMx = ${Mx.toString(2)}\nb = ${b.toString(2)}`)
+                   `Mx != b:\nx = ${x.toString(2)}\n`
+                   + `Mx = ${Mx.toString(2)}\nb = ${b.toString(2)}`)
                 .to.be.true;
         else {
             expect(M.transpose.apply(Mx.sub(b)).isZero(1e-10),
                    'Expected Mx-b to be orthogonal to Col(M)')
                 .to.be.true;
         }
-    });
+    }
+);
+
+Assertion.addMethod(
+    'eigenvectors', function(this: typeof Assertion, M: SquareMatrix,
+                             λ: number | Complex, m: number, ε: number=1e-10) {
+        this._obj.length.should.equal(m);
+        if(typeof λ === "number") {
+            for(let v of this._obj) {
+                let Mv = M.apply(v);
+                let λv = v.clone().scale(λ);
+                Mv.should.resemble(λv, ε);
+            }
+        } else {
+            for(let [v_Re, v_Im] of this._obj) {
+                let Mv_Re = M.apply(v_Re);
+                let Mv_Im = M.apply(v_Im);
+                let λv_Re = v_Re.clone().scale(λ.Re).sub(v_Im.clone().scale(λ.Im));
+                let λv_Im = v_Re.clone().scale(λ.Im).add(v_Im.clone().scale(λ.Re));
+                [Mv_Re, Mv_Im].should.resemble([λv_Re, λv_Im], ε);
+            }
+        }
+    }
+);
+
+Assertion.addMethod(
+    'diagonalize', function(this: typeof Assertion, A: SquareMatrix,
+                            block=false, ε=1e-10) {
+        expect(this._obj, `No diagonalization was found when one was expected`)
+            .not.to.be.null;
+        let { C, D } = this._obj as { C: SquareMatrix, D: SquareMatrix };
+        if(!block) expect(D.isDiagonal()).to.be.true;
+        let Cinv = C.inverse(C.jordanSubst(C.PLU(ε)));
+        expect(Cinv).not.to.be.null;
+        C.mult(D).equals(A.mult(C), ε).should.be.true;
+    }
+);
 
 declare global {
     export namespace Chai {
         interface Assertion {
             factorize(A: Matrix, which: Factorization, ε?: number): void;
             solve(M: Matrix, b: Vector, leastSquares?: boolean, ε?: number): void;
+            eigenvectors(M: SquareMatrix, λ: number | Complex,
+                         m: number, ε?: number): void;
+            diagonalize(A: SquareMatrix, block?: boolean, ε?: number): void;
         }
     }
 }
@@ -984,6 +1035,272 @@ describe('SquareMatrix', () => {
                  [ -90,     206,    -464,    -616]).eigenvalues()
                      .should.resemble([C(1, 1), C(1, -1), C(1, 2), C(1, -2)]
                                           .map(x => [x, 1]));
+        });
+    });
+    describe('#eigenspaceBasis()', () => {
+        it('should work for 1x1 matrices', () =>
+            smat([3]).eigenspaceBasis(3).should.have.eigenvectors(smat([3]), 3, 1));
+        it('should work for 2x2 matrices with distinct eigenvalues', () => {
+            let M = smat([1, 1], [1, 1]);
+            M.eigenspaceBasis(0).should.have.eigenvectors(M, 0, 1);
+            M.eigenspaceBasis(2).should.have.eigenvectors(M, 2, 1);
+            M.eigenspaceBasis.bind(M, 2.001).should.throw(/not an eigenvalue/);
+        });
+        it('should work for 2x2 matrices with a complex eigenvalue', () => {
+            let M = smat([-15/7, 52/7], [-40/7, 57/7]);
+            let λ = C(3, 4);
+            let B = M.eigenspaceBasis(λ);
+            B.should.have.length(1);
+            B.should.have.eigenvectors(M, λ, 1);
+            λ.conj();
+            B = M.eigenspaceBasis(λ);
+            B.should.have.length(1);
+            B.should.have.eigenvectors(M, λ, 1);
+        });
+        it('should work for 2x2 matrices with a repeated eigenvalue', () => {
+            let M = smat([1,1],[0,1]);
+            let B = M.eigenspaceBasis(1);
+            B.should.have.eigenvectors(M, 1, 1);
+            M = smat([2,0],[0,2]);
+            B = M.eigenspaceBasis(2);
+            B.should.have.eigenvectors(M, 2, 2);
+        });
+        it('should work for 3x3 matrices with distinct eigenvalues', () => {
+            let M = smat([23/13,  53/78, -10/39],
+                         [-4/13, 122/39,   4/39],
+                         [-4/13,  49/78,  43/39]);
+            M.eigenspaceBasis(1).should.have.eigenvectors(M, 1, 1);
+            M.eigenspaceBasis(2).should.have.eigenvectors(M, 2, 1);
+            M.eigenspaceBasis(3).should.have.eigenvectors(M, 3, 1);
+        });
+        it('should work for 3x3 matrices with repeated eigenvalues', () => {
+            let M = smat([11/13, 22/39,  2/39],
+                         [-4/13, 83/39,  4/39],
+                         [-1/13, 11/39, 40/39]);
+            M.eigenspaceBasis(1).should.have.eigenvectors(M, 1, 2);
+            M.eigenspaceBasis(2).should.have.eigenvectors(M, 2, 1);
+            M = smat([    1,   1/2,     0],
+                     [-4/13, 83/39,  4/39],
+                     [ 5/13,  7/78, 34/39]);
+            M.eigenspaceBasis(1).should.have.eigenvectors(M, 1, 1);
+            M.eigenspaceBasis(2).should.have.eigenvectors(M, 2, 1);
+            M = Matrix.identity(3, 3);
+            M.eigenspaceBasis(3).should.have.eigenvectors(M, 3, 3);
+        });
+        it('should work for 3x3 matrices with a complex eigenvalue', () => {
+            let M = smat([33, -23,   9],
+                         [22,  33, -23],
+                         [19,  14,  50]).scale(1/29);
+            M.eigenspaceBasis(2).should.have.eigenvectors(M, 2, 1);
+            let λ = C(1, 1);
+            M.eigenspaceBasis(λ).should.have.eigenvectors(M, λ, 1);
+            λ.conj();
+            M.eigenspaceBasis(λ).should.have.eigenvectors(M, λ, 1);
+        });
+        it('should work for 4x4 matrices with distinct complex eigenvalues', () => {
+            let M = smat([-1226,   230,  1166, -989],
+                         [ 1530,  -192,  -786,  932],
+                         [ 8938, -1856, -6401, 6438],
+                         [12222, -2471, -9114, 8883]).scale(1/133);
+            let λ = C(3, 4);
+            M.eigenspaceBasis(λ).should.have.eigenvectors(M, λ, 1);
+            λ.conj();
+            M.eigenspaceBasis(λ).should.have.eigenvectors(M, λ, 1);
+            λ = C(1, 1);
+            M.eigenspaceBasis(λ).should.have.eigenvectors(M, λ, 1);
+            λ.conj();
+            M.eigenspaceBasis(λ).should.have.eigenvectors(M, λ, 1);
+        });
+        it('should work for 4x4 matrices with repeated complex eigenvalues', () => {
+            let M = smat([ -213,   396,   208, -160],
+                         [-2616,  1059,  1056, -976],
+                         [10256, -2036, -7221, 7212],
+                         [10968, -2528, -8088, 7971]).scale(1/133);
+            let λ = C(3, 4);
+            M.eigenspaceBasis(λ).should.have.eigenvectors(M, λ, 2);
+            λ.conj();
+            M.eigenspaceBasis(λ).should.have.eigenvectors(M, λ, 2);
+
+            M = smat([ -126,   371,   168, -119],
+                     [-2442,  1009,   976, -894],
+                     [10604, -2136, -7381, 7376],
+                     [11229, -2603, -8208, 8094]).scale(1/133);
+            λ = C(3, 4);
+            M.eigenspaceBasis(λ).should.have.eigenvectors(M, λ, 1);
+            λ.conj();
+            M.eigenspaceBasis(λ).should.have.eigenvectors(M, λ, 1);
+        });
+        it('should work for 4x4 matrices with real and complex eigenvalues', () => {
+            let M = smat([  276,    17,   240, -113],
+                         [ 1419,   138, -1056, 1109],
+                         [ 9654, -2022, -6773, 6806],
+                         [10827, -2249, -8280, 8088]).scale(1/133);
+            let λ = C(3, 4);
+            M.eigenspaceBasis(λ).should.have.eigenvectors(M, λ, 1);
+            λ.conj();
+            M.eigenspaceBasis(λ).should.have.eigenvectors(M, λ, 1);
+            M.eigenspaceBasis(3).should.have.eigenvectors(M, 3, 1);
+            M.eigenspaceBasis(4).should.have.eigenvectors(M, 4, 1);
+
+            M = smat([  363,    -8,   200,  -72],
+                     [ 2463,  -162, -1536, 1601],
+                     [ 9480, -1972, -6693, 6724],
+                     [10827, -2249, -8280, 8088]).scale(1/133);
+            λ = C(3, 4);
+            M.eigenspaceBasis(λ).should.have.eigenvectors(M, λ, 1);
+            λ.conj();
+            M.eigenspaceBasis(λ).should.have.eigenvectors(M, λ, 1);
+            M.eigenspaceBasis(3).should.have.eigenvectors(M, 3, 1);
+
+            M.eigenspaceBasis.bind(M, C(3, 5)).should.throw(/not an eigenvalue/);
+        });
+    });
+    describe('#diagonalize(), #isDiagonalizable()', () => {
+        it('should work for 1x1 matrices', () => {
+            let M = smat([3]);
+            expect(M.diagonalize()).to.diagonalize(M);
+            expect(M.diagonalize({block: true})).to.diagonalize(M);
+        });
+        it('should diagonalize 2x2 matrices', () => {
+            let testMats = [
+                smat([1, 1], [1, 1]),
+                smat([2, 0], [0, 2])
+            ];
+            for(let M of testMats) {
+                expect(M.diagonalize()).to.diagonalize(M);
+                expect(M.diagonalize({block: true})).to.diagonalize(M);
+            }
+            expect(smat([1,1],[0,1]).diagonalize()).to.be.null;
+        });
+        it('should diagonalize 3x3 matrices', () => {
+            let testMats = [
+                smat([23/13,  53/78, -10/39],
+                     [-4/13, 122/39,   4/39],
+                     [-4/13,  49/78,  43/39]),
+                smat([11/13, 22/39,  2/39],
+                     [-4/13, 83/39,  4/39],
+                     [-1/13, 11/39, 40/39]),
+                Matrix.identity(3, 3)
+            ];
+            for(let M of testMats) {
+                expect(M.diagonalize()).to.diagonalize(M);
+                expect(M.diagonalize({block: true})).to.diagonalize(M);
+            }
+            expect(smat([    1,   1/2,     0],
+                        [-4/13, 83/39,  4/39],
+                        [ 5/13,  7/78, 34/39]).diagonalize()).to.be.null;
+        });
+        it('should diagonalize 4x4 matrices', () => {
+            let testMats = [
+                smat([1482, -247, -741,  703],
+                     [ 963,  214, -828,  729],
+                     [1572, -360, -842, 1016],
+                     [ 105,  -21, -273,  476]).scale(1/133),
+                smat([ 374, 132, 212, -186],
+                     [ -18,  76, -12,   38],
+                     [-132, -40, -32,   92],
+                     [ 198, 116, 132,  -26]).scale(1/56),
+                smat([344, 128, 192, -160],
+                     [ 72,  88,  48,  -40],
+                     [-72, -32,   8,   40],
+                     [288, 128, 192, -104]).scale(1/56),
+                Matrix.identity(4, 3),
+            ];
+            for(let M of testMats) {
+                expect(M.diagonalize()).to.diagonalize(M);
+                expect(M.diagonalize({block: true})).to.diagonalize(M);
+            }
+        });
+        it('should block-diagonalize 2x2 matrices with a complex eigenvalue', () => {
+            let testMats = [
+                smat([2, -1], [2, 0]),
+                smat([-Math.sqrt(3)+1, -2], [1, -Math.sqrt(3)-1])
+            ];
+            for(let M of testMats) {
+                expect(M.diagonalize()).to.be.null;
+                let CD = M.diagonalize({block: true});
+                expect(CD).to.diagonalize(M, true);
+                let D = CD!.D;
+                D[0][0].should.be.approximately(D[1][1], 1e-10);
+                D[0][1].should.be.approximately(-D[1][0], 1e-10);
+            }
+        });
+        it('should block-diagonalize 3x3 matrices with a complex eigenvalue', () => {
+            let M = smat([33, -23,   9],
+                         [22,  33, -23],
+                         [19,  14,  50]).scale(1/29);
+            expect(M.diagonalize()).to.be.null;
+            let CD = M.diagonalize({block: true});
+            expect(CD).to.diagonalize(M, true);
+            let D = CD!.D;
+            D[0][2].should.equal(0);
+            D[1][2].should.equal(0);
+            D[2][0].should.equal(0);
+            D[2][1].should.equal(0);
+            D[0][0].should.be.approximately(D[1][1], 1e-10);
+            D[0][1].should.be.approximately(-D[1][0], 1e-10);
+        });
+        it('should block-diagonalize 4x4 matrices'
+            + 'with repeated complex eigenvalues', () => {
+                let M = smat([ -213,   396,   208, -160],
+                             [-2616,  1059,  1056, -976],
+                             [10256, -2036, -7221, 7212],
+                             [10968, -2528, -8088, 7971]).scale(1/133);
+                expect(M.diagonalize()).to.be.null;
+                expect(M.diagonalize({block: true, ε: 1e-8})).to.diagonalize(M, true);
+
+                M = smat([ -126,   371,   168, -119],
+                         [-2442,  1009,   976, -894],
+                         [10604, -2136, -7381, 7376],
+                         [11229, -2603, -8208, 8094]).scale(1/133);
+                expect(M.diagonalize()).to.be.null;
+                expect(M.diagonalize({block: true, ε: 1e-8})).to.be.null;
+            });
+        it('should block-diagonalize 4x4 matrices'
+           + ' with real and complex eigenvalues', () => {
+               let M = smat([  276,    17,   240, -113],
+                            [ 1419,   138, -1056, 1109],
+                            [ 9654, -2022, -6773, 6806],
+                            [10827, -2249, -8280, 8088]).scale(1/133);
+               expect(M.diagonalize()).to.be.null;
+               expect(M.diagonalize({block: true})).to.diagonalize(M, true);
+
+               M = smat([ 1360,  480,  1504, -1048],
+                        [-2288, -824, -2608,  1856],
+                        [ 1476,  600,  1712, -1212],
+                        [ 2288,  880,  2608, -1800]).scale(1/56);
+               expect(M.diagonalize()).to.be.null;
+               expect(M.diagonalize({block: true})).to.diagonalize(M, true);
+        });
+        it('should orthogonally diagonalize symmetric matrices', () => {
+            let testMats = [
+                smat([3]),
+                smat([1,2], [2,1]),
+                smat([4,3], [3,4]),
+                smat([1,2,3],
+                     [2,4,7],
+                     [3,7,9]),
+                smat([-1, 5, 4],
+                     [ 5,-2, 3],
+                     [ 4, 3,-9]),
+                smat([1.50199300338977629,
+                      0.44200755514697981,
+                      0.23372066474849376],
+                     [0.44200755514698000,
+                      1.38919004346224608,
+                      0.20579230968403700],
+                     [0.23372066474849394,
+                      0.20579230968403707,
+                      1.10881695314797761])
+            ];
+            for(let M of testMats) {
+                let CD = M.diagonalize({ortho: true});
+                expect(CD).to.diagonalize(M);
+                CD!.C.isOrthogonal().should.be.true;
+            }
+            let M = testMats.pop()!;
+            expect(M.eigenvalues()).to.resemble([[1, 2], [2, 1]]);
+            M.eigenspaceBasis(1).length.should.equal(2);
         });
     });
 });
