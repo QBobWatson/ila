@@ -28,7 +28,7 @@
 
 import Vector from "./vector";
 import Polynomial from "./polynomial";
-import { MultRoot } from  "./polynomial";
+import { Root, MultRoot } from  "./polynomial";
 import Complex from "./complex";
 
 import { range } from "./util";
@@ -111,6 +111,17 @@ export interface DiagonalizationData {
 
     /** An `n`x`n` (block-)diagonal matrix. */
     D: SquareMatrix;
+}
+
+export interface SVDData {
+    /** An `m`x`m` orthogonal matrix. */
+    U: SquareMatrix;
+
+    /** An `n`x`n` orthogonal matrix. */
+    V: SquareMatrix;
+
+    /** The singular values. */
+    Σ: number[];
 }
 
 
@@ -678,6 +689,84 @@ class Matrix {
         let Q = Matrix.create(...ui).transpose;
         return { Q, R, LD };
     }
+
+
+    /***********************************************************************/
+    /* SVD                                                                 */
+    /***********************************************************************/
+
+    SVD(hints?: {ε?: number, singularValues?: Root[]}): SVDData {
+        // If the matrix is wide, then the normal matrix of the transpose is
+        // smaller, so compute the SVD of the transpose instead.
+        let { m, n } = this;
+        if(m < n) {
+            let { U, V, Σ } = this.transpose.SVD(hints);
+            return { U: V, V: U, Σ };
+        }
+        let { ε, singularValues } = { ε: 1e-10, ...hints };
+        let ATA = this.normal;
+        let eigenvals: MultRoot[];
+        if(singularValues) {
+            eigenvals = singularValues.map<MultRoot>(
+                x => Array.isArray(x) ? x : [x, 1]).map(
+                    ([λ, m]) => {
+                        if(typeof λ == "number") {
+                            if(λ <= ε)
+                                throw new Error("Singular values must be positive");
+                            return [λ*λ, m];
+                        }
+                        throw new Error("Singular values must be real")
+                    });
+            (eigenvals as [number, number][]).sort(
+                ([λ1, _m1], [λ2, _m2]) => λ1-λ2);
+            let sumams = eigenvals.reduce((acc, [_, m]) => acc + m, 0);
+            if(sumams < n)
+                eigenvals.push([0, n - sumams]);
+        }
+        else {
+            eigenvals = ATA.eigenvalues(ε);
+            let sumams = eigenvals.reduce((acc, [_, m]) => acc + m, 0);
+            if(sumams < n)
+                throw new Error("Eigenvalue computation failed for normal matrix");
+        }
+        let Σ: number[] = [], ui: Vector[] = [], vi: Vector[] = [];
+        for(let i = eigenvals.length - 1; i >= 0; --i) {
+            let [λ, m] = eigenvals[i];
+            if(λ instanceof Complex || λ < -ε)
+                throw new Error("Eigenvalue computation failed for normal matrix");
+            let σ = Math.sqrt(λ);
+            let B = ATA.eigenspaceBasis(λ, ε) as Vector[];
+            if(B.length < m)
+                throw new Error("Eigenspace computation failed for normal matrix");
+            let Q = B.length > 1
+                ? [...Matrix.from(B).transpose.QR(ε).Q.cols]
+                : [B[0].normalize()];
+            for(let v of Q) {
+                vi.push(v);
+                if(λ > ε) {
+                    // Singular value
+                    Σ.push(σ);
+                    ui.push(this.apply(v).scale(1/σ));
+                }
+            }
+        }
+        // Now we have computed V and the singular values, as well as the first
+        // `r` columns of U, which form a basis for the column space of A.  It
+        // remains to compute an orthonormal basis of the left null space.
+        let r = ui.length;
+        if(r < m) {
+            let B = this.leftNullBasis(this.PLU(ε));
+            if(B.length == 1)
+                ui.push(B[0].normalize());
+            else
+                ui.push(...Matrix.from(B).transpose.QR(ε).Q.cols);
+            if(ui.length < m)
+                throw new Error("Left null space computation failed");
+        }
+        let U = Matrix.from(ui).transpose as SquareMatrix;
+        let V = Matrix.from(vi).transpose as SquareMatrix;
+        return { U, V, Σ };
+    }
 }
 
 
@@ -788,6 +877,24 @@ class SquareMatrix extends Matrix {
 
     get adjugate(): SquareMatrix {
         return this.fadeevLeverrier().adjugate;
+    }
+
+    minor(i: number, j: number): SquareMatrix {
+        let rows = [...this.rows];
+        rows.splice(i, 1)
+        let ret = Array.from(
+            rows,
+            row => {
+                let entries = [...row];
+                entries.splice(j, 1);
+                return Vector.from(entries);
+            });
+        return Matrix.from(ret) as SquareMatrix;
+    }
+
+    cofactor(i: number, j: number, ε: number=1e-10): number {
+        let A = this.minor(i, j);
+        return A.det(A.PLU(ε)) * ((i + j) % 2 === 0 ? 1 : -1);
     }
 
     eigenvalues(ε: number=1e-10): MultRoot[] {
@@ -931,6 +1038,44 @@ class SquareMatrix extends Matrix {
         }
         let C = Matrix.from(eigenbasis).transpose as SquareMatrix;
         return { C, D };
+    }
+
+    LDLT(ε: number=1e-10): LDLTData | null {
+        let n = this.n;
+        let D = new Array(n);
+        let L = Matrix.identity(n);
+        for(let j = 0; j < n; ++j) {
+            D[j] = this[j][j];
+            for(let k = 0; k < j; ++k)
+                D[j] -= L[j][k]*L[j][k]*D[k];
+            if(Math.abs(D[j]) <= ε)
+                return null;
+            for(let i = j+1; i < n; ++i) {
+                let l = this[i][j];
+                for(let k = 0; k < j; ++k)
+                    l -= L[i][k]*L[j][k]*D[k];
+                L[i][j] = l / D[j];
+            }
+        }
+        return { L, D };
+    }
+
+    cholesky(LDLT: LDLTData | null=this.LDLT()): SquareMatrix | null {
+        if(!LDLT) return null;
+        let {L, D} = LDLT;
+        L = L.clone();
+        for(let [i, d] of D.entries()) {
+            if(d < 0) return null;
+            d = Math.sqrt(d);
+            for(let j = i; j < this.n; ++j)
+                L[j][i] *= d;
+        }
+        return L;
+    }
+
+    isPosDef(LDLT: LDLTData | null=this.LDLT()): boolean {
+        if(!LDLT) return false;
+        return LDLT.D.every(x => x > 0);
     }
 }
 

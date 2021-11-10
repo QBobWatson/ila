@@ -24,7 +24,8 @@ should();
 import './lib/resemble';
 
 import Matrix from "../src/matrix3";
-import { SquareMatrix, PLUData, QRData, JordanData } from "../src/matrix3";
+import { SquareMatrix, PLUData, QRData, SVDData,
+         JordanData, LDLTData } from "../src/matrix3";
 import Vector from "../src/vector";
 import Polynomial from '../src/polynomial';
 import Complex from '../src/complex';
@@ -41,6 +42,8 @@ type Factorization = 'PA=LU' | 'QR' | 'SVD' | 'LDLT';
 Assertion.addMethod(
     'factorize', function(this: typeof Assertion, A: Matrix,
                           which: Factorization, ε: number=1e-10) {
+        expect(this._obj, "A factorization was expected but none was found")
+            .not.to.be.null;
         switch (which) {
             case 'PA=LU':
                 let { P, L, U, E, pivots } = this._obj as PLUData;
@@ -93,6 +96,33 @@ Assertion.addMethod(
                 expect(QR.equals(A, ε),
                        `Matrix is not correctly factored:`
                        + ` QR =\n${QR.toString(2)}\nA =\n${A.toString(2)}`)
+                        .to.be.true;
+                break;
+
+            case 'SVD':
+                let { U: U2, V, Σ } = this._obj as SVDData;
+                expect(U2.isOrthogonal(ε)).to.be.true;
+                expect(V.isOrthogonal(ε)).to.be.true;
+                Σ.slice().sort((a, b) => b-a).should.eql(Σ);
+                let { m, n } = A;
+                expect(U2
+                    .mult(Matrix.diagonal(Σ, m, n))
+                    .mult(V.transpose).equals(A, ε)).to.be.true;
+                break;
+
+            case 'LDLT':
+                let { L: L2, D } = this._obj as LDLTData;
+                expect(L2.isLowerUni(),
+                       'L should be lower-unipotent: L =\n'
+                    + `${L2.toString(2)}`).to.be.true;
+                let LDLT = L2.mult(Matrix.diagonal(D)).mult(L2.transpose);
+                expect(LDLT.equals(A, ε),
+                       'Matrix is not correctly factored: L=\n'
+                    + `${L2.toString(2)}\n`
+                    + `D= ${D.toString()}\n`
+                    + 'LDLT =\n'
+                    + `${LDLT.toString(2)}\nA=\n`
+                    + `${A.toString(2)}`)
                         .to.be.true;
                 break;
         }
@@ -789,6 +819,37 @@ describe('Matrix', () => {
             let M = mat([1,2],[3,4]);
             M.solve.bind(M, vec(1,2,3)).should.throw(/Incompatible/);
         });
+        // Test LDLT solving for positive-definite symmetric matrices
+        let testLDLT = [
+            {M: mat([10,-7,0],
+                    [-3, 2,6],
+                    [ 5,-1,5]),
+             b: vec(1, 2, 3)},
+            {M: mat([2, 1, 1, 0],
+                    [4, 3, 3, 1],
+                    [8, 7, 9, 5],
+                    [6, 7, 9, 8]),
+             b: vec(1, 2, 3, 4)},
+            {M: mat([ 0,  3, -6,  6,  4, -5],
+                    [ 3, -7,  8, -5,  8,  9],
+                    [ 3, -9, 12, -9,  6, 15]).transpose,
+             b: vec(1, 2, 3)},
+            {M: mat([1, 3, 5, 7],
+                    [3, 5, 7, 9],
+                    [5, 7, 9, 1]).transpose,
+             b: vec(1, 2, 3)},
+            {M: mat([1,2,3],[2,7,4],[3,4,8]),
+             b: vec(1, 2, 3)}
+        ];
+        it('should solve Ax=b using LDLT', () => {
+            for(let {M, b} of testLDLT) {
+                let A: SquareMatrix
+                    = (!M.isSquare() || !M.isSymmetric()) ? M.normal : M;
+                let LDLT = A.LDLT();
+                expect(LDLT).not.to.be.null;
+                expect(A.solve(b, {LDLT: LDLT!})).to.solve(A, b);
+            }
+        });
     });
 
     /***********************************************************************/
@@ -840,6 +901,60 @@ describe('Matrix', () => {
                 M.rank(QR).should.equal(M.rank());
             }
         });
+    });
+
+
+    /***********************************************************************/
+    /* SVD                                                                 */
+    /***********************************************************************/
+
+    describe('#SVD()', () => {
+        let testMats = [
+            mat([10,-7,0],
+                [-3, 2,6],
+                [ 5,-1,5]),
+            mat([2, 1, 1, 0],
+                [4, 3, 3, 1],
+                [8, 7, 9, 5],
+                [6, 7, 9, 8]),
+            mat([-1, 0, 1],
+                [ 2, 1, 1],
+                [-1, 2, 0]),
+            mat([ 2, -6,  6],
+                [-4,  5, -7],
+                [ 3,  5, -1],
+                [-6,  4, -8],
+                [ 8, -3,  9]),
+            mat([ 0, -3, -6,  4,  9],
+                [-1, -2, -1,  3,  1],
+                [-2, -3,  0,  3, -1],
+                [ 1,  4,  5, -9, -7]),
+            mat([ 0,  3, -6,  6,  4, -5],
+                [ 3, -7,  8, -5,  8,  9],
+                [ 3, -9, 12, -9,  6, 15]),
+            mat([1, 2, 3, 4],
+                [4, 5, 6, 7],
+                [6, 7, 8, 9]),
+            mat([1, 3, 5, 7],
+                [3, 5, 7, 9],
+                [5, 7, 9, 1])
+        ];
+        it('should compute the SVD', () => {
+            for(let M of testMats) {
+                M.SVD({ε: 1e-8}).should.factorize(M, 'SVD', 1e-8);
+            }
+        });
+        it('should compute the SVD with hinted σ\'s', () => {
+            let M = mat([ 1, 7, 2, 4, 5],
+                        [ 2, 0, 1, 9, 4],
+                        [-1, 1, 1,-1, 2],
+                        [ 0, 2, 4, 9, 1],
+                        [ 2, 3, 5, 1, 4],
+                        [11,-2, 1, 3, 1]);
+            let Σ = [17.14227310360927, 10.964896741297425, 7.807316494659619,
+                     3.844355328489229, 2.860114255495985];
+            M.SVD({singularValues: Σ}).should.factorize(M, 'SVD');
+        })
     });
 });
 
@@ -910,6 +1025,41 @@ describe('SquareMatrix', () => {
                 [ 3, 11,  9, 5],
                 [-2, -3,  3, 3],
                 [ 7,  8, -8, 9]).det().should.be.approximately(-1329, 1e-10));
+    });
+    describe('#minor', () => {
+        it('should compute minors', () => {
+            let M = smat([ 1,  7,  4, 2],
+                         [ 3, 11,  9, 5],
+                         [-2, -3,  3, 3],
+                         [ 7,  8, -8, 9]);
+            M.minor(1, 2).equals(smat([ 1, 7,2],
+                                      [-2,-3,3],
+                                      [ 7, 8,9])).should.be.true;
+        });
+    });
+    describe('#cofactor', () => {
+        let testMats = [
+            smat([3, 4],
+                 [5, 6]),
+            smat([0,  1, 2],
+                 [1,  0, 3],
+                 [4, -3, 8]),
+            smat([ 1,  7,  4, 2],
+                 [ 3, 11,  9, 5],
+                 [-2, -3,  3, 3],
+                 [ 7,  8, -8, 9])
+        ];
+        it('should compute cofactors', () => {
+            for(let M of testMats) {
+                let A = M.adjugate;
+                for(let i = 0; i < M.n; ++i) {
+                    for(let j = 0; j < M.n; ++j) {
+                        A[i][j].should.be.approximately(
+                            M.cofactor(j, i), 1e-10);
+                    }
+                }
+            }
+        });
     });
     describe('#inverse(), #adjugate()', () => {
         let testMats = [
@@ -1303,35 +1453,50 @@ describe('SquareMatrix', () => {
             M.eigenspaceBasis(1).length.should.equal(2);
         });
     });
-});
 
-/* // Test LDLT solving for positive-definite symmetric matrices */
-/* let testLDLT = [ */
-/*     {M: mat([10,-7,0], */
-/*             [-3, 2,6], */
-/*             [ 5,-1,5]), */
-/*      b: vec(1, 2, 3)}, */
-/*     {M: mat([2, 1, 1, 0], */
-/*             [4, 3, 3, 1], */
-/*             [8, 7, 9, 5], */
-/*             [6, 7, 9, 8]), */
-/*      b: vec(1, 2, 3, 4)}, */
-/*     {M: mat([ 0,  3, -6,  6,  4, -5], */
-/*             [ 3, -7,  8, -5,  8,  9], */
-/*             [ 3, -9, 12, -9,  6, 15]).transpose, */
-/*      b: vec(1, 2, 3)}, */
-/*     {M: mat([1, 3, 5, 7], */
-/*             [3, 5, 7, 9], */
-/*             [5, 7, 9, 1]).transpose, */
-/*      b: vec(1, 2, 3)}, */
-/*     {M: mat([1,2,3],[2,7,4],[3,4,8]), */
-/*      b: vec(1, 2, 3)} */
-/* ]; */
-/* it('should solve Mx=b using LDLT', () => { */
-/*     for(let {M, b} of testLDLT) { */
-/*         if(!M.isSquare() || !M.isSymmetric()) */
-/*             M = M.normal; */
-/*         M.solve(b).should.solve(M, b); */
-/*     } */
-/* }); */
-/* // Test forward-substitution in lower-unitriangular form */
+    /***********************************************************************/
+    /* Symmetric Matrices                                                  */
+    /***********************************************************************/
+
+    describe('#LDLT(), #cholesky()', () => {
+        // Produce positive-definite symmetric matrices from matrices with full
+        // column rank
+        let testMats = [
+            mat([10,-7,0],
+                [-3, 2,6],
+                [ 5,-1,5]),
+            mat([2, 1, 1, 0],
+                [4, 3, 3, 1],
+                [8, 7, 9, 5],
+                [6, 7, 9, 8]),
+            mat([ 0,  3, -6,  6,  4, -5],
+                [ 3, -7,  8, -5,  8,  9],
+                [ 3, -9, 12, -9,  6, 15]).transpose,
+            mat([1, 3, 5, 7],
+                [3, 5, 7, 9],
+                [5, 7, 9, 1]).transpose,
+            mat([4,2,3],[2,7,4],[3,4,8])
+        ];
+        it('should compute an LDLT decomposition', () => {
+            for(let A of testMats) {
+                let M: SquareMatrix
+                    = (!A.isSquare() || !A.isSymmetric()) ? A.normal : A;
+                let LDLT = M.LDLT();
+                expect(LDLT).to.factorize(M, 'LDLT');
+                M.isPosDef(LDLT).should.be.true;
+                let L = M.cholesky(LDLT)!;
+                L.mult(L.transpose).equals(M, 1e-10).should.be.true;
+            }
+        });
+        it('should detect an indefinite matrix', () =>
+           smat([1,2,3],[2,5,4],[3,4,2]).isPosDef().should.be.false);
+        it('should fail to compute an LDLT decomposition for singular matrices',
+           () => {
+               let A = mat([ 0, -3, -6,  4,  9],
+                           [-1, -2, -1,  3,  1],
+                           [-2, -3,  0,  3, -1],
+                           [ 1,  4,  5, -9, -7]);
+               expect(A.normal.LDLT()).to.be.null;
+           });
+    });
+});
