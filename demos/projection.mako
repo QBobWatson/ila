@@ -254,7 +254,7 @@ window.demo = new (if size == 2 then Demo2D else Demo) {}, () ->
                 color:  "black"
                 colors: "<"
 
-    decompLabels = ['x_W', "1.0"]
+    decompLabels = [vecLabel + '_' + subName, "1.0"]
     @labeledVectors view,
         name:       'distance'
         vectors:    [decompProj, vector]
@@ -377,7 +377,7 @@ window.demo = new (if size == 2 then Demo2D else Demo) {}, () ->
                     coeffColors: [hexColorSummand1, hexColorSummand2].slice(0, numVecs)
 
                 katex.render str, sumElt
-                str =  "\\|\\color{#{hexColorPerp}}{x_{W^\\perp}}\\| ="
+                str =  "\\|\\color{#{hexColorPerp}}{#{vecLabel}_{#{subName}^\\perp}}\\| ="
                 str += "\\left\\|"
                 str += @texVector vector
                 str += '-'
