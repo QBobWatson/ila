@@ -4,10 +4,10 @@ import os
 from subprocess import check_output
 
 
-def cat_files(target, sources, delim=''):
+def cat_files(target, sources, delim=b''):
     with open(target, 'wb') as outfobj:
         for infile in sources:
-            with open(str(infile), 'r') as infobj:
+            with open(str(infile), 'br') as infobj:
                 outfobj.write(infobj.read())
                 outfobj.write(delim)
 
@@ -17,7 +17,7 @@ def cat_css(target, source, env, for_signature=None):
 
 def cat_js(target, source, env, for_signature=None):
     target = str(target[0])
-    cat_files(target, source, ';\n')
+    cat_files(target, source, b';\n')
 
 def minify(target, source, env, for_signature=None):
     target = str(target[0])

@@ -29,12 +29,6 @@ AddOption('--theme',
           default='duke',
           help='Choose the theme to use (gt or duke)')
 
-AddOption('--variant',
-          dest='variant',
-          type='string', nargs=1, action='store',
-          default='default',
-          help='Build variant of the textbook')
-
 AddOption('--chunk-size',
           dest='chunksize',
           type='int', nargs=1, action='store',
@@ -47,11 +41,11 @@ AddOption('--production',
           help='Synonym for --build-pdf --minify --scratch')
 
 env = Environment(tools=['default', 'textfile', TOOL_ADD_CAT],
+                  ENV=os.environ,
                   BUILD_PDF=GetOption('build_pdf'),
                   MINIFY=GetOption('minify'),
                   SCRATCH=GetOption('scratch'),
                   THEME=GetOption('theme'),
-                  VARIANT=GetOption('variant'),
                   CHUNKSIZE=GetOption('chunksize'))
 if GetOption('production'):
     env['BUILD_PDF'] = True
@@ -59,8 +53,8 @@ if GetOption('production'):
     env['SCRATCH'] = True
 
 env['BASE_DIR'] = env.Entry('#').get_abspath()
-env['BUILD_DIR'] = '/home/vagrant/build'
-env['CACHE_DIR'] = '/home/vagrant/cache'
+env['BUILD_DIR'] = os.path.join(env['BASE_DIR'], 'build')
+env['CACHE_DIR'] = os.path.join(env['BASE_DIR'], 'cache')
 
 if GetOption('delete_cache'):
     env['SCRATCH'] = True

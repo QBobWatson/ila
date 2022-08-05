@@ -12,10 +12,6 @@ import os
 import sys
 import unicodedata
 
-import platform
-if platform.system() == 'Darwin':
-    sys.path.append('/Applications/FontForge.app/Contents/Resources/opt/local/lib/python2.7/site-packages')
-
 import cairo
 import fontforge
 import poppler

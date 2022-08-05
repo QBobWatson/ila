@@ -32,30 +32,20 @@ theme_xsl = env.Command('xsl/theme.xsl', 'xsl/theme-${THEME}.xsl',
 xml_sources = Glob('*.xml') + Glob('xsl/*.xsl') \
     + Glob('figure-images/*') + Glob('latex/*') + [git_hash_xsl, theme_xsl]
 
-versioned_xml = \
-    env.Command('$CACHE_DIR/${VARIANT}.xml',
-                ['xsl/versioning.xsl', 'ila.xml'],
-                'xsltproc -o $TARGET --xinclude ' \
-                '    --stringparam version $VARIANT $SOURCES')
-env.Depends(versioned_xml, xml_sources)
+env['PDF_FILE'] = 'ila.pdf'
 
-if env['VARIANT'] == 'default':
-    env['PDF_FILE'] = 'ila.pdf'
-else:
-    env['PDF_FILE'] = 'ila-%s.pdf' % env['VARIANT']
-
-# Put it in /tmp because a ramdisk is much faster in a vm
-env['OUTPUT_HTML'] = '/home/vagrant/output-html'
+env['OUTPUT_HTML'] = os.path.join(env['CACHE_DIR'], 'output-html')
 output_html = \
     env.Command('$OUTPUT_HTML',
-                ['xsl/mathbook-html.xsl', versioned_xml],
-                Action('xsltproc -o $OUTPUT_HTML/ --xinclude ' \
+                ['xsl/mathbook-html.xsl', 'ila.xml'],
+                Action('xsltproc -o $OUTPUT_HTML/ --xinclude' \
                        '    --stringparam pdf.online $PDF_FILE $SOURCES',
                        'Generating html files...'))
+env.Depends(output_html, xml_sources)
 env.AddPreAction(output_html,
                  Action('xmllint --xinclude --noout'
                         '    --relaxng $BASE_DIR/mathbook/build/pretext.rng'
-                        '    $CACHE_DIR/${VARIANT}.xml',
+                        '    $BASE_DIR/src/ila.xml',
                         'Verifying xml...'))
 if env['SCRATCH']:
     env.AddPreAction(output_html, ['rm -rf $OUTPUT_HTML', 'mkdir $OUTPUT_HTML'])
@@ -88,9 +78,10 @@ if env['BUILD_PDF']:
     env['ENV']['TEXINPUTS'] = ".:" + env['LATEX_DIR'] + "/style:"
     index_tex = \
         env.Command('$LATEX_DIR/index.tex',
-                    ['xsl/mathbook-latex.xsl', versioned_xml],
+                    ['xsl/mathbook-latex.xsl', 'ila.xml'],
                     Action('xsltproc -o $LATEX_DIR/ --xinclude $SOURCES',
                            'Generating master LaTeX file'))
+    env.Depends(index_tex, xml_sources)
     env.AddPreAction(index_tex,
                      ['rm -rf $LATEX_DIR',
                       'mkdir -p $LATEX_DIR',

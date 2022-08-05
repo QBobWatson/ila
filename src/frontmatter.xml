@@ -128,13 +128,7 @@ the license is included in gfdl.xml.
     </p>
 
     <p>
-      You are currently viewing the
-      <restrict-version versions="default">
-        <em>master version</em>.
-      </restrict-version>
-      <restrict-version versions="1553">
-        <em>version for math 1553</em>.
-      </restrict-version>
+      You are currently viewing the <em>master version</em>.
     </p>
 
   </preface>

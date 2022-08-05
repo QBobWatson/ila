@@ -9,7 +9,6 @@ any later version published by the Free Software Foundation.  A copy of
 the license is included in gfdl.xml.
 *********************************************************************-->
 
-<restrict-version versions="1554 default">
 <section xml:id="similarity">
   <title>Similarity</title>
 
@@ -1259,4 +1258,3 @@ the license is included in gfdl.xml.
   </subsection>
 
 </section>
-</restrict-version>

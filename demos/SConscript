@@ -34,10 +34,10 @@ def coffee_filter(text):
     proc = Popen(['coffee', '--no-header', '-scb'],
                  stdin=PIPE, stdout=PIPE, universal_newlines=True)
 
-    out, _ = proc.communicate(text.encode('utf-8'))
+    out, _ = proc.communicate(text)
     if proc.returncode > 0:
         raise Exception("Can't compile coffeescript")
-    return out.decode('utf-8')
+    return out
 
 VERSIONS = {} # Cache
 def version_filter(fname):
