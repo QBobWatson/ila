@@ -72,6 +72,9 @@ env['UGLIFYJS'] = env.File('#/node_modules/uglify-js/bin/uglifyjs').get_abspath(
 env['CLEANCSS'] = env.File('#/node_modules/clean-css-cli/bin/cleancss').get_abspath()
 env['PRETEX']   = env.File('#/pretex/pretex.py').get_abspath()
 
+if not os.path.isdir('node_modules'):
+    env.Execute('npm install')
+
 build_dir = lambda sd='': os.path.join(env['BUILD_DIR'], sd)
 cache_dir = lambda sd='': os.path.join(env['CACHE_DIR'], sd)
 
@@ -86,10 +89,6 @@ env.Alias('subpackages', subpackages)
 
 env.Alias('build-all', '$BUILD_DIR/index.html')
 env.Default('build-all')
-
-if not os.path.isdir('node_modules'):
-    env.Depends('build-all', 'node_modules')
-    env.Command('node_modules', [], 'npm install')
 
 # Create bundles
 
@@ -135,8 +134,9 @@ for fname in ['manifest.json', 'google9ccfcae89045309c.html']:
     env.Depends('build-all', dep)
 
 images = \
-    env.Command('$BUILD_DIR/images', 'static/images',
-                Copy('$TARGET', '$SOURCE'))
+    env.Command('$BUILD_DIR/images/logo.png', 'static/images',
+                Copy('$BUILD_DIR/images', '$SOURCE'))
+env.AddPreAction(images, 'rm -rf $BUILD_DIR/images')
 env.AddPostAction(images, 'cp $BASE_DIR/static/theme-$THEME/* $BUILD_DIR/images')
 env.Depends('build-all', images)
 
