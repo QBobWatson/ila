@@ -73,10 +73,6 @@ def main():
     # Process in a random order.  Otherwise one process gets all the section
     # files.
     shuffle(htmls)
-    # htmls = [os.path.join(args.output_dir, 'similarity.html'),
-    #          os.path.join(args.output_dir, 'index.html'),
-    #          # os.path.join(args.output_dir, 'index2.html'),
-    #          ]
 
     with Pool(processes=max(cpu_count()-1, 3)) as pool:
         job_args = []

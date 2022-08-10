@@ -523,7 +523,7 @@ class HTMLDoc:
         for page_num in range(self.num_pages):
             script.append(
                 'export-plain-svg:true;'
-                f'open-page:{page_num+1};'  # this has to come before file-open!
+                f'open-page:{page_num+1};'  # this has to come before file-open
                 f'file-open:{self.pdf_file};'
                 f'export-filename:{self.svg_file(page_num)};'
                 'export-do;'
@@ -1025,9 +1025,9 @@ def main():
         os.environ['TEXINPUTS'] = f'.:{args.style_path}:'
     os.makedirs(args.cache_dir, exist_ok=True)
 
-    #with TemporaryDirectory() as tmpdir:
-    tmpdir = "/tmp/ila"
-    if True:
+    # tmpdir = "/tmp/ila"
+    # if True:
+    with TemporaryDirectory() as tmpdir:
         sfd_dir = os.path.join(tmpdir, 'sfd')
         os.makedirs(sfd_dir, exist_ok=True)
 

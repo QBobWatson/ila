@@ -91,12 +91,13 @@ if env['BUILD_PDF']:
                       'cp -r $BASE_DIR/src/latex $LATEX_DIR/style',
                       'cp -r $BASE_DIR/src/figure-images $LATEX_DIR/figure-images',
                       'cp -r $BASE_DIR/static/images $LATEX_DIR/images'])
+    env.AddPostAction(index_tex, 'mv $LATEX_DIR/contents.tex $LATEX_DIR/index.tex')
     latex_cmd = 'cd $LATEX_DIR && pdflatex -interaction=nonstopmode "\\input{index}"'
     index_pdf = \
         env.Command('$LATEX_DIR/index.pdf',
                     index_tex,
                     Action([latex_cmd, latex_cmd, latex_cmd],
                            'Compiling PDF version'))
-    env.Command('$BUILD_DIR/$PDF_FILE', index_pdf,
-                Copy('$TARGET', '$SOURCE'))
-
+    dep = env.Command('$BUILD_DIR/$PDF_FILE', index_pdf,
+                      Copy('$TARGET', '$SOURCE'))
+    env.Depends('build-all', dep)

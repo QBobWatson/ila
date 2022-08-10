@@ -2,11 +2,11 @@
 # Developer's Getting Started Guide
 
 Overview:
-* Fetch the repositories
-* Install nixpkgs
-* Build the site
-* Editing XML
-* Resources
+* [Fetch the repositories](#fetch-the-repositories)
+* [Install nixpkgs](#install-nixpkgs)
+* [Build the site](#build-the-site)
+* [Editing XML](#editing-xml)
+* [Resources](#resources)
 
 The command-line arguments given in this guide assume you're running a Linux distribution, MacOS, or [WSL2](https://docs.microsoft.com/en-us/windows/wsl/install) on a Windows machine.  (See [Install nixpkgs](#install-nixpkgs) below.)
 
@@ -24,18 +24,18 @@ This will put this repository in `ila/`, and will clone the submodules `mathbook
 
 ## Install nixpkgs
 
-The build system has a large number of dependencies, and is sensitive to versioning.  It also requires a patched version of Inkscape.  In order to distribute a reproducible build environment, ILA is packaged as a [Nix flake](https://nixos.wiki/wiki/Flakes).  In order to use nix flakes, you first need to install [nikpkgs](https://nixos.org/download.html).  This works natively on Linux and MacOS, and also works under Windows using [WSL2](https://docs.microsoft.com/en-us/windows/wsl/install).  Follow the installation instructions linked above; it is not important whether you use a single-user or multi-user installation.
+The build system has a large number of dependencies, and is sensitive to versioning.  It also requires a patched version of Inkscape.  In order to distribute a reproducible build environment, ILA is packaged as a [Nix flake](https://nixos.wiki/wiki/Flakes).  In order to use nix flakes, you first need to install [nixpkgs](https://nixos.org/download.html).  This works natively on Linux and MacOS, and also works under Windows using [WSL2](https://docs.microsoft.com/en-us/windows/wsl/install).  Follow the installation instructions linked above; it is not important whether you use a single-user or multi-user installation.
 
 Now enable nix flakes using the instructions [here](https://nixos.wiki/wiki/Flakes#Non-NixOS).  Test the build environment using:
 ```
-~/projects$ nix develop
+~/projects/ila$ nix develop
 ```
 The first time you run this command, you will have to wait a long time as it pulls in several gigabytes of dependencies and rebuilds Inkscape.  Please be patient.  If all goes well, you'll be dropped into a shell from which you can build the book.
 
 
 ## Build the site
 
-All build commands are run in the development shell obtained by running `nix develop`.  Alternatively, a build command, for example `scons`, can be run from outside the development shell by running `nix develop -c scons`.
+All build commands are run in the development shell obtained by running `nix develop`.  Alternatively, a build command, for example `scons --production`, can be run from outside the development shell by running `nix develop -c scons --production`.
 
 This project uses the build system [scons](https://scons.org).  Before building the first time, build the dependencies:
 ```
@@ -55,7 +55,7 @@ The build system accepts several options, which you pass to `scons`:
 * `--build-pdf` Build the pdf version of the book in addition to the html.
 * `--minify` Minify generated css and js files (for production builds).
 * `--scratch` Empty the build directory before building (in case some files disappeared from the build; for production builds).
-* `--production` Synonym for `--build-pdf --minify --scratch`.  Also copies the build to `ila/html`.
+* `--production` Synonym for `--build-pdf --minify --scratch`.
 * `--delete-cache` The build system maintains a cache from previous builds in `ila/cache`.  Among other things, this contains hundreds of megabytes of cached LaTeX output converted to `svg` format.  Use this option to regenerate the cache (this takes a long time).  Implies `--scratch`.
 * `--theme THEME` Build with a specified visual theme.  Valid options for `THEME` are `gt` and `duke`.  Defaults to `duke`.
 
