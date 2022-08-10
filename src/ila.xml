@@ -18,9 +18,10 @@ Free Documentation License"
   <!-- ISBN, website, other metadata -->
   <xi:include href="./bookinfo.xml" />
 
-  <book xml:id="index">
+  <book xml:id="contents">
 
       <title>Interactive Linear Algebra</title>
+      <subtitle>Duke Edition</subtitle>
 
     <!-- Title Page, Preface, etc. -->
     <xi:include href="./frontmatter.xml" />

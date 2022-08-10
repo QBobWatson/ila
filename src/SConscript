@@ -20,23 +20,24 @@ def create_hash_dict(target, source, env):
     }
 
 git_hash_xsl = env.Substfile('xsl/git-hash.xsl.in')
-env.Depends(git_hash_xsl, ['$BUILD_DIR/js/ila.js',
-                           '$BUILD_DIR/css/ila.css',
-                           '$BUILD_DIR/js/cover.js'])
+git_hash_depends = ['$BUILD_DIR/js/ila.js',
+                    '$BUILD_DIR/css/ila.css',
+                    '$BUILD_DIR/js/cover.js']
+env.Depends(git_hash_xsl, git_hash_depends)
 env.AddPreAction(git_hash_xsl, create_hash_dict)
 
 theme_xsl = env.Command('xsl/theme.xsl', 'xsl/theme-${THEME}.xsl',
                         Copy('$TARGET', '$SOURCE'))
 
 # Create output html files
-xml_sources = Glob('*.xml') + Glob('xsl/*.xsl') \
-    + Glob('figure-images/*') + Glob('latex/*') + [git_hash_xsl, theme_xsl]
+xml_sources = Glob('*.xml') + Glob('figure-images/*') + Glob('latex/*') \
+    + [theme_xsl, git_hash_xsl, 'xsl/mathbook-html.xsl', 'xsl/mathbook-latex.xsl']
 
 env['PDF_FILE'] = 'ila.pdf'
 
 env['OUTPUT_HTML'] = os.path.join(env['CACHE_DIR'], 'output-html')
 output_html = \
-    env.Command('$OUTPUT_HTML',
+    env.Command('$OUTPUT_HTML/index.html',
                 ['xsl/mathbook-html.xsl', 'ila.xml'],
                 Action('xsltproc -o $OUTPUT_HTML/ --xinclude' \
                        '    --stringparam pdf.online $PDF_FILE $SOURCES',
@@ -56,9 +57,10 @@ env['PRETEX_CACHE'] = '$CACHE_DIR/pretex-cache'
 env['PRETEX_STYLE'] = '$BASE_DIR/src/latex'
 env['PRETEX_IMGS'] = '$BASE_DIR/src/figure-images'
 pretex = \
-    env.Command('$BUILD_DIR/index2.html',
+    env.Command('$BUILD_DIR/index.html',
                 output_html,
-                Action('$PRETEX --chunk-size $CHUNKSIZE' \
+                Action('python3 '\
+                       '$PRETEX --chunk-size $CHUNKSIZE' \
                        '        --preamble   $PREAMBLE' \
                        '        --cache-dir  $PRETEX_CACHE' \
                        '        --style-path $PRETEX_STYLE' \
@@ -66,11 +68,12 @@ pretex = \
                        '        --output-dir $OUTPUT_HTML' \
                        '        --build-dir  $BUILD_DIR',
                        'Running pretex (be patient)...'))
-env.AddPostAction(pretex, 'cp $BUILD_DIR/index2.html $BUILD_DIR/index.html')
+env.AddPostAction(pretex, 'cp $BUILD_DIR/index.html $BUILD_DIR/contents.html')
 env.AddPostAction(pretex,
                   ['rm -rf $BUILD_DIR/figure-images',
                    'mkdir $BUILD_DIR/figure-images',
-                   'cp $PRETEX_CACHE/*.png $BUILD_DIR/figure-images'])
+                   '[ "$$(echo $PRETEX_CACHE/*.png)" == $PRETEX_CACHE/"*.png" ]'
+                   '  || cp $PRETEX_CACHE/*.png $BUILD_DIR/figure-images'])
 
 # Build pdf
 if env['BUILD_PDF']:

@@ -13,6 +13,17 @@
             inkscape = super.inkscape.overrideAttrs (old: {
               patches = (old.patches or []) ++ [ ./build-environment/inkscape.patch ];
             });
+
+            # Need to use updated Gemfile.  Presumably this will be fixed
+            # in nixpkgs at some point; then ./build-environment/compass can be
+            # deleted.
+            compass = super.bundlerApp {
+              pname = "compass";
+              gemdir = ./build-environment/compass;
+              exes = [ "compass" ];
+
+              passthru.updateScript = super.bundlerUpdateScript "compass";
+            };
           })
         ];
         system = "x86_64-linux";
@@ -25,8 +36,8 @@
         lxml
         Mako
         pdfrw
-        poppler-qt5
         pycairo
+        pygobject3
         pyyaml
       ]));
 
@@ -35,10 +46,13 @@
 
         buildInputs = with pkgs; [
 
+          compass
           inkscape
           libxml2
+          nodejs
           nodePackages.npm
           nodePackages.coffee-script
+          poppler_gi
           scons
 
           python-pkgs
@@ -46,6 +60,7 @@
 
         packages = with pkgs; [
           fontforge
+          git
           jing-trang
           libxslt
           texlive.combined.scheme-full

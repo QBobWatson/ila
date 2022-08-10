@@ -1,12 +1,12 @@
-#!/usr/bin/python3
+"""
+Manages a pool of processtex jobs.
 
-# Manages a pool of processtex jobs
-# Don't do this in processtex, to avoid crashes...
+Don't do this in processtex, to avoid crashes...
+"""
 
 import argparse
 import glob
 import os
-import sys
 
 from multiprocessing import Pool, cpu_count
 from random import shuffle
@@ -16,12 +16,14 @@ from subprocess import Popen
 PROCESSTEX = os.path.join(os.path.dirname(__file__), 'processtex.py')
 
 
-def chunks(l, n):
-    "Yield successive n-sized chunks from l."
-    for i in range(0, len(l), n):
-        yield l[i:i+n]
+def chunks(lst, n):
+    """Yield successive n-sized chunks from lst."""
+    for i in range(0, len(lst), n):
+        yield lst[i:i+n]
+
 
 def job(arg):
+    """Run one processing job."""
     args, htmls = arg
     cmdline = [
         'python3', PROCESSTEX,
@@ -39,7 +41,9 @@ def job(arg):
     if proc.returncode != 0:
         raise Exception("Call failed")
 
+
 def main():
+    """Run the main function."""
     parser = argparse.ArgumentParser(
         description='Process LaTeX in html files: job dispatcher.')
     parser.add_argument('--preamble', default='preamble.tex', type=str,
@@ -62,11 +66,17 @@ def main():
 
     os.makedirs(os.path.join(args.build_dir, 'knowl'), exist_ok=True)
 
-    htmls = glob.glob(os.path.join(args.output_dir, '*.html')) + \
-            glob.glob(os.path.join(args.output_dir, 'knowl', '*.html'))
+    htmls = \
+        glob.glob(os.path.join(args.output_dir, '*.html')) + \
+        glob.glob(os.path.join(args.output_dir, 'knowl', '*.html'))
 
-    # Process in a random order.  Otherwise one process gets all the section files.
+    # Process in a random order.  Otherwise one process gets all the section
+    # files.
     shuffle(htmls)
+    # htmls = [os.path.join(args.output_dir, 'similarity.html'),
+    #          os.path.join(args.output_dir, 'index.html'),
+    #          # os.path.join(args.output_dir, 'index2.html'),
+    #          ]
 
     with Pool(processes=max(cpu_count()-1, 3)) as pool:
         job_args = []
@@ -75,6 +85,7 @@ def main():
         result = pool.map_async(
             job, job_args, error_callback=lambda x: pool.close())
         result.wait()
+
 
 if __name__ == "__main__":
     main()

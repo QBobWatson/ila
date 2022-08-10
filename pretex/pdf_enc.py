@@ -4,7 +4,8 @@ Predefined pdf font encodings.
 
 import re
 
-class Encoding(object):
+
+class Encoding:
     char_names = ()
 
     def __init__(self):
@@ -22,11 +23,12 @@ class Encoding(object):
     def modify(self, differences):
         cur_code = None
         for diff in differences:
-            if re.match('\d+', diff):
+            if re.match(r'\d+', diff):
                 cur_code = int(diff)
                 continue
             self.glyphs[diff[1:]] = cur_code
             cur_code += 1
+
 
 class Standard(Encoding):
     char_names = (
@@ -60,6 +62,7 @@ class Standard(Encoding):
         None, "ae", None, None, None, "dotlessi", None, None, "lslash",
         "oslash", "oe", "germandbls", None, None, None, None
     )
+
 
 class WinAnsi(Encoding):
     char_names = (
@@ -100,6 +103,7 @@ class WinAnsi(Encoding):
         'ucircumflex', 'udieresis', 'yacute', 'thorn', 'ydieresis'
     )
 
+
 class MacRoman(Encoding):
     char_names = (
         None, None, None, None, None, None, None, None, None, None, None, None,
@@ -137,6 +141,7 @@ class MacRoman(Encoding):
         'Ugrave', 'dotlessi', 'circumflex', 'tilde', 'macron', 'breve',
         'dotaccent', 'ring', 'cedilla', 'hungarumlaut', 'ogonek', 'caron'
     )
+
 
 class Symbol(Encoding):
     char_names = (
@@ -180,6 +185,7 @@ class Symbol(Encoding):
         'bracketrighttp', 'bracketrightex', 'bracketrightbt', 'bracerighttp',
         'bracerightmid', 'bracerightbt', None
     )
+
 
 class ZapfDingbats(Encoding):
     char_names = (
@@ -254,6 +260,7 @@ def PDFDoc(Encoding):
         "ydieresis"
     )
 
+
 class MacExpert(Encoding):
     char_names = (
         None, None, None, None, None, None, None, None, None, None,
@@ -302,6 +309,7 @@ class MacExpert(Encoding):
         'msuperior', 'commasuperior', 'periodsuperior', 'Dotaccentsmall',
         'Ringsmall', None, None, None, None
     )
+
 
 ENCODINGS = {
     'NoEncoding'           : Encoding,

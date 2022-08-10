@@ -219,6 +219,7 @@ for src in Split('''
                  rrinter
                  '''):
     demos[src] = env.Mako('$BUILD_DIR/demos/' + src, src)
+    env.Depends('build-all', demos[src])
     env.Depends(demos[src], [demo_css, demo_js])
 
 env.Depends(demos['rrinter'], [rrinter_js, rrinter_css])
@@ -226,18 +227,24 @@ env.Depends([demos['dynamics'], demos['dynamics2']], dynamics_js)
 
 
 # Copy everything over to the install dir
-env.Command('$BUILD_DIR/demos/css/fonts', 'vendor/fonts',
-            Copy("$TARGET", "$SOURCE"))
-env.Command('$BUILD_DIR/demos/img', 'img',
-            Copy("$TARGET", "$SOURCE"))
-env.Command('$BUILD_DIR/cover.html', 'cover.html',
-            Copy("$TARGET", "$SOURCE"))
-env.Command('$BUILD_DIR/demos/rabbits.html', 'rabbits.html',
-            Copy("$TARGET", "$SOURCE"))
+deps = [
+    env.Command('$BUILD_DIR/demos/css/fonts', 'vendor/fonts',
+                Copy("$TARGET", "$SOURCE")),
+    env.Command('$BUILD_DIR/demos/img', 'img',
+                Copy("$TARGET", "$SOURCE")),
+    env.Command('$BUILD_DIR/cover.html', 'cover.html',
+                Copy("$TARGET", "$SOURCE")),
+    env.Command('$BUILD_DIR/demos/rabbits.html', 'rabbits.html',
+                Copy("$TARGET", "$SOURCE")),
+    env.Minify('$BUILD_DIR/js/cover.js', cover_js),
+    env.Minify('$BUILD_DIR/css/cover.css', cover_css),
+]
 
-env.Minify('$BUILD_DIR/js/cover.js', cover_js)
-env.Minify('$BUILD_DIR/css/cover.css', cover_css)
+env.Depends('build-all', deps)
+
 
 root = env.Dir('$DEMO_CACHE_DIR')
 for node in Flatten(to_minify):
-    env.Minify('$BUILD_DIR/demos/' + node.get_path(root), node)
+    dep = env.Minify('$BUILD_DIR/demos/' + node.get_path(root), node)
+    env.Depends('build-all', dep)
+

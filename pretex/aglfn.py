@@ -695,12 +695,14 @@ GLYPHLIST = u'''0041;A;LATIN CAPITAL LETTER A
 0030;zero;DIGIT ZERO
 03B6;zeta;GREEK SMALL LETTER ZETA'''
 
-class Glyph(object):
+
+class Glyph:
     def __init__(self, char, name, descr):
         self.codepoint = int(char, 16)
-        self.char = unichr(self.codepoint)
+        self.char = chr(self.codepoint)
         self.name = name
         self.descr = descr
+
 
 GLYPHS = {}
 GLYPHS_BYCP = {}
