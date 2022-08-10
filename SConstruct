@@ -140,6 +140,10 @@ images = \
 env.AddPostAction(images, 'cp $BASE_DIR/static/theme-$THEME/* $BUILD_DIR/images')
 env.Depends('build-all', images)
 
+favicon = env.Command('$BUILD_DIR/favicon.ico', '$BUILD_DIR/images/logo.png',
+                      Copy('$TARGET', '$SOURCE'))
+env.Depends('build-all', favicon)
+
 
 env.SConscriptChdir(1)
 env.SConscript('demos/SConscript', exports='env build_dir cache_dir')
