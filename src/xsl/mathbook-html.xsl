@@ -1,4 +1,4 @@
-<?xml version='1.0'?>
+<?xml version='1.0'?>  <!-- -*- nxml-child-indent: 4 -*- -->
 
 <!DOCTYPE xsl:stylesheet [
     <!ENTITY % entities SYSTEM "../../mathbook/xsl/entities.ent">
@@ -186,6 +186,24 @@
     <xsl:text>bluebox</xsl:text>
 </xsl:template>
 
+<xsl:template match="concept" />
+
+<xsl:template match="*" mode="concept">
+    <xsl:if test="concept">
+        <span class="concepts">
+            <span class="concept-button">&#xf2e8;</span>
+            <span class="concept-list">
+                <xsl:for-each select="concept">
+                    <xsl:text>#</xsl:text><xsl:value-of select="text()" />
+                    <xsl:if test="position() != last()">
+                        <xsl:text> </xsl:text>
+                    </xsl:if>
+                </xsl:for-each>
+            </span>
+        </span>
+    </xsl:if>
+</xsl:template>
+
 <!-- JDR: mathbox support -->
 
 <xsl:template match="mathbox" mode="panel-html-box">
@@ -293,6 +311,13 @@
     <xsl:variable name="hide-type">
         <xsl:apply-templates select="." mode="get-hide-type"/>
     </xsl:variable>
+    <xsl:variable name="hidden">
+        <xsl:apply-templates select="." mode="is-hidden" />
+    </xsl:variable>
+    <xsl:if test="$hidden != 'true'">
+        <!-- The concepts template is applied in example/born-hidden -->
+        <xsl:apply-templates select="." mode="concept" />
+    </xsl:if>
     <xsl:if test="title or $hide-type != 'true'">
         <xsl:element name="h5">
             <xsl:attribute name="class">
@@ -309,6 +334,7 @@
                     <xsl:attribute name="class">
                         <xsl:text>important</xsl:text>
                     </xsl:attribute>
+                    <xsl:attribute name="alt">Exclamation Point</xsl:attribute>
                 </xsl:element>
             </xsl:if>
             <xsl:choose>
@@ -337,6 +363,13 @@
 <!-- JDR: customize heading-full -->
 <xsl:template match="*" mode="heading-full">
     <xsl:param name="important"/>
+    <xsl:variable name="hidden">
+        <xsl:apply-templates select="." mode="is-hidden" />
+    </xsl:variable>
+    <xsl:if test="$hidden != 'true'">
+        <!-- The concepts template is applied in example/born-hidden -->
+        <xsl:apply-templates select="." mode="concept" />
+    </xsl:if>
     <xsl:element name="h5">
         <xsl:attribute name="class">
             <xsl:text>heading</xsl:text>
@@ -374,6 +407,22 @@
             </span>
         </xsl:if>
     </xsl:element>
+</xsl:template>
+
+<!-- JDR: just add concepts here -->
+<xsl:template match="*" mode="heading-title">
+    <xsl:variable name="hidden">
+        <xsl:apply-templates select="." mode="is-hidden" />
+    </xsl:variable>
+    <xsl:if test="$hidden != 'true'">
+        <!-- The concepts template is applied in example/born-hidden -->
+        <xsl:apply-templates select="." mode="concept" />
+    </xsl:if>
+    <h5 class="heading">
+        <span class="title">
+            <xsl:apply-templates select="." mode="title-full" />
+        </span>
+    </h5>
 </xsl:template>
 
 <xsl:template match="&DEFINITION-LIKE;|&REMARK-LIKE;" mode="heading-birth">
@@ -417,6 +466,7 @@
         <xsl:attribute name="class">
             <xsl:text>hidden-knowl-wrapper</xsl:text>
         </xsl:attribute>
+        <xsl:apply-templates select="." mode="concept" />
         <xsl:element name="a">
             <xsl:attribute name="knowl">
                 <xsl:apply-templates select="." mode="hidden-knowl-url" />

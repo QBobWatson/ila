@@ -208,8 +208,16 @@
                 .on("click", maximize);
             $("#kuid-" + uid + " .mathbox .minimizer")
                 .on("click", maximize);
+            $("#kuid-" + uid + " .concept-button")
+                .click(function() {
+                    $(this).parent().toggleClass("show");
+                });
         };
 
+        // Concept library
+        $(".concept-button").click(function() {
+            $(this).parent().toggleClass("show");
+        });
     };
 
     // If script is run after page is loaded, initialize immediately
