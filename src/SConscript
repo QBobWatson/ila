@@ -9,14 +9,14 @@ Import('env build_dir')
 # Create versioning hashes
 def create_hash_dict(target, source, env):
     env['SUBST_DICT'] =  {
-        '@GIT_HASH@' : check_output(['git', 'rev-parse', 'HEAD']).strip(),
-        '@GIT_HASH_SHORT@' : check_output(['git', 'rev-parse', 'HEAD']).strip()[:6],
+        '@GIT_HASH@' : check_output(['git', 'rev-parse', 'HEAD']).decode().strip(),
+        '@GIT_HASH_SHORT@' : check_output(['git', 'rev-parse', 'HEAD']).decode().strip()[:6],
         '@ILA_JS@' : check_output(['git', 'hash-object',
-                                   build_dir('js/ila.js')]).strip()[:6],
+                                   build_dir('js/ila.js')]).decode().strip()[:6],
         '@ILA_CSS@' : check_output(['git', 'hash-object',
-                                    build_dir('css/ila.css')]).strip()[:6],
+                                    build_dir('css/ila.css')]).decode().strip()[:6],
         '@COVER_JS@' : check_output(['git', 'hash-object',
-                                     build_dir('js/cover.js')]).strip()[:6],
+                                     build_dir('js/cover.js')]).decode().strip()[:6],
     }
 
 git_hash_xsl = env.Substfile('xsl/git-hash.xsl.in')
@@ -37,7 +37,7 @@ env['PDF_FILE'] = 'ila.pdf'
 
 env['OUTPUT_HTML'] = os.path.join(env['CACHE_DIR'], 'output-html')
 output_html = \
-    env.Command('$OUTPUT_HTML/index.html',
+    env.Command('$OUTPUT_HTML',
                 ['xsl/mathbook-html.xsl', 'ila.xml'],
                 Action('xsltproc -o $OUTPUT_HTML/ --xinclude' \
                        '    --stringparam pdf.online $PDF_FILE $SOURCES',
