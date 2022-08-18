@@ -23,6 +23,16 @@ AddOption('--delete-cache',
           action='store_true',
           help='Delete all cache files.  Implies --scratch.')
 
+AddOption('--cache-dir',
+          dest='cache_dir',
+          type='string', nargs=1, action='store',
+          help='Build cache directory')
+
+AddOption('--build-dir',
+          dest='build_dir',
+          type='string', nargs=1, action='store',
+          help='Build output directory')
+
 AddOption('--theme',
           dest='theme',
           type='string', nargs=1, action='store',
@@ -59,8 +69,10 @@ if GetOption('production'):
     env['SCRATCH'] = True
 
 env['BASE_DIR'] = env.Entry('#').get_abspath()
-env['BUILD_DIR'] = os.path.join(env['BASE_DIR'], 'build')
-env['CACHE_DIR'] = os.path.join(env['BASE_DIR'], 'cache')
+env['BUILD_DIR'] = GetOption('build_dir') or '/tmp/ila-build'
+# env['BUILD_DIR'] = os.path.join(env['BASE_DIR'], 'build')
+env['CACHE_DIR'] = GetOption('cache_dir') or '/tmp/ila-cache'
+# env['CACHE_DIR'] = os.path.join(env['BASE_DIR'], 'cache')
 
 if GetOption('delete_cache'):
     env['SCRATCH'] = True
