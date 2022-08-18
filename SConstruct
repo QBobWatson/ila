@@ -167,6 +167,20 @@ def when_done():
     if not list(GetBuildFailures()):
         print("")
         print("Build successful!")
+        print("Starting a web server at http://localhost:8081/")
+        print("Press ctrl-C to exit...")
+
+        from http.server import ThreadingHTTPServer, SimpleHTTPRequestHandler
+        class Server(ThreadingHTTPServer):
+            def finish_request(self, request, client_address):
+                self.RequestHandlerClass(request, client_address, self,
+                                         directory=build_dir())
+        addr = ('', 8081)
+        with Server(addr, SimpleHTTPRequestHandler) as httpd:
+            try:
+                httpd.serve_forever()
+            except KeyboardInterrupt:
+                print("\nKeyboard interrupt received, exiting...")
 
 atexit.register(when_done)
 
