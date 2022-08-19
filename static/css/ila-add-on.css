@@ -482,6 +482,10 @@ body, html body {
   font-size: 90%;
 }
 
+.mathbook-content .concepts .concept-list a {
+  text-decoration: none;
+}
+
 .mathbook-content .concepts.show .concept-list {
   visibility: visible;
   opacity: 1;
@@ -507,6 +511,12 @@ body, html body {
   opacity: 0.3;
 }
 
+.concept-library-tag {
+  font-family: "Inconsolata", monospace;
+  font-size: 90%;
+  text-decoration: none;
+}
+
 .mathbook-content .concept-button:hover {
   opacity: 1;
 }
@@ -515,4 +525,89 @@ body, html body {
   opacity: 1;
 }
 
+.mathbook-content .concept-library {
+  width: 100%;
+}
 
+.mathbook-content .concept-library tr > td {
+  text-align: left;
+  vertical-align: baseline;
+}
+
+.mathbook-content .concept-library tr > td:last-of-type {
+  text-align: right;
+  width: 30%;
+}
+
+.mathbook-content .concept-library .see {
+  font-size: 90%;
+  margin-right: 0.5em;
+}
+
+/* pretex */
+
+.pretex-bind {
+  display: inline-block;
+}
+.pretex-inline {
+  display: inline-block;
+}
+.pretex-inline span {
+  display: inline-block;
+}
+.pretex-inline span:last-child {
+  position: relative;
+}
+.pretex-inline span:last-child svg.pretex {
+  position: absolute;
+  bottom:   0;
+  height:   1em;
+}
+svg.pretex {
+  display:      inline-block;
+  overflow:     visible;
+  font-variant: normal;
+  font-weight:  normal;
+  font-style:   normal;
+}
+.pretex-display {
+  text-align:  center;
+  margin:      1em 0;
+  padding:     0;
+  text-indent: 0;
+  text-transform: none;
+  position: relative;
+}
+.pretex-display svg.pretex {
+  /* hack to adjust spacing */
+  vertical-align: middle;
+}
+.pretex-display .tag {
+  position:    absolute;
+  right:       0;
+  top:         0;
+}
+.pretex-display .tag > span {
+  display: inline-block;
+}
+
+/* Keep these synchronized with processtex.py */
+svg.pretex text {
+  writing-mode: horizontal-tb;
+  fill:         #000000;
+  fill-rule:    nonzero;
+  fill-opacity: 1;
+  stroke:       none;
+}
+
+svg.pretex path {
+  fill:              none;
+  fill-rule:         nonzero;
+  fill-opacity:      1;
+  stroke:            #000000;
+  stroke-linecap:    butt;
+  stroke-linejoin:   miter;
+  stroke-miterlimit: 10;
+  stroke-dasharray:  none;
+  stroke-opacity:    1;
+}

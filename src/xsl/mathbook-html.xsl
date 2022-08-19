@@ -186,6 +186,36 @@
     <xsl:text>bluebox</xsl:text>
 </xsl:template>
 
+<!-- JDR: this produces the links in the notation list and concept library -->
+
+<xsl:template match="*" mode="enclosure-xref">
+    <xsl:variable name="structural">
+        <xsl:apply-templates select="." mode="is-structural" />
+    </xsl:variable>
+    <xsl:variable name="block">
+        <xsl:apply-templates select="." mode="is-block" />
+    </xsl:variable>
+    <xsl:choose>
+        <!-- found a structural or block parent -->
+        <!-- we fashion a cross-reference link  -->
+        <xsl:when test="$structural='true' or $block='true'">
+            <xsl:apply-templates select="." mode="xref-link">
+                <xsl:with-param name="content">
+                    <xsl:apply-templates select="." mode="type-name" />
+                </xsl:with-param>
+            </xsl:apply-templates>
+        </xsl:when>
+        <!-- nothing interesting here, so step up a level -->
+        <!-- Eventually we find the top-level structure   -->
+        <!-- eg article, book, etc                        -->
+        <xsl:otherwise>
+            <xsl:apply-templates select="parent::*" mode="enclosure-xref" />
+        </xsl:otherwise>
+    </xsl:choose>
+</xsl:template>
+
+<!-- JDR: Concept library support -->
+
 <xsl:template match="concept" />
 
 <xsl:template match="*" mode="concept">
@@ -194,15 +224,82 @@
             <span class="concept-button">&#xf2e8;</span>
             <span class="concept-list">
                 <xsl:for-each select="concept">
-                    <xsl:text>#</xsl:text><xsl:value-of select="text()" />
+                    <xsl:variable name="tag">
+                        <xsl:value-of select="@tag" />
+                    </xsl:variable>
+                    <xsl:if test="not(//concept-library/concept[@tag=$tag])">
+                        <xsl:message>MBX:WARNING: Concept library tag #<xsl:value-of select="@tag" /> is used but not defined in the concept library.</xsl:message>
+                    </xsl:if>
+                    <xsl:element name="a">
+                        <xsl:attribute name="href">
+                            <xsl:text>concept-library.html#concept-</xsl:text>
+                            <xsl:value-of select="@tag" />
+                        </xsl:attribute>
+                        <xsl:text>#</xsl:text><xsl:value-of select="@tag" />
+                    </xsl:element>
                     <xsl:if test="position() != last()">
-                        <xsl:text> </xsl:text>
+                        <br/>
                     </xsl:if>
                 </xsl:for-each>
             </span>
         </span>
     </xsl:if>
 </xsl:template>
+
+<xsl:template match="concept-library">
+    <table class="concept-library">
+        <xsl:apply-templates select="concept" mode="library" />
+    </table>
+</xsl:template>
+
+<xsl:template match="concept" mode="library">
+    <xsl:variable name="tag">
+        <xsl:value-of select="@tag"/>
+    </xsl:variable>
+    <tr>
+        <xsl:element name="td">
+            <xsl:attribute name="class">
+                <xsl:text>concept-library-tag</xsl:text>
+            </xsl:attribute>
+            <xsl:attribute name="id">
+                <xsl:text>concept-</xsl:text><xsl:value-of select="@tag"/>
+            </xsl:attribute>
+            <xsl:text>#</xsl:text><xsl:value-of select="@tag"/>
+        </xsl:element>
+        <td>
+            <xsl:apply-templates select="desc" />
+        </td>
+        <td>
+            <xsl:apply-templates select="//concept[@tag=$tag][not(parent::concept-library)]" mode="enclosure-xref" />
+            <xsl:if test="see">
+                <br/>
+                <i class="see">also see</i>
+                <xsl:for-each select="see">
+                    <xsl:variable name="see-tag">
+                        <xsl:value-of select="@tag" />
+                    </xsl:variable>
+                    <xsl:if test="not(//concept-library/concept[@tag=$see-tag])">
+                        <xsl:message>MBX:WARNING: Concept library tag #<xsl:value-of select="@tag" /> is used but not defined in the concept library.</xsl:message>
+                    </xsl:if>
+                    <xsl:element name="a">
+                        <xsl:attribute name="class">
+                            <xsl:text>concept-library-tag</xsl:text>
+                        </xsl:attribute>
+                        <xsl:attribute name="href">
+                            <xsl:text>#concept-</xsl:text>
+                            <xsl:value-of select="@tag" />
+                        </xsl:attribute>
+                        <xsl:text>#</xsl:text><xsl:value-of select="@tag" />
+                    </xsl:element>
+                    <xsl:if test="position() != last()">
+                        <xsl:text>, </xsl:text>
+                    </xsl:if>
+                </xsl:for-each>
+            </xsl:if>
+        </td>
+    </tr>
+</xsl:template>
+
 
 <!-- JDR: mathbox support -->
 
@@ -308,16 +405,10 @@
 <!-- JDR: simpler numbering of some elements -->
 <xsl:template match="*" mode="heading-simple-nonumber">
     <xsl:param name="important"/>
+    <xsl:param name="in-knowl"/>
     <xsl:variable name="hide-type">
         <xsl:apply-templates select="." mode="get-hide-type"/>
     </xsl:variable>
-    <xsl:variable name="hidden">
-        <xsl:apply-templates select="." mode="is-hidden" />
-    </xsl:variable>
-    <xsl:if test="$hidden != 'true'">
-        <!-- The concepts template is applied in example/born-hidden -->
-        <xsl:apply-templates select="." mode="concept" />
-    </xsl:if>
     <xsl:if test="title or $hide-type != 'true'">
         <xsl:element name="h5">
             <xsl:attribute name="class">
@@ -363,13 +454,6 @@
 <!-- JDR: customize heading-full -->
 <xsl:template match="*" mode="heading-full">
     <xsl:param name="important"/>
-    <xsl:variable name="hidden">
-        <xsl:apply-templates select="." mode="is-hidden" />
-    </xsl:variable>
-    <xsl:if test="$hidden != 'true'">
-        <!-- The concepts template is applied in example/born-hidden -->
-        <xsl:apply-templates select="." mode="concept" />
-    </xsl:if>
     <xsl:element name="h5">
         <xsl:attribute name="class">
             <xsl:text>heading</xsl:text>
@@ -409,23 +493,11 @@
     </xsl:element>
 </xsl:template>
 
-<!-- JDR: just add concepts here -->
-<xsl:template match="*" mode="heading-title">
-    <xsl:variable name="hidden">
-        <xsl:apply-templates select="." mode="is-hidden" />
-    </xsl:variable>
-    <xsl:if test="$hidden != 'true'">
-        <!-- The concepts template is applied in example/born-hidden -->
-        <xsl:apply-templates select="." mode="concept" />
-    </xsl:if>
-    <h5 class="heading">
-        <span class="title">
-            <xsl:apply-templates select="." mode="title-full" />
-        </span>
-    </h5>
+<xsl:template match="&DEFINITION-LIKE;|&REMARK-LIKE;" mode="heading-birth">
+    <xsl:apply-templates select="." mode="heading-simple-nonumber" />
 </xsl:template>
 
-<xsl:template match="&DEFINITION-LIKE;|&REMARK-LIKE;" mode="heading-birth">
+<xsl:template match="&DEFINITION-LIKE;|&REMARK-LIKE;" mode="heading-xref-knowl">
     <xsl:apply-templates select="." mode="heading-simple-nonumber" />
 </xsl:template>
 
@@ -436,7 +508,7 @@
 </xsl:template>
 
 <xsl:template match="essential" mode="heading-xref-knowl">
-    <xsl:apply-templates select="." mode="heading-full">
+    <xsl:apply-templates select="." mode="heading-simple-nonumber">
         <xsl:with-param name="important" select="true()"/>
     </xsl:apply-templates>
 </xsl:template>
@@ -445,7 +517,15 @@
     <xsl:apply-templates select="." mode="heading-simple-nonumber" />
 </xsl:template>
 
+<xsl:template match="&EXAMPLE-LIKE;|&PROJECT-LIKE;|list" mode="heading-xref-knowl">
+    <xsl:apply-templates select="." mode="heading-simple-nonumber" />
+</xsl:template>
+
 <xsl:template match="&THEOREM-LIKE;|&AXIOM-LIKE;" mode="heading-birth">
+    <xsl:apply-templates select="." mode="heading-simple-nonumber" />
+</xsl:template>
+
+<xsl:template match="&THEOREM-LIKE;|&AXIOM-LIKE;" mode="heading-xref-knowl">
     <xsl:apply-templates select="." mode="heading-simple-nonumber" />
 </xsl:template>
 

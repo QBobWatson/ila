@@ -286,6 +286,7 @@ class HTMLDoc:
 
     SVG_ATTRS = set(['viewBox', 'height', 'width', 'version'])
 
+    # Keep these synchronized with ila-add-on.css
     DEFAULT_TEXT = css_to_dict('''
         writing-mode: horizontal-tb;
         fill:         #000000;
@@ -515,7 +516,7 @@ class HTMLDoc:
                 this_tags = []
                 this_prepage = 0
         self.num_pages = len(self.pages_extents)
-        self.DEFAULT_TEXT['font-size'] = f"{fontsize}px"
+        self.fontsize = fontsize
 
     def inkscape_script(self):
         """Generate inkscape commands necessary to convert pdf to svg."""
@@ -648,15 +649,11 @@ class HTMLDoc:
         for i, elt in enumerate(self.to_replace):
             self._replace_elt(elt, svgs[i])
             cached_elts.append(svgs[i])
-        style = PRETEX_STYLE
-        style += r'''
+        style = r'''
 svg.pretex text {{
-  {}
+  font-size: {}px
 }}
-svg.pretex path {{
-  {}
-}}
-'''.format(dict_to_css(self.DEFAULT_TEXT), dict_to_css(self.DEFAULT_PATH))
+'''.format(self.fontsize)
         # Add fonts
         font_style = f'\n/* pretex cache: {self.contents_hash} */\n'
         for name, data in self.fonts.items():
