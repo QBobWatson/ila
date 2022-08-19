@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <!--********************************************************************
-Copyright 2019 Dan Margalit and Joseph Rabinoff
+Copyright 2022 Dan Margalit and Joseph Rabinoff
 
 Permission is granted to copy, distribute and/or modify this document
 under the terms of the GNU Free Documentation License, Version 1.3 or
@@ -12,11 +12,6 @@ the license is included in gfdl.xml.
 <docinfo>
 
   <brandlogo source="images/logo.png" />
-
-  <!-- JDR: put everything in "macros" below. -->
-  <!-- <latex-preamble> -->
-  <!--   <package>color</package> -->
-  <!-- </latex-preamble> -->
 
   <defaults>
     <image-width>auto</image-width>
@@ -47,14 +42,6 @@ the license is included in gfdl.xml.
   <macros>
     \usepackage{macros}
   </macros>
-
-  <!-- tikz package and libraries for images -->
-  <!-- <latex-image-preamble> -->
-  <!--   \usepackage{geometry} -->
-  <!--   \geometry{paperwidth=300mm, paperheight=300mm, -->
-  <!--     layoutwidth=300mm, layoutheight=300mm, -->
-  <!--     textwidth=300mm, textheight=300mm, ignoreall} -->
-  <!-- </latex-image-preamble> -->
 
   <!-- <search> -->
   <!--   <google> -->
