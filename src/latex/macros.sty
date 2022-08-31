@@ -9,12 +9,14 @@
 \def\C{\mathbf C}
 \let\mathbb=\mathbf
 \spaligndelims()
-\let\oldvec=\vec
-\let\vec=\spalignvector
-\let\mat=\spalignmat
-\let\amat=\spalignaugmat
-\let\hmat=\spalignaugmathalf
+\let\origvec=\vec
+\renewcommand{\vec}[2][r]{\spalignvector[#1]{#2}}
+\newcommand{\mat}[2][r]{\spalignmat[#1]{#2}}
+\newcommand{\amat}[2][r]{\spalignaugmat[#1]{#2}}
+\newcommand{\nmat}[3][r]{\spalignaugmatn[#1]{#2}{#3}}
+\newcommand{\hmat}[2][r]{\spalignaugmathalf[#1]{#2}}
 \let\syseq=\spalignsys
+
 \let\epsilon=\varepsilon
 
 \def\Span{\operatorname{Span}}
@@ -81,7 +83,6 @@
 \usetikzlibrary{datavisualization.formats.functions}
 \usetikzlibrary{math}
 \usepackage{jdr-tikz}
-\usepackage{spalign}
 
     \tikzset{
         whitebg/.style={fill=white},

@@ -480,6 +480,7 @@ body, html body {
   transition: opacity 0.3s;
   font-family: "Inconsolata", monospace;
   font-size: 90%;
+  white-space: nowrap;
 }
 
 .mathbook-content .concepts .concept-list a {

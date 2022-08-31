@@ -31,12 +31,21 @@ Free Documentation License"
       <title>Solving Systems of Linear Equations</title>
 
       <introduction>
-        <note type-name="Primary Goal">
-          <p>Solve a system of linear equations algebraically in parametric form.</p>
-        </note>
+        <p>
+          This chapter is devoted to solving systems of linear equations in a systematic way.
+          <ul>
+            <li>In <xref ref="systems-eqns"/> we begin with a brief discussion of systems of linear equations and their solutions.</li>
+            <li>In <xref ref="vectors-matrices"/> we give an introduction to vector and matrix algebra, which will be used throughout the text.</li>
+            <li>In <xref ref="elimination"/> we will learn the Gauss<ndash/>Jordan elimination algorithm, which is the fundamental tool for solving systems of equations.</li>
+            <li>We turn to computational considerations in <xref ref="lu-decomposition"/>, where we will discuss how to use Gaussian elimination efficiently on a computer.</li>
+            <li>In <xref ref="parametric-form"/> we will learn how to <em>parameterize</em> the solution set of a system of equations when the system has more than one solution.</li>
+            <li>Finally, in <xref ref="spans"/> we will cover the geometric notion of <term>spans</term>, which we will use to <em>draw</em> the solution set of a system of equations.</li>
+          </ul>
+        </p>
 
       </introduction>
 
+      <xi:include href="./systems-eqns.xml" />
       <xi:include href="./vectors-matrices.xml" />
       <xi:include href="./elimination.xml" />
       <xi:include href="./lu-decomposition.xml" />

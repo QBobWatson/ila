@@ -29,6 +29,7 @@
   <uri uri="../mathbook/build/pretext.rnc" resource="spans.xml"/>
   <uri uri="../mathbook/build/pretext.rnc" resource="spectral-theorem.xml"/>
   <uri uri="../mathbook/build/pretext.rnc" resource="subspaces.xml"/>
+  <uri uri="../mathbook/build/pretext.rnc" resource="systems-eqns.xml"/>
   <uri uri="../mathbook/build/pretext.rnc" resource="svd.xml"/>
   <uri uri="../mathbook/build/pretext.rnc" resource="vectors-matrices.xml"/>
 </locatingRules>

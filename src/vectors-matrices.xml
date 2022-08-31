@@ -14,12 +14,1271 @@ the license is included in gfdl.xml.
 
   <objectives>
     <ol>
-      <li>Write the objectives.</li>
+      <li>Learn basic definitions involving matrices and vectors.</li>
+      <li>Learn the algebraic operations one can perform on matrices and vectors, and the rules for algebraic manipulations.</li>
+      <li><em>Recipe:</em> the row-column rule for matrix multiplication.</li>
+      <li><em>Vocabulary words:</em> <term>scalar</term>, <term>vector</term>, <term>unit coordinate vector</term>, <term>linear combination</term>, <term>diagonal</term>, <term>identity matrix</term>, <term>outer product</term>, <term>transpose</term>, <term>symmetric matrix</term>, the <term>matrix of column dot products</term>.</li>
     </ol>
   </objectives>
 
-  <p>
-    Write the content.
-  </p>
+  <introduction>
+    <p>
+      When solving a system of equations, it is very helpful to rewrite it in a more compact form using <em>vectors</em> and <em>matrices</em>.  For example, we will write the system
+      <me>
+        \syseq{
+        x_1 + 2x_2 + 3x_3 = 6;
+        2x_1 - 3x_2 + 2x_3 = 14;
+        3x_1 + x_2 - x_3 = -2\rlap.
+        }
+      </me>
+      in the form
+      <me>
+        \mat{1 2 3; 2 -3 2; 3 1 -1}\vec{x_1 x_2 x_3} = \vec{6 14 -2}.
+      </me>
+      The square box is a <term>matrix</term>, and the rectangular ones are <term>vectors</term>; the left side of the equation is a <term>matrix-vector product.</term>
+    </p>
+
+    <p>
+      In this section we will introduce matrices and vectors and explain how to do algebra with them.  As we will be doing algebra with vectors and matrices as well as with numbers, it is useful to give <q>number</q> a new name.
+    </p>
+
+    <definition>
+      <title>Scalars</title>
+      <idx><h>Scalar</h><h>definition of</h></idx>
+      <idx><h>Real numbers <m>\R</m></h></idx>
+      <idx><h>Line</h><h>number line</h></idx>
+      <notation><usage>\R</usage><description>The real numbers</description></notation>
+      <statement>
+        <p>
+          A <term>scalar</term> is a real number.  We denote the set of all scalars (i.e., the number line) with the letter <m>\R</m>.
+        </p>
+      </statement>
+    </definition>
+
+    <p>
+      Examples of scalars are the numbers <m>2,\, e^{\sqrt3},\, 0,\, \frac 32,\, -\pi,\, 104,\, \ldots</m>
+    </p>
+
+    <note hide-type="true" xml:id="notn-element-of">
+      <title>Notation</title>
+      <p>
+        <notation><usage>\in</usage><description><q>Is an element of</q></description></notation>
+        We write <m>x\in S</m> to mean that <m>x</m> is an <term>element of</term> the set <m>S</m>.
+      </p>
+    </note>
+
+    <p>
+      With this notation, we can equivalently write <m>e^{\sqrt3}\in\R,</m> to mean <q><m>e^{\sqrt3}</m> is a scalar.</q>
+    </p>
+
+  </introduction>
+
+  <subsection>
+    <title>Vectors</title>
+
+    <p>
+      A vector is a device that allows us to do algebra with several numbers at the same time.
+    </p>
+
+    <definition>
+      <title>Vectors</title>
+      <idx><h>Real <m>n</m>-space</h></idx>
+      <idx><h>Vector</h><h>definition of</h></idx>
+      <idx><h>Vector</h><h>size of</h></idx>
+      <idx><h>Coordinates</h><h>of a vector</h></idx>
+      <notation>
+        <usage>\R^n</usage>
+        <description>Real <m>n</m>-space</description>
+      </notation>
+      <statement>
+        <p>Let <m>n</m> be a positive whole number.  A <term>vector of size <m>n</m></term> is an ordered list of <m>n</m> real numbers, or a <term><m>n</m>-tuple</term> of real numbers.  The numbers in this list are called the <term>coordinates</term> of the vector.  We use the notation
+        <me>\begin{split}
+          \R^n &amp;= \text{all ordered $n$-tuples of real numbers }(x_1,x_2,x_3,\ldots,x_n)\\
+          &amp;= \text{all vectors of size $n$}.
+          \end{split}
+        </me>
+        </p>
+      </statement>
+    </definition>
+
+    <p>
+      Using the <xref ref="notn-element-of">notation</xref> above, writing <m>v\in\R^n</m> is equivalent to saying <q><m>v</m> is a vector of size <m>n</m></q>.  For example, <m>(0,\frac 32,-\pi)</m> is a vector of size 3, so we can equivalently write <m>(0,\frac 32,-\pi)\in\R^3</m>.  The coordinates of this vector are <m>0,\,\frac 32,\,</m> and <m>-\pi</m>, respectively.
+    </p>
+
+    <p>
+      Note that vectors of size 1 are simply scalars: we have <m>\R^1=\R</m>.
+    </p>
+
+    <p>
+      <idx><h>Column vector</h></idx>
+      We will usually write vectors in a <em>column</em>, like so:
+      <me>\vec[c]{0 3/2 -\pi}\in\R^3 \qquad \vec{0 0 0 1}\in\R^4.</me>
+      The reason will be made clear in this <xref ref="vectors-matrices-column-vector"/>.
+      Keep in mind that, however we choose to write a vector, it is always simply an ordered list of numbers; the notations
+      <me>v = \vec[c]{0 3/2 -\pi} \sptxt{and} v = \left(0,\, \frac 32,\, -\pi\right)</me>
+      mean the same thing.
+    </p>
+
+    <remark>
+      <p>Some authors use boldface letters to represent vectors, as in <q><m>\mathbf v</m></q>, or use arrows, as in <q><m>\origvec v</m></q>.  As it is usually clear from context if a letter represents a vector, we do not decorate vectors in this way.</p>
+    </remark>
+
+    <remark>
+      <title>What is the fourth dimension?</title>
+      <p>One usually uses Cartesian coordinates to visualize <m>\R</m> as the number line, <m>\R^2</m> as the <m>xy</m>-plane, and <m>\R^3</m> as <q>space</q>.  We will discuss the geometry of vectors in detail in <xref ref="spans"/>.  For now, it is important to remark that <m>\R^n</m> does not necessarily have a physical interpretation.  Physicists often use <m>\R^4</m> to represent spacetime, the fourth coordinate being time, but vectors with four coordinates could be used to represent many other things.  For instance, we used vectors <m>(x,y,z,w)\in\R^4</m> to encode traffic circulation in this <xref ref="overview-traffic-flow"/>.</p>
+    </remark>
+
+    <definition hide-type="true" xml:id="unit-coordinate-vecs">
+      <title>Unit Coordinate Vectors</title>
+      <idx><h>Unit coordinate vector</h></idx>
+      <idx><h>Vector</h><h>unit coordinate</h><see>Unit coordinate vector</see></idx>
+      <notation><usage>e_i</usage><description>Unit coordinate vector</description></notation>
+      <statement>
+        <p>
+          The <term>unit coordinate vectors</term> in <m>\R^n</m> are the vectors with one coordinate equal to 1 and the rest equal to 0:
+          <me>
+            e_1 = \vec[c]{1 0 0 \vdots, 0} \quad
+            e_2 = \vec[c]{0 1 0 \vdots, 0} \quad
+            e_3 = \vec[c]{0 0 1 \vdots, 0} \quad \cdots \quad
+            e_n = \vec[c]{0 0 0 \vdots, 1}.
+          </me>
+        </p>
+      </statement>
+    </definition>
+
+    <p>
+      For instance, in <m>\R^3</m> the unit coordinate vectors are
+      <me>e_1 = \vec{1 0 0} \qquad e_2 = \vec{0 1 0}\qquad e_3 = \vec{0 0 1}.</me>
+      Note that the size of <m>e_i</m> must be inferred from context.
+    </p>
+
+    <bluebox>
+      <p>
+        The notation <m>e_1,e_2,\ldots</m> for the unit coordinate vectors is fixed throughout the rest of this book.
+      </p>
+    </bluebox>
+
+    <definition hide-type="true" xml:id="zero-vector">
+      <title>The Zero Vector</title>
+      <idx><h>Vector</h><h>zero</h></idx>
+      <idx><h>Zero vector</h></idx>
+      <notation><usage>0</usage><description>The zero vector</description></notation>
+      <statement>
+        <p>
+          The <term>zero vector</term> in <m>\R^n</m> is the vector whose coordinates are all zero:
+          <me> 0 = \vec[c]{0 0 \vdots, 0} \in \R^n. </me>
+        </p>
+      </statement>
+    </definition>
+
+    <p>
+      Again the size of the zero vector must be inferred from context.  Note that we use the same symbol <m>0</m> to denote the zero vector and the number zero (and the zero matrix below).
+    </p>
+
+    <definition>
+      <title>Vector Equality</title>
+      <idx><h>Vector</h><h>equality of</h></idx>
+      <statement>
+        <p>
+          Two vectors are <term>equal</term> if they have the <em>same size</em> and the <em>same coordinates</em>.
+        </p>
+      </statement>
+    </definition>
+
+    <p>
+      For instance, zero vectors of different sizes are not equal:
+      <me>\vec{0 0} \neq \vec{0 0 0}.</me>
+    </p>
+
+  </subsection>
+
+  <subsection>
+    <title>Vector Algebra</title>
+
+    <p>
+      There are three algebraic operations we will perform on vectors: addition/subtraction, scalar multiplication, and dot products.  We begin with scalar multiplication.
+    </p>
+
+    <definition hide-type="true">
+      <title>Scalar multiplication</title>
+      <idx><h>Vector</h><h>scalar multiplication of</h></idx>
+      <idx><h>Scalar multiplication</h><see>Vector, scalar multiplication of</see></idx>
+      <statement>
+        <p>
+          Given a vector <m>v = (x_1,x_2,\ldots,x_n)\in\R^n</m> and a scalar <m>c\in\R</m>, the <term>scalar multiple</term> <m>cv</m> is the vector in <m>\R^n</m> obtained from <m>v</m> by multiplying all of its coordinates by <m>c</m>:
+          <me> c\vec[c]{x_1 x_2 \vdots, x_n} = \vec[c]{cx_1 cx_2 \vdots, cx_n}. </me>
+        </p>
+      </statement>
+    </definition>
+
+    <p>
+      Note that scalar multiplication takes a scalar and a vector in <m>\R^n</m> and produces another vector in <m>\R^n</m>.  For example,
+      <latex-code>
+        \begin{gather*}
+        2\vec{1 2 3} = \vec{2\cdot 1 2\cdot 2 2\cdot 3} = \vec{2 4 6} \qquad
+        0\vec{1 2 3} = \vec{0\cdot 1 0\cdot 2 0\cdot 3} = 0 \\
+        (-1)\vec{1 2 3} = \vec{(-1)\cdot 1 (-1)\cdot 2 (-1)\cdot 3} = \vec{-1 -2 -3} = -\vec{1 2 3}.
+        \end{gather*}
+      </latex-code>
+    </p>
+
+    <definition hide-type="true">
+      <title>Vector Addition</title>
+      <idx><h>Vector</h><h>addition of</h></idx>
+      <idx><h>Vector</h><h>subtraction of</h></idx>
+      <idx><h>Addition</h><h>of vectors</h><see>Vector, addition of</see></idx>
+      <idx><h>Subtraction</h><h>of vectors</h><see>Vector, subtraction of</see></idx>
+      <statement>
+        <p>
+          The sum and difference of two vectors are defined componentwise:
+          <me>
+            \vec[c]{x_1 x_2 \vdots, x_n} + \vec[c]{y_1 y_2 \vdots, y_n}
+            = \vec[c]{x_1+y_1 x_2+y_2 \vdots, x_n+y_n}
+            \qquad
+            \vec[c]{x_1 x_2 \vdots, x_n} - \vec[c]{y_1 y_2 \vdots, y_n}
+            = \vec[c]{x_1-y_1 x_2-y_2 \vdots, x_n-y_n}.
+          </me>
+        </p>
+      </statement>
+    </definition>
+
+    <p>
+      Vector addition and subtraction take two vectors in <m>\R^n</m> and produce another vector in <m>\R^n</m>.  It is not possible to add or subtract vectors of different sizes.  For instance, we have
+      <me> \vec{1 2 3} + \vec[c]{\pi, e \sqrt2} = \vec[c]{1+\pi, 2+e 3+\sqrt2}, </me>
+      but the sum
+      <me> \vec{1 2 3} + \vec{4 5} </me>
+      is not defined.
+    </p>
+
+    <p>
+      Finally, we can multiply two vectors together, but the result is a <em>scalar</em>.
+    </p>
+
+    <definition hide-type="true">
+      <title>Dot Product</title>
+      <idx><h>Vector</h><h>dot product of</h></idx>
+      <idx><h>Dot product</h><see>Vector, dot product of</see></idx>
+      <notation><usage>u\cdot v</usage><description>Dot product of vectors</description></notation>
+      <statement>
+        <p>
+          Given two vectors <m>u,v\in\R^n</m>, their <term>dot product</term> <m>u\cdot v</m> is the number obtained by adding the products of the respective coordinates of the vectors:
+          <me>
+            \vec[c]{x_1 x_2 \vdots, x_n} \cdot \vec[c]{y_1 y_2 \vdots, y_n}
+            = x_1y_1 + x_2y_2 + \cdots + x_ny_n \in \R.
+          </me>
+        </p>
+      </statement>
+    </definition>
+
+    <p>
+      For example,
+      <me>
+        \begin{split}
+        \vec{1 2 3}\cdot\vec[c]{2 -1 4} &amp;= 1\cdot 2+2\cdot(-1)+3\cdot 4 = 12 \\
+        \vec{1 2 2}\cdot\vec[c]{-2 -1 2} &amp;= 1\cdot(-2) + 2\cdot(-1) + 2\cdot 2 = 0 \\
+        \vec{1 2 3}\cdot\vec{1 2 3} &amp;= 1^2 + 2^2 + 3^2 = 14.
+        \end{split}
+      </me>
+      In the second example above, the dot product of two nonzero vectors was equal to zero.  It turns out that <m>u\cdot v=0</m> means that <m>u</m> and <m>v</m> are <em>orthogonal</em>: see <xref ref="orthogonal-complements"/>.
+    </p>
+
+    <p>
+      As with vector addition, it is only possible to take dot products of vectors of the <em>same size</em>.
+    </p>
+
+    <note>
+      <p>
+        If <m>v = (x_1,x_2,\ldots,x_n)</m> then
+        <me> v \cdot v = x_1^2 + x_2^2 + \cdots + x_n^2.</me>
+        This is a <em>nonnegative</em> number, and <m>v\cdot v = 0</m> if and only if <m>v</m> is the zero vector.
+      </p>
+    </note>
+
+    <p>
+      It turns out that <m>v\cdot v</m> will be related to the <term>length</term> of the vector <m>v</m>, so this quantity will appear often.  Note that the notation <m>v^2</m> has not been defined.  It is tempting to abbreviate <m>v^2 = v\cdot v</m>, but no other <q>powers</q> of <m>v</m> would be defined: the expression <m>v^3 = v\cdot v\cdot v</m> does not make sense because you can only dot two vectors together, and <m>v\cdot v</m> is a scalar.
+    </p>
+
+    <p>
+      Vector addition, scalar multiplication, and dot products obey the usual commutativity, distributivity, and associativity laws; we list some of these properties below.
+    </p>
+
+    <lemma hide-type="true" xml:id="lem-vector-algebra">
+      <title>Rules for Vector Algebra</title>
+      <statement>
+        <p>
+          Let <m>c\in\R</m> and let <m>u,v,w\in\R^n</m>.  The following identities hold:
+          <latex-code>
+            \begin{align*}
+              &amp;(1)\quad c(u\pm v) = cu \pm cv \qquad &amp;
+                \text{(distributivity over scalar $\times$)} \\
+              &amp;(2)\quad u\cdot(cv) = c(u\cdot v) = (cu)\cdot v \qquad &amp;
+                \text{(associativity of $\cdot$ and scalar $\times$)} \\
+              &amp;(3)\quad u\cdot v = v\cdot u \qquad &amp;
+                \text{(commutativity of $\cdot$)} \\
+              &amp;(4)\quad u\cdot(v\pm w) = u\cdot v\pm u\cdot w \qquad &amp;
+                \text{(distributivity over $\cdot$)}
+            \end{align*}
+          </latex-code>
+        </p>
+      </statement>
+    </lemma>
+
+    <example>
+      <p>
+        Let <m>u,v,x,y</m> be vectors in <m>\R^n</m>.  Applying the rules in the <xref ref="lem-vector-algebra"/> above, we have
+        <me> (u+v)\cdot(x+y) = u\cdot(x+y) + v\cdot(x+y) = u\cdot x + u\cdot y + v\cdot x + v\cdot y.
+        </me>
+        In other words, the FOIL rule for expanding out a product of sums works when the product is a dot product of vectors.
+      </p>
+    </example>
+
+    <p>
+      Combining vector addition and scalar multiplication is a fundamental construction with its own name.
+    </p>
+
+    <definition>
+      <idx><h>Linear combination</h><h>definition of</h></idx>
+      <idx><h>Vector</h><h>linear combination of</h><see>Linear combination</see></idx>
+      <statement>
+        <p>Let <m>c_1,c_2,\ldots,c_k</m> be scalars, and let <m>v_1,v_2,\ldots,v_k</m> be vectors in <m>\R^n</m>.  The vector
+        <me>c_1v_1 + c_2v_2 + \cdots + c_kv_k\;\in\R^n
+        </me>
+        is called the <term>linear combination</term> of the vectors <m>v_1,v_2,\ldots,v_k</m> with <term>weights</term> <m>c_1,c_2,\ldots,c_k</m>.
+        </p>
+      </statement>
+    </definition>
+
+    <specialcase xml:id="linear-combo-unit-coordinate-vecs">
+      <p>
+        Every vector can be expressed as a linear combination of the unit coordinate vectors:
+        <me>
+          \vec[c]{x_1 x_2 \vdots, x_n}
+          = x_1\vec[c]{1 0 \vdots, 0} + x_2\vec[c]{0 1 \vdots, 0}
+          + \cdots + x_n\vec[c]{0 0 \vdots, 1}
+          = x_1e_1 + x_2e_2 + \cdots + x_ne_n.
+        </me>
+        The <em>coordinates</em> of a vector become the <em>weights</em> when expressing that vector as a linear combination of the unit coordinate vectors.
+      </p>
+    </specialcase>
+
+  </subsection>
+
+  <subsection>
+    <title>Matrices</title>
+
+    <p>
+      A matrix is a box full of numbers.  We will use matrices for many purposes; to begin, they will hold the coefficients of a system of linear equations, like so:
+      <me>
+        \def\b{\color{seq-green}}
+        \syseq{
+        {\b1}x_1 + {\b2}x_2 + {\b3}x_3 = 6;
+        {\b2}x_1 \b- {\b3}x_2 + {\b2}x_3 = 14;
+        {\b3}x_1 + {\b1}x_2 \b- {\b1}x_3 = -2\rlap.
+        } \qquad\To\qquad
+        \mat{\b1 \b2 \b3; \b2 \b-3 \b2; \b3 \b1 \b-1}.
+      </me>
+    </p>
+
+    <definition>
+      <title>Matrices</title>
+      <idx><h>Matrix</h><h>definition of</h></idx>
+      <idx><h>Matrix</h><h>size of</h></idx>
+      <idx><h>Matrix</h><h>entries of</h></idx>
+      <statement>
+        <p>
+          A <term>matrix</term> is a box holding a grid of numbers in rows and columns.  If a matrix <m>A</m> has <m>m</m> rows and <m>n</m> columns, we say that <m>A</m> is an <m>m\times n</m> matrix and that <m>m\times n</m> is the <term>size</term> of <m>A</m>.  The <term><m>(i,j)</m>-entry of <m>A</m></term> is the number in the <m>i</m>th row and the <m>j</m>th column.
+        </p>
+      </statement>
+    </definition>
+
+    <p>
+      For instance,
+      <me> A = \mat{1 4; 2 5; 3 \color{seq-green}6} </me>
+      is a <m>3\times 2</m>-matrix; its <m>\color{seq-green}(3,2)\text{-entry}</m> is 6.  The matrix
+      <me> A = \mat{a_{11} a_{12} a_{13} a_{14};
+                    a_{21} a_{22} a_{23} a_{24};
+                    a_{31} a_{32} a_{33} a_{34}}
+      </me>
+      has size <m>3\times 4</m>; its <m>(i,j)</m>-entry is <m>a_{ij}</m>.
+    </p>
+
+    <p>
+      A vector can be promoted to a matrix in two natural ways.
+    </p>
+
+    <definition hide-type="true" xml:id="vectors-matrices-column-vector">
+      <title>Row and Column Vectors</title>
+      <idx><h>Column vector</h></idx>
+      <idx><h>Row vector</h></idx>
+      <notation><usage>u^T</usage><description>Vector as a column vector</description></notation>
+      <statement>
+        <p>
+          A <term>column vector</term> is a matrix with one column.  A <term>row vector</term> is a matrix with one row.
+        </p>
+        <p>
+          A vector can be regarded as a row vector or a column vector in the obvious way.  We will generally treat vectors in <m>\R^n</m> as <m>n\times 1</m> <em>column vectors</em>; if we want to regard a vector <m>v\in\R^n</m> as an <m>n\times 1</m> <em>row vector</em>, we will write <m>v^T</m> instead of <m>v</m>.
+        </p>
+      </statement>
+    </definition>
+
+    <p>
+      The notation <m>v^T</m> is provisional; see this <xref ref="row-vector-as-transpose"/> below.
+    </p>
+
+    <definition>
+      <idx><h>Matrix</h><h>diagonal entries of</h></idx>
+      <idx><h>Matrix</h><h>diagonal</h></idx>
+      <statement>
+        <p>
+          The <term>diagonal entries</term> of a matrix are the <m>(1,1)</m>, <m>(2,2)</m>, <m>(3,3),\,\ldots</m> entries:
+          <me>
+            <![CDATA[
+\begin{tikzpicture}[baseline]
+  \matrix[math matrix] (aij)
+    {
+      a_{11} \& a_{12} \& a_{13} \& a_{14} \\
+      a_{21} \& a_{22} \& a_{23} \& a_{24} \\
+      a_{31} \& a_{32} \& a_{33} \& a_{34} \\
+    };
+  \draw[thick, seq-green] (aij-1-1.center) circle[radius=1.4ex]
+                          (aij-2-2.center) circle[radius=1.4ex]
+                          (aij-3-3.center) circle[radius=1.4ex];
+  \draw[thick, seq-green] (aij-2-4.east) ++(3cm,0) circle[radius=1.4ex]
+                          node[right=5mm] {diagonal entries};
+\end{tikzpicture}
+            ]]>
+          </me>
+        </p>
+        <p>
+          A matrix is <term>diagonal</term> if all non-diagonal entries are zero:
+          <me>
+            <![CDATA[
+\begin{tikzpicture}[baseline]
+  \matrix[math matrix] (aij)
+    {
+      a_{11} \& 0 \& 0 \& 0 \\
+      0 \& a_{22} \& 0 \& 0 \\
+      0 \& 0 \& a_{33} \& 0 \\
+    };
+  \draw[thick, seq-green] (aij-1-1.center) circle[radius=1.4ex]
+                          (aij-2-2.center) circle[radius=1.4ex]
+                          (aij-3-3.center) circle[radius=1.4ex];
+  \draw[thick, seq-green] (aij-2-4.east) ++(3cm,0) circle[radius=1.4ex]
+                          node[right=5mm] {any number};
+\end{tikzpicture}
+            ]]>
+          </me>
+        </p>
+      </statement>
+    </definition>
+
+    <p>
+      The diagonal entries of a diagonal matrix can also be equal to zero.  For example, these matrices are diagonal:
+      <me>
+        \mat{1 0 0; 0 2 0; 0 0 3}
+        \qquad
+        \mat{0 0 0; 0 0 0}
+        \qquad
+        \mat{1 0 0}
+      </me>
+      whereas these are not:
+      <me>
+        \mat{1 1 0; 0 2 0 ; 0 0 3}
+        \qquad
+        \mat{0 1 0; 0 0 0}
+        \qquad
+        \mat{0 1 0}.
+      </me>
+    </p>
+
+    <definition>
+      <idx><h>Matrix</h><h>square</h></idx>
+      <statement>
+        <p>
+          A matrix is <term>square</term> if it has the same number of rows as columns.
+        </p>
+      </statement>
+    </definition>
+
+    <p>
+      In other words, an <m>m\times n</m> matrix is square when <m>m=n</m>.  Roughly one third of this text will be devoted to square matrices.  An important example of a square matrix is the identity matrix, which will play the role of the number 1 in matrix multiplication.
+    </p>
+
+    <definition hide-type="true" xml:id="identity-matrix">
+      <title>The Identity Matrix</title>
+      <idx><h>Identity Matrix</h></idx>
+      <idx><h>Matrix</h><h>identity</h></idx>
+      <notation><usage>I_n</usage><description>The <m>n\times n</m> identity matrix</description></notation>
+      <statement>
+        <p>
+          The <term><m>n\times n</m> identity matrix</term> is the the matrix <m>I_n</m> whose columns are the unit coordinate vectors in <m>\R^n</m>:
+          <me> I_n = \mat[c]{1 0 0 \cdots, 0;
+                             0 1 0 \cdots, 0;
+                             0 0 1 \cdots, 0;
+                             \vdots, \vdots, \vdots, \ddots, \vdots;
+                             0 0 0 \cdots, 1}.
+          </me>
+        </p>
+      </statement>
+    </definition>
+
+    <p>
+      The identity matrix is square and diagonal.  Its rows are also composed of the unit coordinate vectors.
+    </p>
+
+    <definition hide-type="true" xml:id="zero-matrix">
+      <title>The Zero Matrix</title>
+      <idx><h>Zero Matrix</h></idx>
+      <idx><h>Matrix</h><h>zero</h></idx>
+      <statement>
+        <p>
+          The <term><m>m\times n</m> zero matrix</term> is the the <m>m\times n</m> matrix 0 whose entries are all equal to zero:
+          <me> 0 = \mat[c]{0 0 \cdots, 0;
+                           0 0 \cdots, 0;
+                           \vdots, \vdots, \ddots, \vdots;
+                           0 0 \cdots, 0}.
+          </me>
+        </p>
+      </statement>
+    </definition>
+
+    <p>
+      The zero matrix is diagonal because its off-diagonal entries are equal to zero.  Unlike the identity matrix <m>I_n</m>, the size of the zero matrix must be inferred from context.
+    </p>
+
+    <definition xml:id="definition-matrix-equality">
+      <title>Matrix Equality</title>
+      <idx><h>Matrix</h><h>equality of</h></idx>
+      <statement>
+        <p>
+          Two matrices are <term>equal</term> if they have the <em>same size</em> and the <em>same entries</em>.
+        </p>
+      </statement>
+    </definition>
+
+  </subsection>
+
+  <subsection>
+    <title>Matrix Algebra</title>
+
+    <p>
+      There are several algebraic operations we will perform on matrices: addition/subtraction, scalar multiplication, matrix-vector multiplication, matrix-matrix multiplication, and transposition.  We will see that vector addition/subtraction, scalar multiplication, and the dot product are special cases of these.
+    </p>
+
+    <p>
+      Scalar multiplication and addition/subtraction are performed on individual matrix entries, as for vectors.
+    </p>
+
+    <definition hide-type="true">
+      <title>Scalar multiplication</title>
+      <idx><h>Matrix</h><h>scalar multiplication of</h></idx>
+      <statement>
+        <p>
+          Given a matrx <m>A</m> and a scalar <m>c\in\R</m>, the <term>scalar multiple</term> <m>cA</m> is the matrix obtained from <m>A</m> by multiplying all of its entries by <m>c</m>:
+          <me>
+            c\mat[c]{a_{11} a_{12} a_{13}; a_{21} a_{22} a_{23}}
+            = \mat[c]{ca_{11} ca_{12} ca_{13}; ca_{21} ca_{22} ca_{23}}.
+          </me>
+        </p>
+      </statement>
+    </definition>
+
+    <definition hide-type="true">
+      <title>Matrix Addition</title>
+      <idx><h>Matrix</h><h>addition of</h></idx>
+      <idx><h>Matrix</h><h>subtraction of</h></idx>
+      <idx><h>Addition</h><h>of matrices</h><see>Matrix, addition of</see></idx>
+      <idx><h>Subtraction</h><h>of matrices</h><see>Matrix, subtraction of</see></idx>
+      <statement>
+        <p>
+          The sum and difference of two matrices are defined by adding and subtracting the corresponding entries:
+          <me>
+            \begin{split}
+            \mat[c]{a_{11} a_{12} a_{13}; a_{21} a_{22} a_{23}}
+            + \mat[c]{b_{11} b_{12} b_{13}; b_{21} b_{22} b_{23}}
+            &amp;= \mat[c]{a_{11}+b_{11} a_{12}+b_{12} a_{13}+b_{13};
+                      a_{21}+b_{21} a_{22}+b_{22} a_{23}+b_{23}} \\
+            \mat[c]{a_{11} a_{12} a_{13}; a_{21} a_{22} a_{23}}
+            - \mat[c]{b_{11} b_{12} b_{13}; b_{21} b_{22} b_{23}}
+            &amp;= \mat[c]{a_{11}-b_{11} a_{12}-b_{12} a_{13}-b_{13};
+            a_{21}-b_{21} a_{22}-b_{22} a_{23}-b_{23}}
+            \end{split}
+          </me>
+        </p>
+      </statement>
+    </definition>
+
+    <p>
+      As with vector addition, it is only possible to add or subtract matrices of the <em>same size</em>.
+    </p>
+
+    <paragraphs>
+      <title>Multiplying Matrices by Vectors</title>
+
+      <p>There are two different ways of multiplying a matrix and a vector.</p>
+
+      <definition hide-type="true" xml:id="matrix-vector-product">
+        <title>Matrix-Vector Product</title>
+        <idx><h>Matrix</h><h>product with vector</h></idx>
+        <idx><h>Vector</h><h>product with matrix</h></idx>
+        <statement>
+          <p>
+            Let <m>A</m> be an <m>m\times n</m> matrix and let <m>x</m> be a vector of size <m>n</m>.  The <term>matrix-vector product</term> <m>Ax</m> is defined in either of the following two ways:
+            <ol>
+              <li>
+                <em>By Columns.</em>  Suppose that <m>A</m> has columns <m>v_1,v_2,\ldots,v_n\in\R^m</m>.  Then
+                <me>
+                  Ax = \mat[c]{| | {} |; v_1 v_2 \cdots, v_n; | | {} |}\vec[c]{x_1 x_2 \vdots, x_n}
+                  = x_1v_1 + x_2v_2 + \cdots + x_nv_n \in \R^m.
+                </me>
+              </li>
+              <li>
+                <em>By Rows.</em>  Suppose that <m>A</m> has rows <m>w_1,w_2,\ldots,w_m\in\R^n</m>.  Then
+                <me>
+                  Ax = \mat[c]{\matrow{w_1}; \matrow{w_2}; \vdots; \matrow{w_m}}x
+                  = \vec[c]{w_1\cdot x w_2\cdot x \vdots, w_m\cdot x} \in \R^m,
+                </me>
+                where <m>w_i\cdot x</m> is the dot product.
+              </li>
+            </ol>
+          </p>
+        </statement>
+      </definition>
+
+      <p>
+        When computing <m>Ax</m> by columns, the <em>coordinates</em> of <m>x</m> are the <em>weights</em> of a linear combination of the columns of <m>A</m>.
+      </p>
+
+      <bluebox>
+        <p>
+          The matrix-vector product
+          <m>A(x_1, x_2, \ldots, x_n)</m>
+          is the linear combination of the columns of <m>A</m> with weights <m>x_1,x_2,\ldots,x_n</m>.
+        </p>
+      </bluebox>
+
+      <p>
+        When computing <m>Ax</m> by rows, the <em>coordinates</em> of <m>Ax</m> are <em>dot products</em> of the rows of <m>A</m> with <m>x</m>.
+      </p>
+
+      <bluebox>
+        <p>
+          The <m>i</m>th coordinate of <m>Ax</m> is <m>(i\text{th row of }A)\cdot x</m>.
+        </p>
+      </bluebox>
+
+      <p>
+        Both methods of computing the matrix-vector product <m>Ax</m> give you the <em>same answer.</em>  For example, computing by columns we have
+        <me>
+          \mat{1 4; 2 5; 3 6}\vec{2 -1}
+          = 2\vec{1 2 3} - 1\vec{4 5 6} = \vec{2 4 6} - \vec{4 5 6} = \vec{-2 -1 0},
+        </me>
+        and computing by rows we have
+        <me>
+          \mat{1 4; 2 5; 3 6}\vec{2 -1}
+          = \vec{{1\choose4}\cdot{2\choose-1}; {2\choose5}\cdot{2\choose-1}; {3\choose6}\cdot{2\choose-1}}
+          = \vec{1\cdot 2+4\cdot(-1) 2\cdot 2+5\cdot(-1) 3\cdot 2+6\cdot(-1)}
+          = \vec{-2 -1 0}.
+        </me>
+        When computing by hand, it is generally easier to compute by rows, but the definition by columns is very important to understand conceptually.
+      </p>
+
+      <p>
+        The matrix-vector product <m>Ax</m> only makes sense when the number of <em>columns</em> of <m>A</m> equals the <em>size</em> of <m>x</m>; otherwise neither displayed equation in the <xref ref="matrix-vector-product"/> is defined.
+      </p>
+
+      <bluebox>
+        <p>
+          If <m>A</m> is an <m>\textcolor{seq-blue}{m}\times\textcolor{seq-green}{n}</m> matrix and <m>x</m> is a vector of size <m>\textcolor{seq-green}{n}</m> then the product <m>Ax</m> is a vector of size <m>\textcolor{seq-blue}{m}</m>:
+          <me>
+            A \text{ is }\textcolor{seq-blue}{m}\times\textcolor{seq-green}{n}
+            \qquad x \in \R^{\textcolor{seq-green}{n}}
+            \quad\To\quad Ax \in \R^{\textcolor{seq-blue}{m}}.
+          </me>
+        </p>
+      </bluebox>
+
+      <p>
+        Multiplying by a unit coordinate vector simply extracts columns of a matrix.
+      </p>
+
+      <specialcase hide-type="true" xml:id="matrix-times-unit-coord-vector">
+        <title>Multiplication With Unit Coordinate Vectors</title>
+        <p>
+          If <m>A</m> is an <m>m\times n</m> matrix and <m>e_i</m> is the <m>i</m>th <xref ref="unit-coordinate-vecs">unit coordinate vector</xref> of size <m>n</m>, then multiplying by columns, we have
+          <me>Ae_i = 0v_1 + 0v_2 + \cdots + 1v_i + \cdots + 0v_n = v_i,</me>
+          where <m>v_1,v_2,\ldots,v_n</m> are the columns of <m>A</m>.
+        </p>
+      </specialcase>
+
+      <bluebox>
+        <p>
+          <me>Ae_i = \text{ the }i\text{th column of }A.</me>
+        </p>
+      </bluebox>
+
+      <example>
+        <p>
+          <me>
+            \def\r{\textcolor{seq-red}}
+            \mat{1 \r4 7; 2 \r5 8; 3 \r6 9}e_2
+            = \mat{1 \r4 7; 2 \r5 8; 3 \r6 9}\vec{0 1 0}
+            = 0\vec{1 2 3} + 1\vec{\r4 \r5 \r6} + 0\vec{7 8 9}
+            = \vec{\r4 \r5 \r6}.
+          </me>
+        </p>
+      </example>
+
+      <specialcase hide-type="true" xml:id="identity-matrix-times-vector">
+        <title>Multiplying by the Identity Matrix</title>
+        <p>
+          Recall that <m>I_n</m> is the <m>n\times n</m> <xref ref="identity-matrix">identity matrix</xref>, whose <m>i</m>th column is the <m>i</m>th <xref ref="unit-coordinate-vecs">unit coordinate vector</xref>.  If <m>x = (x_1,x_2,\ldots,x_n)\in\R^n</m> is any vector, then multiplying <m>I_nx</m> by columns gives
+          <me>
+            I_nx = \mat[c]{| | {} |; e_1 e_2 \cdots, e_n; | | {} |}x
+            = x_1e_1 + x_2e_2 + \cdots + x_ne_n
+            = \vec[c]{x_1 x_2 \vdots, x_n} = x.
+          </me>
+          See this <xref ref="linear-combo-unit-coordinate-vecs"/>.
+        </p>
+      </specialcase>
+
+      <bluebox>
+        <p><me>I_n x = x \sptxt{for all} x\in\R^n.</me></p>
+      </bluebox>
+
+    </paragraphs>
+
+    <paragraphs>
+      <title>Multiplying Matrices by Matrices</title>
+
+      <p>
+        As for the matrix-vector product, we present two equivalent definitions of the matrix-matrix product.  This is a coincidence and not an analogy<mdash/>the two ways of computing matrix-matrix products have a very different flavor from the two ways of computing matrix-vector products.  The first method says that the matrix product <m>AB</m> <q>distributes over the columns of <m>B</m>.</q>
+      </p>
+
+      <definition hide-type="true" xml:id="matrix-product-col-form">
+        <title>Matrix-Matrix Product: Column Form</title>
+        <idx><h>Matrix</h><h>product with matrix</h><see>Matrix Multiplication</see></idx>
+        <idx><h>Matrix Multiplication</h><h>column form</h></idx>
+        <statement>
+          <p>
+            Let <m>A</m> be an <m>m\times n</m> matrix and let <m>B</m> be an <m>n\times p</m> matrix with columns <m>u_1,u_2,\ldots,u_p\in\R^n</m>.  The <term>matrix-matrix product</term> <m>AB</m> is the <m>m\times p</m> matrix with columns <m>Au_1,Au_2,\ldots,Au_p\in\R^m</m>:
+            <me>
+              AB = A\mat[c]{| | {} |; u_1 u_2 \cdots, u_p; | | {} |}
+              = \mat[c]{| | {} |; Au_1 Au_2 \cdots, Au_p; | | {} |}.
+            </me>
+          </p>
+        </statement>
+      </definition>
+
+      <p>
+        In order for the matrix-vector products <m>Au_1,Au_2,\ldots,Au_p</m> to be defined, the size of each <m>u_i</m> has to be equal to the number of columns of <m>A</m>.
+      </p>
+
+      <bluebox>
+        <title>The Sizes of the Matrices in the Matrix Product</title>
+        <idx><h>Matrix multiplication</h><h>size of matrices</h></idx>
+        <p>
+          <ul>
+            <li>
+              In order for <m>AB</m> to be defined, the number of rows of <m>B</m> has to equal the number of columns of <m>A</m>.
+            </li>
+            <li>
+              <latex-code mode="bare">
+                \def\r{\textcolor{seq-red}}
+                \def\b{\textcolor{seq-blue}}
+                \def\g{\textcolor{seq-green}}
+              </latex-code>
+              The product of an <m>\b m\times\r n</m> matrix and an <m>\r n\times\g p</m> matrix is an <m>\b m\times\g p</m> matrix.</li>
+          </ul>
+        </p>
+      </bluebox>
+
+      <note>
+        <p>
+          Let <m>A</m> be an <m>m\times n</m> matrix and let <m>v</m> be a vector in <m>\R^n</m>, regarded as a column vector.  Then the matrix-matrix product <m>Av</m> is defined to be the matrix whose single column is equal to the matrix-vector product <m>Av</m>.  In this way, the matrix-vector product is a special case of the matrix-matrix product.
+        </p>
+      </note>
+
+      <p>
+        The matrix-vector products <m>Au_1,Au_2,\ldots,Au_p</m> can of course be computed by rows or by columns.  Computing by rows, the <m>i</m>th coordinate of <m>Au_j</m> is equal to the dot product of the <m>i</m>th row of <m>A</m> with <m>u_j</m>.  In other words, the <m>(i,j)</m>-entry of <m>AB</m> is the dot product of the <m>i</m>th row of <m>A</m> and the <m>j</m>th column of <m>B</m>.
+      </p>
+
+      <bluebox xml:id="matrix-mult-row-column">
+        <title>Recipe: The Row-Column Rule for Matrix Multiplication</title>
+        <idx><h>Matrix multiplication</h><h>row-column rule</h></idx>
+        <p>
+          Let <m>A</m> be an <m>m\times n</m> matrix, let <m>B</m> be an <m>n\times p</m> matrix, and let <m>C = AB</m>.  Then the <m>(i,j)</m> entry of <m>C</m> is the <m>i</m>th row of <m>A</m> dot the <m>j</m>th column of <m>B</m>:
+          <me>c_{ij} = a_{i1}b_{1j} + a_{i2}b_{2j} + \cdots + a_{in}b_{nj}.</me>
+          Here is a diagram:
+          <me>
+            <![CDATA[
+\def\spvdots{\vphantom{\vbox{\hbox{(}\kern0pt}}\smash{\vdots}}
+\begin{tikzpicture}[baseline, scale=.95]
+  \matrix[math matrix]  (aij)
+    {
+      a_{11} \& \cdots \& a_{1k} \& \cdots \& a_{1n} \\
+      \spvdots \&        \& \spvdots \&        \& \spvdots \\
+      a_{i1} \& \cdots \& a_{ik} \& \cdots \& a_{in} \\
+      \spvdots \&        \& \spvdots \&        \& \spvdots \\
+      a_{m1} \& \cdots \& a_{mk} \& \cdots \& a_{mn} \\
+    };
+  \node[fit=(aij-3-1) (aij-3-5), inner sep=2pt,
+      draw=green!70!black, thick, rounded corners] (row) {};
+  \node[text=green!70!black, rotate=90, anchor=north, yshift=2mm, font=\small]
+      at (row.east) {$i$th row};
+\end{tikzpicture}\hskip-1mm
+\begin{tikzpicture}[baseline, scale=.95]
+  \matrix[math matrix]  (bij)
+    {
+      b_{11} \& \cdots \& b_{1j} \& \cdots \& b_{1p} \\
+      \spvdots \&        \& \spvdots \&        \& \spvdots \\
+      b_{k1} \& \cdots \& b_{kj} \& \cdots \& b_{kp} \\
+      \spvdots \&        \& \spvdots \&        \& \spvdots \\
+      b_{n1} \& \cdots \& b_{nj} \& \cdots \& b_{np} \\
+    };
+  \node[fit=(bij-1-3) (bij-5-3), inner sep=2pt,
+      draw=blue!50, thick, rounded corners,
+      label={[text=blue!50]below:\small$j$th column}] {};
+\end{tikzpicture}
+\hskip-4pt=\hskip-4pt
+\begin{tikzpicture}[baseline, scale=.95]
+\matrix[math matrix,
+      label=below:{$(\textcolor{green!70!black}i,\textcolor{blue!50}j)$-entry}]
+        (cij)
+    {
+      c_{11} \& \cdots \& c_{1j} \& \cdots \& c_{1p} \\
+      \spvdots \&        \& \spvdots \&        \& \spvdots \\
+      c_{i1} \& \cdots \& c_{ij} \& \cdots \& c_{ip} \\
+      \spvdots \&        \& \spvdots \&        \& \spvdots \\
+      c_{m1} \& \cdots \& c_{mj} \& \cdots \& c_{mp} \\
+    };
+  \draw[thick, green!70!black]
+    (cij-3-3.center) circle[radius=1.35ex];
+  \draw[thick, blue!50]
+    (cij-3-3.center) circle[radius=1.35ex+\pgflinewidth];
+\end{tikzpicture}
+            ]]>
+          </me>
+        </p>
+      </bluebox>
+
+      <example xml:id="vectors-matrices-mult-example">
+        <statement>
+          <p>
+            Compute the matrix-matrix product
+            <me>\mat{1 2 -3; -1 2 -4}\mat{1 3; 2 1; 4 -1}.</me>
+          </p>
+        </statement>
+        <answer>
+          <p>
+            The first matrix has size <m>2\times 3</m> and the second has size <m>3\times 2</m>, so the product will be a <m>2\times 2</m> matrix.  We compute its entries using dot products:
+            <me>
+              \begin{split}
+              &amp;\mat{1 2 3; -1 2 -4}\mat{1 3; 2 1; 4 -1} \\
+              &amp;\qquad= \mat{1\cdot1+2\cdot2+3\cdot4 1\cdot3+2\cdot1+3\cdot(-1);
+              (-1)\cdot1+2\cdot2+(-4)\cdot4 (-1)\cdot3+2\cdot1+(-4)\cdot(-1)}
+              = \mat{17 2; -13 3}.
+              \end{split}
+            </me>
+          </p>
+        </answer>
+      </example>
+
+      <specialcase hide-type="true" xml:id="identity-matrix-times-matrix">
+        <title>Multiplying by the Identity Matrix, II</title>
+        <p>
+          Let <m>A</m> be an <m>m\times n</m> matrix with columns <m>v_1,v_2,\ldots,v_n</m>.  Recall that <m>I_n</m> is the <m>n\times n</m> <xref ref="identity-matrix">identity matrix</xref>, whose <m>i</m>th column is the <m>i</m>th <xref ref="unit-coordinate-vecs">unit coordinate vector</xref>.  We noted in this <xref ref="matrix-times-unit-coord-vector">example</xref> that <m>Ae_i = v_i</m>, so
+          <me>
+            AI_n = A\mat[c]{| | {} |; e_1 e_2 \cdots, e_n; | | {} |}
+            = \mat[c]{| | {} |; Ae_1 Ae_2 \cdots, Ae_n; | | {} |}
+            = \mat[c]{| | {} |; v_1 v_2 \cdots, v_n; | | {} |} = A.
+          </me>
+          On the other hand, we have
+          <me>
+            I_mA = I_m\mat[c]{| | {} |; v_1 v_2 \cdots, v_n; | | {} |}
+            = \mat[c]{| | {} |; I_mv_1 I_mv_2 \cdots, I_mv_n; | | {} |}
+            = \mat[c]{| | {} |; v_1 v_2 \cdots, v_n; | | {} |} = A,
+          </me>
+          where we used this <xref ref="identity-matrix-times-vector"/> for the third equality.
+        </p>
+      </specialcase>
+
+      <bluebox>
+        <p>
+          If <m>A</m> is an <m>m\times n</m> matrix then
+          <me> I_mA = A = AI_n.</me>
+        </p>
+      </bluebox>
+
+      <p>
+        As promised, we now show how inner products can be seen as a special case of matrix multiplication.  This will be very useful in several instances.  Recall from the <xref ref="vectors-matrices-column-vector"/> that when we regard a vector <m>y</m> as a row vector, we use the notation <m>y^T</m>.
+      </p>
+
+      <specialcase hide-type="true" xml:id="dot-product-as-matrix-product">
+        <title>Dot Products, Revisited</title>
+        <p>
+          If <m>x = (x_1,\ldots,x_n)\in\R^n</m> and <m>y = (y_1,\ldots,y_n)\in\R^n</m> then the matrix-matrix product <m>x^Ty</m> is a <m>1\times 1</m> matrix, i.e., a number:
+          <me>
+            x^Ty = \mat{x_1 x_2 \cdots, x_n}\vec[c]{y_1 y_2 \vdots, y_n}
+            = \mat{x_1y_1+x_2y_2+\cdots+x_ny_n} = \mat{x\cdot y}.
+          </me>
+        </p>
+      </specialcase>
+
+      <bluebox>
+        <p>
+          For any vectors <m>x,y\in\R^n</m>, we have
+          <me>x\cdot y = x^Ty.</me>
+        </p>
+      </bluebox>
+
+      <p>
+        The product of a <em>column vector</em> with a <em>row vector</em> has a special name, as it will play an important role in <xref ref="chap-svd"/>.
+      </p>
+
+      <definition hide-type="true" xml:id="outer-product-definition">
+        <title>Outer Products</title>
+        <idx><h>Outer Product</h></idx>
+        <statement>
+          <p>
+            The product of a column vector with a row vector is called an <term>outer product</term>.
+          </p>
+        </statement>
+      </definition>
+
+      <p>
+        If <m>v</m> is a column vector with <m>m</m> entries (a <m>1\times m</m> matrix) and <m>w</m> is a row vector with <m>n</m> entries (an <m>n\times 1</m> matrix), then <m>vw</m> is an <m>m\times n</m> matrix.  For instance,
+        <me>
+          \vec{1 2}\mat{3 4 5}
+          = \mat{3\vec{1 2} 4\vec{1 2} 5\vec{1 2}}
+          = \mat{3 4 5; 6 8 10}.
+        </me>
+      </p>
+
+      <note hide-type="true" xml:id="inner-outer-products">
+        <title>Inner Products and Outer Products</title>
+        <p>
+          Let <m>x,y</m> be vectors in <m>\R^n</m>.  Then both quantities <m>x^Ty</m> and <m>xy^T</m> are defined.
+          <ul>
+            <li>
+              <m>x^Ty</m> is the dot product, which is sometimes called an <term>inner product</term>.  It is a <m>1\times 1</m> matrix, i.e., a scalar.
+            </li>
+            <li>
+              <m>xy^T</m> is by definition an <term>outer product</term>.  It is an <m>n\times n</m> matrix.
+            </li>
+          </ul>
+        </p>
+      </note>
+
+      <p>
+        Now we present the second form of matrix multiplication, which will play an important role in <xref ref="chap-svd"/>.  Both methods of matrix multiplication always yield the <em>same result</em>.
+      </p>
+
+      <definition hide-type="true" xml:id="matrix-product-outer-product-form">
+        <title>Matrix-Matrix Product: Outer Product Form</title>
+        <idx><h>Matrix Multiplication</h><h>outer product form</h></idx>
+        <statement>
+          <p>
+            Let <m>A</m> be an <m>m\times n</m> matrix with columns <m>v_1,v_2,\ldots,v_n\in\R^m</m> and let <m>B</m> be an <m>n\times p</m> matrix with rows <m>w_1^T,w_2^T,\ldots,w_n^T\in\R^p</m>.  The <term>matrix-matrix product</term> <m>AB</m> is the <m>m\times p</m> matrix
+            <me>
+              AB =
+              \mat[c]{| | {} |; v_1 v_2 \cdots, v_n; | | {} |}
+              \mat[c]{\matrow{w_1^T}; \matrow{w_2^T}; \vdots; \matrow{w_n^T}}
+              = v_1w_1^T + v_2w_2^T + \cdots + v_nw_n^T.
+            </me>
+          </p>
+        </statement>
+      </definition>
+
+      <example>
+        <statement>
+          <p>
+            Compute the matrix-matrix product
+            <me>\mat{1 2 -3; -1 2 -4}\mat{1 3; 2 1; 4 -1}</me>
+            using the outer product form of matrix multiplication.
+          </p>
+        </statement>
+        <answer>
+          <p>
+            <me>
+              \def\r{\textcolor{seq-red}}
+              \def\b{\textcolor{seq-blue}}
+              \def\g{\textcolor{seq-green}}
+              \begin{split}
+              &amp;\mat{\r1 \g2 \b3; \r-\r1 \g2 \b-\b4}\mat{\r1 \r3; \g2 \g1; \b4 \b-\b1} \\
+              &amp;\qquad= \textcolor{seq-red}{\vec{1 -1}\mat{1 3}}
+              + \textcolor{seq-green}{\vec{2 2}\mat{2 -1}}
+              + \textcolor{seq-blue}{\vec{3 -4}\mat{4 -1}} \\
+              &amp;\qquad= \textcolor{seq-red}{\mat{1 3; -1 -3}}
+              + \textcolor{seq-green}{\mat{4 -2; 4 -2}}
+              + \textcolor{seq-blue}{\mat{12 -3; -16 4}}
+              = \mat{17 2; -13 3}.
+              \end{split}
+            </me>
+            Compare this <xref ref="vectors-matrices-mult-example"/>.
+          </p>
+        </answer>
+      </example>
+
+    </paragraphs>
+
+    <paragraphs>
+      <title>Transposes and Symmetric Matrices</title>
+
+      <p>
+        There is one more operation that we can perform on matrices.
+      </p>
+
+      <definition>
+        <idx><h>Matrix</h><h>transpose of</h></idx>
+        <idx><h>Transpose</h><see>Matrix</see></idx>
+        <notation><usage>A^T</usage><description>Transpose of a matrix</description></notation>
+        <statement>
+          <p>
+            The <term>transpose</term> of an <m>m\times n</m> matrix <m>A</m> is the <m>n\times m</m> matrix <m>A^T</m> whose rows are the columns of <m>A</m>.  In other words, the <m>(i,j)</m>-entry of <m>A^T</m> is the <m>(j,i)</m>-entry of <m>A</m>.
+          </p>
+        </statement>
+      </definition>
+
+      <p>
+        It can help to think of transposition as <q>flipping over the main diagonal</q>, as in the following diagram:
+        <latex-code>
+              <![CDATA[
+    \begin{tikzpicture}[
+        every matrix/.append style={nodes={
+            minimum width=1.5em, minimum height=1.5em},
+            row sep=.3em, column sep=.3em}
+        ]
+      \matrix[math matrix, label={[yshift=1mm]above:$A$}] (aij)
+        {
+          a_{11} \& a_{12} \& a_{13} \& a_{14} \\
+          a_{21} \& a_{22} \& a_{23} \& a_{24} \\
+          a_{31} \& a_{32} \& a_{33} \& a_{34} \\
+        };
+      \matrix[math matrix, right=2.4cm of aij,
+          label={[yshift=1mm]above:$A^T$}] (aijT)
+        {
+          a_{11} \& a_{21} \& a_{31} \\
+          a_{12} \& a_{22} \& a_{32} \\
+          a_{13} \& a_{23} \& a_{33} \\
+          a_{14} \& a_{24} \& a_{34} \\
+        };
+      \draw[->, thick, shorten=6mm] (aij.east) -- (aijT.west);
+      \draw[green!50!black, opacity=.5, shorten >=-8mm]
+        (aij-1-1.north west) -- (aij-3-3.south east)
+        coordinate[pos=1.3, below left=3mm] (left)
+        coordinate[pos=1.3, above right=3mm] (right)
+        node[pos=1.2, below right, opaque] {\small flip};
+      \draw[<->, green!50!black] (left) to[bend left] (right);
+      \draw[green!50!black, opacity=.5, shorten >=-8mm]
+        (aijT-1-1.north west) -- (aijT-3-3.south east);
+    \end{tikzpicture}
+                  ]]>
+        </latex-code>
+        For instance, <m>a_{12}</m> is the <m>(1,2)</m>-entry of <m>A</m> and the <m>(2,1)</m>-entry of <m>A^T</m>.
+      </p>
+
+      <example>
+        <p><me>
+          A = \mat{1 4; 2 5; 3 6} \qquad\implies\qquad
+          A^T = \mat{1 2 3; 4 5 6}.</me></p>
+      </example>
+
+      <note xml:id="row-vector-as-transpose">
+        <p>
+          If <m>v</m> is a vector in <m>\R^n</m>, then the transpose <m>v^T</m> of the column vector <m>v</m> is the row vector that we have also been <xref ref="vectors-matrices-column-vector">denoting</xref> by <m>v^T</m>.
+        </p>
+      </note>
+
+      <p>
+        A matrix that is equal to its transpose also has a special name.  Such matrices will be central to <xref ref="chap-svd"/>.
+      </p>
+
+      <definition>
+        <idx><h>Matrix</h><h>symmetric</h></idx>
+        <idx><h>Symmetric Matrix</h><see>Matrix, symmetric</see></idx>
+        <statement>
+          <p>
+            A matrix is <term>symmetric</term> if it is equal to its transpose.  That is, <m>A</m> is symmetric if <m>A=A^T</m>.  Equivalently, a matrix is symmetric if its <m>(i,j)</m>-entry is equal to its <m>(j,i)</m>-entry for all <m>i</m> and <m>j</m>.
+          </p>
+        </statement>
+      </definition>
+
+      <p>
+        Note that a symmetric matrix is necessarily square: otherwise, <m>A</m> and <m>A^T</m> have different sizes, hence are by <xref ref="definition-matrix-equality"/> not equal.
+      </p>
+
+      <example>
+        <p>
+          The matrix
+          <me> \mat{1 2 3; 2 4 5; 3 5 6} </me>
+          is symmetric, but the matrix
+          <me> \def\r{\textcolor{seq-red}} \mat{1 2 \r3; 2 4 5; \r0 5 6} </me>
+          is not symmetric: its <m>(1,3)</m>-entry is not equal to its <m>(3,1)</m>-entry.
+        </p>
+      </example>
+
+      <p>
+        Matrices of the form <m>A^TA</m> will play an important role in <xref ref="chap-orthogonality"/> and <xref ref="chap-svd"/>.
+      </p>
+
+      <specialcase hide-type="true" xml:id="ATA-first-appearance">
+        <title>The Matrix of Column Dot Products</title>
+        <idx><h>Matrix of Column Dot Products</h></idx>
+        <p>
+          <latex-code mode="bare">
+            \def\r{\textcolor{seq-red}}
+            \def\b{\textcolor{seq-blue}}% foo12
+          </latex-code>
+          Let <m>A</m> be an
+          <m>\r m\times\b n</m> matrix with columns <m>v_1,v_2,\ldots,v_{\b n}\in\R^{\r m}</m>.  Then <m>A^T</m> is an <m>\b n\times\r m</m> matrix with rows <m>v_1^T,v_2^T,\ldots,v_n^T</m>.  The product <m>A^TA</m> is an <m>\b n\times\b n</m> matrix whose <m>(i,j)</m>-entry is the dot product of the <m>i</m>th row <m>v_i^T</m> of <m>A^T</m> with the <m>j</m>th column <m>v_j</m> of <m>A</m>:
+          <me>
+            A^TA
+            = \mat[c]{\matrow{v_1^T}; \matrow{v_2^T}; \vdots; \matrow{v_n^T}}
+            \mat[c]{| | {} |; v_1 v_2 \cdots, v_n; | | {} |}
+            = \mat[c]{
+            v_1\cdot v_1 v_1\cdot v_2 \cdots, v_1\cdot v_n;
+            v_2\cdot v_1 v_2\cdot v_2 \cdots, v_2\cdot v_n;
+            \vdots, \vdots, \ddots, \vdots;
+            v_n\cdot v_1 v_n\cdot v_2 \cdots, v_n\cdot v_n}.
+          </me>
+          This matrix is <em>symmetric</em> since <m>v_i\cdot v_j = v_j\cdot v_i</m>.  We call <m>A^TA</m> the <term>matrix of column dot products</term>.
+        </p>
+      </specialcase>
+
+      <bluebox>
+        <p>
+          The <m>(i,j)</m>-entry of <m>A^TA</m> is the dot product of the <m>i</m>th column of <m>A</m> with the <m>j</m>th column of <m>A</m>.
+        </p>
+      </bluebox>
+
+    </paragraphs>
+
+    <paragraphs>
+      <title>Algebraic Manipulation with Matrices</title>
+
+      <p>
+        One can perform most kinds of algebraic manipulations on matrices as with numbers, with some <xref ref="matrix-mult-caveats">caveats</xref>.  The situation is somewhat complicated by the fact that there are a large number of algebraic operations that one can perform, which makes for a long list of rules.
+      </p>
+
+      <lemma hide-type="true" xml:id="lem-matrix-algebra">
+        <title>Rules for Matrix Algebra</title>
+        <statement>
+          <p>
+            Let <m>A,B,</m> and <m>C</m> be matrices and let <m>c</m> be a scalar.  In each assertion that follows, we tacitly assume that the sizes of the matrices are compatible so that the sums and products are defined.
+            <latex-code>
+              \begin{align*}
+                &amp;(1)\quad c(A\pm B) = (cA)\pm cB \qquad &amp;
+                  \text{(distributivity over scalar $\times$)} \\
+                &amp;(2)\quad c(AB) = (cA)B = A(cB) \qquad &amp;
+                  \text{(associativity of matrix and scalar $\times$)} \\
+                &amp;(3)\quad A(B\pm C) = AB \pm AC \qquad &amp;
+                  \text{(left-distributivity of matrix $\times$)} \\
+                &amp;(3\rlap{$')$}\phantom{)}\quad (A\pm B)C = AC \pm BC \qquad &amp;
+                  \text{(right-distributivity of matrix $\times$)} \\
+                &amp;(4)\quad A(BC) = (AB)C \qquad &amp;
+                  \text{(associativity of matrix $\times$)} \\
+                &amp;(5)\quad I_m A = A = AI_n \qquad &amp;
+                  \text{(identity)} \\
+                &amp;(6)\quad (A\pm B)^T = A^T \pm B^T \qquad &amp;
+                  \text{(distributivity of transposes)} \\
+                &amp;(7)\quad (AB)^T = B^TA^T \qquad &amp;
+                  \text{(transposes and matrix $\times$)} \\
+                &amp;(8)\quad (A^T)^T = A \qquad &amp;
+                  \text{(transpose is an involution)} \\
+              \end{align*}
+            </latex-code>
+          </p>
+        </statement>
+      </lemma>
+
+      <p>
+        Most of these properties are either easily derived from the definitions or were discussed earlier.  The notable exceptions are parts (4) and (7), which the interested reader may want to verify as an exercise.
+      </p>
+
+      <note>
+        <p>
+          A number of remarks are in order.
+          <ol>
+            <li>
+              In part (2) we can take <m>B = v</m> to be a vector, so that
+              <me> c(Av) = (cA)v = A(cv). </me>
+              Likewise, in part (3) we can take <m>B = v</m> and <m>C = w</m> to be vectors:
+              <me> A(v \pm w) = Av \pm Aw. </me>
+              These two rules together are sometimes called the <term>superposition principle</term>.
+            </li>
+            <li>
+              In part (4) we can take <m>C = v</m> to be a vector to obtain
+              <me> A(Bv) = (AB)v. </me>
+              In other words, multiplying the product <m>AB</m> by the vector <m>v</m> is the same as multiplying <m>A</m> by the vector <m>Bv</m>.
+            </li>
+            <li>
+              Part (4) allows us to define the product <m>ABC</m> either as <m>(AB)C</m> or as <m>A(BC)</m>.  Similarly, given four matrices <m>A,B,C,D</m>, we can define <m>ABCD</m> as <m>(ABC)D</m> or <m>A((BC)D)</m> or <m>A(BCD)</m>.  In other words, <em>associativity</em> allows us to omit the parentheses when writing products of more than two matrices.
+            </li>
+            <li>
+              Both parts (3) and <m>(3')</m> are necessary: see the <xref ref="matrix-mult-caveats">caveats</xref> below.
+            </li>
+            <li>
+              <latex-code mode="bare">
+                \def\r{\textcolor{seq-red}}
+                \def\b{\textcolor{seq-blue}}
+                \def\g{\textcolor{seq-green}}
+              </latex-code>
+              In part (7), it may seem surprising that transposition reverses the order of matrix multiplication.  However, this is forced on you just by compatibilty of matrix sizes.  Indeed, if <m>A</m> is an <m>\b m\times\r n</m> matrix and <m>B</m> is an <m>\r n\times\g p</m> matrix then <m>A^T</m> is an <m>\r n\times\b m</m> matrix and <m>B^T</m> is a <m>\g p\times\r n</m> matrix, so the product <m>A^TB^T</m> may not even be defined.  However, the product <m>B^TA^T</m> is defined, and results a <m>\g p\times\b m</m> matrix, which is the same size as <m>(AB)^T</m>.  That said, even when <m>B^TA^T</m> and <m>A^TB^T</m> are both defined, they need not be equal: see the <xref ref="matrix-mult-caveats">caveats</xref> below.
+            </li>
+          </ol>
+        </p>
+      </note>
+
+      <example>
+        <p>
+          If <m>A</m> is any matrix then
+          <me> (A^TA)^T = A^T(A^T)^T = A^TA, </me>
+          where we used <xref ref="lem-matrix-algebra">rule</xref> (7) for the first equality and rule (8) for the second.  This gives another reason why <m>A^TA</m> is symmetric; see this <xref ref="ATA-first-appearance"/> for the first.
+        </p>
+      </example>
+
+      <p>
+        If <m>A</m> is a <em>square</em> matrix then the products <m>AA,\,AAA,\,AAAA,\ldots</m> are all defined.
+      </p>
+
+      <definition>
+        <idx><h>Matrix</h><h>powers of</h></idx>
+        <notation><usage>A^p</usage><description>Power of a matrix</description></notation>
+        <statement>
+          <p>
+            If <m>A</m> is a square matrix and <m>p</m> is a positive integer, the <term><m>p</m>th power</term> <m>A^p</m> is defined to be
+            <me>A^p = \underbrace{A\cdot A\cdots A}_{p\text{ times}}.</me>
+          </p>
+        </statement>
+      </definition>
+
+      <note hide-type="true" xml:id="matrix-mult-caveats">
+        <title>Matrix Algebra Caveats</title>
+        <p>
+          Matrix multiplication is <em>not commutative</em>: in general,
+          <me>AB \neq BA,</me>
+          even when both products are defined.  For example,
+          <me>
+            \begin{split}
+              \mat{1 2; 0 1}\mat{1 0; 1 1} &amp;= \mat{3 2; 1 1} \\
+              \mat{1 0; 1 1}\mat{1 2; 0 1} &amp;= \mat{1 2; 1 3}. \\
+            \end{split}
+          </me>
+        </p>
+        <p>
+          Matrix multiplication is <em>not cancelative</em>: in general,
+          <me>A\neq 0 \sptxt{and} AB=AC \sptxt{does not imply} B=C.</me>
+          For example,
+          <me>
+            \mat{1 0; 0 0}\mat{1 2; 3 4} = \mat{1 2; 0 0} = \mat{1 0; 0 0}\mat{1 2; 5 6}.
+          </me>
+          (We will see in <xref provisional="matrix-inverse"/> that cancelativity holds when <m>A</m> is <em>invertible</em>.)
+        </p>
+      </note>
+
+    </paragraphs>
+
+  </subsection>
 
 </section>

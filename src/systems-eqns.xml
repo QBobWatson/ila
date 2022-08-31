@@ -1,0 +1,340 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--********************************************************************
+Copyright 2022 Dan Margalit and Joseph Rabinoff
+
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version 1.3 or
+any later version published by the Free Software Foundation.  A copy of
+the license is included in gfdl.xml.
+*********************************************************************-->
+
+<section xml:id="systems-eqns">
+  <title>Systems of Linear Equations</title>
+
+  <objectives>
+    <ol>
+      <li>Learn what a system of linear equations is, and what its solutions are.</li>
+      <li><em>Picture:</em> solutions of systems of linear equations.</li>
+      <li><em>Vocabulary words:</em> <term>consistent</term>, <term>inconsistent</term>, <term>solution set</term>.</li>
+    </ol>
+  </objectives>
+
+  <subsection>
+    <title>Systems of Equations and Solution Sets</title>
+
+    <p>
+      In this section we fix our ideas regarding systems of linear equations, and make some preliminary observations about their solutions.
+    </p>
+
+    <definition>
+      <idx><h>Linear equation</h><h>definition of</h></idx>
+      <concept tag="linear-eqn"/>
+      <statement>
+        <p>An equation in the unknown variables <m>x_1,x_2,\ldots,x_n</m> is called <term>linear</term> if both sides of the equation are sums of (constant) multiples of <m>x_1,x_2,\ldots,x_n</m>, plus an optional constant.</p>
+      </statement>
+    </definition>
+
+    <p>
+      For instance, the equations
+      <me>
+        y = 3x + 2 \qquad x + y + z = 1 \qquad y - z = 3
+      </me>
+      are linear in the unknown variables <m>x,y,z</m>.  The equations
+      <me>
+        xy + z = 1 \qquad x + 3 = y^2 \qquad e^x = \cos y
+      </me>
+      are not linear: the first contains a product <m>xy</m> of two of the unknowns; the second contains a power <m>y^2</m> of one of the unknowns, and the third contains complicated functions <m>e^x,\;\cos y</m> of the unknowns.
+    </p>
+
+    <note>
+      <p>
+        The list of unknown variables <m>x_1,\ldots,x_n</m> is part of the data of a linear equation.  For instance, the equation <m>2x_1 = 3x_2 + x_3</m> can be regarded as an equation in the four variables <m>x_1,x_2,x_3,x_4</m>; the last variable simply does not appear in the equation.  Usually it will be clear from context what the unknowns are meant to be.
+      </p>
+    </note>
+
+    <definition>
+      <title>Systems of Equations and Solution sets</title>
+      <idx><h>Linear equation</h><h>system of</h></idx>
+      <idx><h>System of linear equations</h><h>solution of</h></idx>
+      <idx><h>Solution</h><see>System of linear equations</see></idx>
+      <idx><h>Solution set</h><h>definition of</h></idx>
+      <concept tag="linear-eqn"/><concept tag="solution-set"/>
+      <statement>
+        <p>
+          A collection of <m>m</m> linear equations in the unknown variables <m>x_1,x_2,\ldots,x_n</m> is called a <term>system</term> of linear equations.
+          <ul>
+            <li>A <term>solution</term> of a system of equations is a list of numbers <m>(x_1, x_2, \ldots,x_n)</m> making <em>all</em> of the equations true simultaneously.</li>
+            <li>The <term>solution set</term> of a system of equations is the collection of <em>all solutions.</em></li>
+            <li><term>Solving</term> the system means giving a way to easily produce all of its solutions.</li>
+          </ul>
+        </p>
+      </statement>
+    </definition>
+
+    <specialcase>
+      <p>
+        Consider the following system of three equations in the three unknowns <m>x_1,x_2,x_3</m>:
+        <me>
+          \syseq{
+            x_1 + 2x_2 + 3x_3 = 6;
+            2x_1 - 3x_2 + 2x_3 = 14;
+            3x_1 + x_2 - x_3 = -2\rlap.
+          }
+        </me>
+        One solution is <m>(x_1,x_2,x_3) = (1,-2,3)</m>, as one can verify by substituting <m>x_1=1</m>, <m>x_2=-2</m>, and <m>x_3=3</m> into the equations above:
+        <me>
+          \syseq{
+            (1) + 2(-2) + 3(3) = 6;
+            2(1) - 3(-2) + 2(3) = 14;
+            3(1) + (-2) - (3) = -2\rlap.
+          }
+        </me>
+        This turns out to be the only solution, so the solution set is
+        <me>\bigl\{(1,-2,3)\bigr\}.</me>
+        This is read as the <q>set containing only <m>(1,-2,3)</m></q>.
+      </p>
+    </specialcase>
+
+    <note type-name="Convention">
+      <p>
+        When we write a system of linear equations, we move all of the unknowns to the <em>left</em> side of the equation (before the <m>=</m>), and we move all of the constants to the <em>right</em> side of the equation.  We also group the unknown variables into columns.  For instance,
+        <me>
+          \syseq{x + 2 = 3y - 1; y - 8 = 2x} \sptxt{becomes}
+          \syseq{x - 3y = -3; -2x + y = 8\rlap.}
+        </me>
+      </p>
+    </note>
+
+    <p>
+      A system of linear equations need not have a solution, as we see in the next example.
+    </p>
+
+    <specialcase xml:id="systems-eqns-inconsistent">
+      <concept tag="inconsistent"/>
+      <p>
+        There do not exist numbers <m>x</m> and <m>y</m> making the following two equations true simultaneously:
+        <me>
+          \syseq{x + 2y = 3 ; x + 2y = -3\rlap.}
+        </me>
+        Indeed, if <m>x+2y=3</m> then <m>x+2y\neq-3</m>.  In this case, the solution set is <em>empty</em>.  We can write the solution set as <m>\{\}</m>, which is read as <q>the empty set</q> or <q>the set containing nothing</q>.
+      </p>
+    </specialcase>
+
+    <bluebox>
+      <title>Notation</title>
+      <idx><h>Empty set</h><h>definition of</h></idx>
+      <p>
+        <notation><usage>\{\}</usage><description>The empty set</description></notation>
+        The <term>empty set</term> is the set <m>\{\}</m> that does not have any elements.
+      </p>
+    </bluebox>
+
+    <p>
+      The most basic question one can ask about a system of equations is whether or not a solution exists.  This property has its own name.
+    </p>
+
+    <definition>
+      <idx><h>System of linear equations</h><h>inconsistent</h></idx>
+      <idx><h>System of linear equations</h><h>consistent</h></idx>
+      <idx><h>Consistent</h><see>System of linear equations</see></idx>
+      <idx><h>Inconsistent</h><see>System of linear equations</see></idx>
+      <statement>
+        <p>A system of equations is called <term>inconsistent</term> if it has no solutions.  It is called <term>consistent</term> if it has one or more solutions.</p>
+      </statement>
+    </definition>
+
+  </subsection>
+
+  <subsection xml:id="systems-eqns-pictures">
+    <title>Pictures of Solution Sets</title>
+    <idx><h>Solution set</h><h>picture of</h></idx>
+
+    <p>Before discussing how to solve a system of linear equations, it is helpful to see some pictures of what these solution sets look like geometrically.</p>
+
+    <specialcase hide-type="true" xml:id="systems-eqns-picture-line">
+      <title>One Equation in Two Variables</title>
+
+      <p>
+        Consider the linear equation <m>x+y=1</m>.  We can rewrite this as <m>y = 1-x</m>, which defines a line in the plane: the slope is <m>-1</m>, and the <m>x</m>-intercept is <m>1</m>.
+        <latex-code>
+          <![CDATA[
+  \begin{tikzpicture}
+    \draw[grid lines] (-2,-2) grid (2,2);
+    \draw[->] (-2,0) -- (2,0);
+    \draw[->] (0,-2) -- (0,2);
+    \draw[{Stealth}-{Stealth}, seq-violet, thick] (-1,2) -- (2,-1);
+  \end{tikzpicture}
+          ]]>
+        </latex-code>
+        In this case the solution set is a <em>line</em>.
+      </p>
+    </specialcase>
+
+    <definition xml:id="defn-lines">
+      <title>Lines</title>
+      <idx><h>Line</h><h>geometric definition of</h></idx>
+      <statement>
+        <p>For our purposes, a <term>line</term> is a ray that is <em>straight</em> and <em>infinite</em> in both directions.</p>
+      </statement>
+    </definition>
+
+    <specialcase hide-type="true" xml:id="systems-eqns-picture-plane">
+      <title>One Equation in Three Variables</title>
+
+      <p>
+        Consider the linear equation <m>x+y+z=1</m>.  The solution set of this equation forms a <em>plane</em> in space. 
+        <latex-code>
+          <![CDATA[
+  \begin{tikzpicture}[myxyz, scale=0.75]
+    \draw[densely dotted] (0,0,0) -- (1,0,0);
+    \draw[densely dotted] (0,0,0) -- (0,1,0);
+    \draw[densely dotted] (0,0,0) -- (0,0,1);
+    \begin{scope}[x={(-1,0,1)}, y={(0,-1,1)}, transformxy=1]
+      \fill[help lines, seq-violet!50, fill opacity=.7] (-2.5, -2.5) rectangle (2, 2);
+      \draw[help lines, seq-violet!50] (-2.5, -2.5) grid (2, 2);
+    \end{scope}
+    \draw[->] (1,0,0) -- (3,0,0) node[below left] {$x$};
+    \draw[->] (0,1,0) -- (0,3,0) node[right] {$y$};
+    \draw[->] (0,0,1) -- (0,0,3) node[above] {$z$};
+  \end{tikzpicture}
+          ]]>
+        </latex-code>
+      </p>
+    </specialcase>
+
+    <definition>
+      <title>Planes</title>
+      <idx><h>Plane</h><h>geometric definition of</h></idx>
+      <statement>
+        <p>A <term>plane</term> is a flat sheet that is infinite in all directions.
+        </p>
+      </statement>
+    </definition>
+
+    <remark>
+      <p>
+        The equation <m>x+y+z+w=1</m> defines a <q><m>3</m>-plane</q> in <m>4</m>-space, and more generally, a single linear equation in <m>n</m> variables defines an <q><m>(n-1)</m>-plane</q> in <m>n</m>-space.  We will make these statements precise in <xref ref="linear-independence"/>.
+      </p>
+    </remark>
+
+    <specialcase hide-type="true" xml:id="systems-eqns-picture-2lines">
+      <title>Two Equations in Two Variables</title>
+
+      <p>
+        Now consider the system of two linear equations
+        <me>\def\r{\color{seq-violet}}\def\b{\color{seq-green}}
+        \syseq{\r x \r- \r3y \r= \r-3; \b2x \b+ \b y \b= \b8\rlap.}</me>
+        Each equation individually defines a line in the plane, pictured below.
+        <latex-code>
+          <![CDATA[
+  \begin{tikzpicture}[scale=.2]
+    \draw[grid lines] (-20,-20) rectangle (20,20);
+    \clip (-20,-20) rectangle (20,20);
+    \draw[->] (-20,0) -- (20,0);
+    \draw[->] (0,-20) -- (0,20);
+    \draw[seq-violet, thick] (-20,-20/3+1) -- (20,20/3+1);
+    \draw[seq-green, thick] (-20,40+8) -- (20,-40+8);
+    \point at (3,2);
+  \end{tikzpicture}
+          ]]>
+        </latex-code>
+        A solution to the <em>system</em> of both equations is a pair of numbers <m>(x,y)</m> that makes both equations true at once.  In other words, it is a point that lies on both lines simultaneously.  We can see in the picture above that there is only one point where the lines intersect: therefore, this system has exactly one solution.  (This solution is <m>(3,2)</m>, as the reader can verify.)
+      </p>
+
+      <p>
+        Usually, two lines in the plane will intersect in one point, but of course this is not always the case.  Consider now the system of equations
+        <me>\def\r{\color{seq-violet}}\def\b{\color{seq-green}}
+        \syseq{\r x \r- \r3y \r= \r-3; \b x \b- \b3y \b= \b3}</me>
+        from this <xref ref="systems-eqns-inconsistent"/>.
+        These equations define <em>parallel</em> lines in the plane.
+        <latex-code>
+          <![CDATA[
+  \begin{tikzpicture}[scale=.2]
+    \draw[grid lines] (-20,-20) rectangle (20,20);
+    \clip (-20,-20) rectangle (20,20);
+    \draw[->] (-20,0) -- (20,0);
+    \draw[->] (0,-20) -- (0,20);
+    \draw[seq-violet, thick] (-20,-20/3+1) -- (20,20/3+1);
+    \draw[seq-green, thick] (-20,-20/3-1) -- (20,20/3-1);
+  \end{tikzpicture}
+          ]]>
+        </latex-code>
+        The fact that that the lines do not intersect means that the system of equations has no solution.  Of course, this is easy to see algebraically: if <m>x-3y=-3</m>, then it is cannot also be the case that <m>x-3y=3</m>.
+      </p>
+
+      <p>
+        There is one more possibility.  Consider the system of equations
+        <me>\def\r{\color{seq-violet}}\def\b{\color{seq-green}}
+        \syseq{\r x \r- \r3y \r= \r-3; \b2x \b- \b6y \b= \b-6\rlap.}</me>
+        The second equation is a multiple of the first, so these equations define the <em>same</em> line in the plane.
+        <latex-code>
+          <![CDATA[
+  \begin{tikzpicture}[scale=.2]
+    \draw[grid lines] (-20,-20) rectangle (20,20);
+    \clip (-20,-20) rectangle (20,20);
+    \draw[->] (-20,0) -- (20,0);
+    \draw[->] (0,-20) -- (0,20);
+    \draw[seq-green, double=seq-violet!50, double distance=1pt, thick] (-20,-20/3+1) -- (20,20/3+1);
+  \end{tikzpicture}
+          ]]>
+        </latex-code>
+        In this case, the solution set is a line: there are infinitely many solutions of the system of equations.
+      </p>
+    </specialcase>
+
+    <specialcase hide-type="true" xml:id="systems-eqns-two-planes">
+      <title>Two Equations in Three Variables</title>
+
+      <p>
+        Consider the system of two linear equations
+        <me>\def\r{\color{seq-violet}}\def\b{\color{seq-green}}
+        \syseq{\r x \r+ \r y \r+ \r z \r= \r1; \b x \+ \. \b- \b z \b= \b0\rlap.}</me>
+        Each equation individually defines a plane in space.  The solutions of the system of both equations are the points that lie on both planes.  We can see in the picture below that the planes intersect in a line.  In particular, this system has infinitely many solutions.
+      </p>
+
+      <figure>
+        <caption>The planes defined by the equations <m>\color{seq-violet}x+y+z=1</m> and <m>\color{seq-green}x-z=0</m> intersect in the red line, which is the solution set of the system of both equations.</caption>
+        <mathbox source="demos/planes.html" height="400px"/>
+      </figure>
+    </specialcase>
+
+    <remark>
+      <p>
+        In general, the solutions of a system of equations in <m>n</m> variables is the intersection of <q><m>(n-1)</m>-planes</q> in <m>n</m>-space.  This is always some kind of linear space, as we will discuss in <xref ref="parametric-form"/> and <xref ref="spans"/>.
+      </p>
+    </remark>
+
+    <specialcase hide-type="true" xml:id="systems-eqns-three-planes">
+      <title>Three Equations in Three Variables</title>
+
+      <p>
+        Consider the system of three linear equations
+        <me>
+          \def\r{\color{seq-violet}}\def\b{\color{seq-green}}\def\g{\color{seq-blue}}
+          \syseq{
+            \r x \r+ \r y \r+ \r z \r= \r1;
+            \b x \+ \. \b- \b z \b= \b0;
+            \. \+ \. \+ \g z \g= \g0\rlap.
+          }
+        </me>
+        The first two equations define the two planes in the previous example, and the third describes the <m>xy</m>-plane.  The only point at which all three planes meet is <m>(x,y,z) = (0,1,0),</m> so the solution set is <m>\bigl\{(0,1,0)\bigr\}</m>.
+      </p>
+    </specialcase>
+
+    <remark hide-type="true">
+      <title>Challenge</title>
+      <p>
+        Usually, three planes in space will intersect in exactly one point.  However, there may be no point contained in the intersection<mdash/>for example, two of the planes might be parallel.  The intersection could also be a line<mdash/>for instance, two of the planes might be identical.
+      </p>
+      <p>
+        <em>Question:</em> How many <q>ways</q> can three planes in space intersect?
+      </p>
+      <p>
+        Depending on how you count, there are quite a number of them!  This kind of question belongs to the subject of <url href="https://en.wikipedia.org/wiki/Arrangement_of_hyperplanes">hyperplane arrangements</url>, which is beyond the scope of this book.
+      </p>
+    </remark>
+
+  </subsection>
+
+</section>

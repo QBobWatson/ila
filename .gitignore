@@ -1,5 +1,4 @@
 .sconsign.dblite
 .direnv
 node_modules
-build
-cache
+publish

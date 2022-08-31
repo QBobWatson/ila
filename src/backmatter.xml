@@ -27,14 +27,9 @@ the license is included in gfdl.xml.
 
       <p>Concepts</p>
 
-      <concept-library>
-        <concept tag="foo">
-          <desc>Foo <m>x=1</m> concept</desc>
-          <see tag="bar"/>
-          <see tag="baz"/>
-        </concept>
-        <concept tag="bar"><desc>Bar concept</desc></concept>
-      </concept-library>
+      <!-- <concept-library> -->
+
+      <!-- </concept-library> -->
 
     </appendix>
 
