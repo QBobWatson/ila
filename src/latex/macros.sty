@@ -4,6 +4,7 @@
 \usepackage{color}
 \usepackage{spalign}
 \usepackage{calc}
+\usepackage{bbding}
 
 \def\R{\mathbf R}
 \def\C{\mathbf C}
@@ -40,6 +41,16 @@
 \def\sptxt#1{\quad\text{ #1 }\quad}
 \let\bar=\overline
 \let\hat=\widehat
+
+\def\pluseq{\mathrel{+}=}
+\def\minuseq{\mathrel{-}=}
+\def\timeseq{\mathrel{\times}=}
+\def\diveq{\mathrel{\div}=}
+
+\newcommand\bigcheck[1][\;]{\smash{\hbox{\Huge\raise-.7ex\hbox to 0pt{%
+      #1\color{seq-green}\CheckmarkBold\hss}}}}
+\newcommand\bigcross[1][\;]{\smash{\hbox{\Huge\raise-.7ex\hbox to 0pt{%
+      #1\color{seq-red}\XSolidBrush\hss}}}}
 
 \def\cB{{\mathcal B}}
 

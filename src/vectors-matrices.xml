@@ -17,7 +17,7 @@ the license is included in gfdl.xml.
       <li>Learn basic definitions involving matrices and vectors.</li>
       <li>Learn the algebraic operations one can perform on matrices and vectors, and the rules for algebraic manipulations.</li>
       <li><em>Recipe:</em> the row-column rule for matrix multiplication.</li>
-      <li><em>Vocabulary words:</em> <term>scalar</term>, <term>vector</term>, <term>unit coordinate vector</term>, <term>linear combination</term>, <term>diagonal</term>, <term>identity matrix</term>, <term>outer product</term>, <term>transpose</term>, <term>symmetric matrix</term>, the <term>matrix of column dot products</term>.</li>
+      <li><em>Vocabulary words:</em> <term>scalar,</term> <term>vector,</term> <term>unit coordinate vector,</term> <term>linear combination,</term> <term>diagonal,</term> <term>identity matrix,</term> <term>outer product,</term> <term>transpose,</term> <term>symmetric matrix,</term> the <term>matrix of column dot products</term>.</li>
     </ol>
   </objectives>
 
@@ -35,7 +35,7 @@ the license is included in gfdl.xml.
       <me>
         \mat{1 2 3; 2 -3 2; 3 1 -1}\vec{x_1 x_2 x_3} = \vec{6 14 -2}.
       </me>
-      The square box is a <term>matrix</term>, and the rectangular ones are <term>vectors</term>; the left side of the equation is a <term>matrix-vector product.</term>
+      The square box is a <term>matrix,</term> and the rectangular ones are <term>vectors</term>; the left side of the equation is a <term>matrix-vector product.</term>
     </p>
 
     <p>
@@ -175,7 +175,7 @@ the license is included in gfdl.xml.
       Again the size of the zero vector must be inferred from context.  Note that we use the same symbol <m>0</m> to denote the zero vector and the number zero (and the zero matrix below).
     </p>
 
-    <definition>
+    <definition xml:id="vector-equality-defn">
       <title>Vector Equality</title>
       <idx><h>Vector</h><h>equality of</h></idx>
       <statement>
@@ -506,7 +506,7 @@ the license is included in gfdl.xml.
 
     <definition hide-type="true" xml:id="identity-matrix">
       <title>The Identity Matrix</title>
-      <idx><h>Identity Matrix</h></idx>
+      <idx><h>Identity matrix</h></idx>
       <idx><h>Matrix</h><h>identity</h></idx>
       <notation><usage>I_n</usage><description>The <m>n\times n</m> identity matrix</description></notation>
       <statement>
@@ -528,7 +528,7 @@ the license is included in gfdl.xml.
 
     <definition hide-type="true" xml:id="zero-matrix">
       <title>The Zero Matrix</title>
-      <idx><h>Zero Matrix</h></idx>
+      <idx><h>Zero matrix</h></idx>
       <idx><h>Matrix</h><h>zero</h></idx>
       <statement>
         <p>
@@ -626,14 +626,14 @@ the license is included in gfdl.xml.
             Let <m>A</m> be an <m>m\times n</m> matrix and let <m>x</m> be a vector of size <m>n</m>.  The <term>matrix-vector product</term> <m>Ax</m> is defined in either of the following two ways:
             <ol>
               <li>
-                <em>By Columns.</em>  Suppose that <m>A</m> has columns <m>v_1,v_2,\ldots,v_n\in\R^m</m>.  Then
+                <alert>By Columns.</alert>  Suppose that <m>A</m> has columns <m>v_1,v_2,\ldots,v_n\in\R^m</m>.  Then
                 <me>
                   Ax = \mat[c]{| | {} |; v_1 v_2 \cdots, v_n; | | {} |}\vec[c]{x_1 x_2 \vdots, x_n}
                   = x_1v_1 + x_2v_2 + \cdots + x_nv_n \in \R^m.
                 </me>
               </li>
               <li>
-                <em>By Rows.</em>  Suppose that <m>A</m> has rows <m>w_1,w_2,\ldots,w_m\in\R^n</m>.  Then
+                <alert>By Rows.</alert>  Suppose that <m>A</m> has rows <m>w_1,w_2,\ldots,w_m\in\R^n</m>.  Then
                 <me>
                   Ax = \mat[c]{\matrow{w_1}; \matrow{w_2}; \vdots; \matrow{w_m}}x
                   = \vec[c]{w_1\cdot x w_2\cdot x \vdots, w_m\cdot x} \in \R^m,
@@ -758,7 +758,7 @@ the license is included in gfdl.xml.
       <definition hide-type="true" xml:id="matrix-product-col-form">
         <title>Matrix-Matrix Product: Column Form</title>
         <idx><h>Matrix</h><h>product with matrix</h><see>Matrix Multiplication</see></idx>
-        <idx><h>Matrix Multiplication</h><h>column form</h></idx>
+        <idx><h>Matrix multiplication</h><h>column form</h></idx>
         <statement>
           <p>
             Let <m>A</m> be an <m>m\times n</m> matrix and let <m>B</m> be an <m>n\times p</m> matrix with columns <m>u_1,u_2,\ldots,u_p\in\R^n</m>.  The <term>matrix-matrix product</term> <m>AB</m> is the <m>m\times p</m> matrix with columns <m>Au_1,Au_2,\ldots,Au_p\in\R^m</m>:
@@ -938,7 +938,7 @@ the license is included in gfdl.xml.
 
       <definition hide-type="true" xml:id="outer-product-definition">
         <title>Outer Products</title>
-        <idx><h>Outer Product</h></idx>
+        <idx><h>Outer product</h></idx>
         <statement>
           <p>
             The product of a column vector with a row vector is called an <term>outer product</term>.
@@ -976,7 +976,7 @@ the license is included in gfdl.xml.
 
       <definition hide-type="true" xml:id="matrix-product-outer-product-form">
         <title>Matrix-Matrix Product: Outer Product Form</title>
-        <idx><h>Matrix Multiplication</h><h>outer product form</h></idx>
+        <idx><h>Matrix multiplication</h><h>outer product form</h></idx>
         <statement>
           <p>
             Let <m>A</m> be an <m>m\times n</m> matrix with columns <m>v_1,v_2,\ldots,v_n\in\R^m</m> and let <m>B</m> be an <m>n\times p</m> matrix with rows <m>w_1^T,w_2^T,\ldots,w_n^T\in\R^p</m>.  The <term>matrix-matrix product</term> <m>AB</m> is the <m>m\times p</m> matrix
@@ -1096,7 +1096,7 @@ the license is included in gfdl.xml.
 
       <definition>
         <idx><h>Matrix</h><h>symmetric</h></idx>
-        <idx><h>Symmetric Matrix</h><see>Matrix, symmetric</see></idx>
+        <idx><h>Symmetric matrix</h><see>Matrix, symmetric</see></idx>
         <statement>
           <p>
             A matrix is <term>symmetric</term> if it is equal to its transpose.  That is, <m>A</m> is symmetric if <m>A=A^T</m>.  Equivalently, a matrix is symmetric if its <m>(i,j)</m>-entry is equal to its <m>(j,i)</m>-entry for all <m>i</m> and <m>j</m>.

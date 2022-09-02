@@ -10,16 +10,1143 @@ the license is included in gfdl.xml.
 *********************************************************************-->
 
 <section xml:id="elimination">
-  <title>Elimination</title>
+  <title>The Elimination Method</title>
 
   <objectives>
     <ol>
-      <li>Write the objectives.</li>
+      <li>Understand how to solve a system of equations using elimination and back-substitution.</li>
+      <li>Learn how the elimination method corresponds to performing row operations on an augmented matrix.</li>
+      <li>Understand when a matrix is in row echelon form.</li>
+      <li>Understand how the pivots of an augmented matrix determine how many solutions the corresponding system of equations has.</li>
+      <li><em>Recipe:</em> back-substitution.</li>
+      <li><em>Vocabulary words:</em> <term>row operation,</term> <term>matrix equation,</term> <term>augmented matrix,</term> <term>row echelon form,</term> <term>pivot position,</term> <term>pivot column,</term> <term>rank.</term></li>
     </ol>
   </objectives>
 
-  <p>
-    Write the content.
-  </p>
+  <introduction>
+    <p>
+      Consider the following system of three linear equations in three variables:
+      <men xml:id="elimination-eg-1">
+        \syseq{
+          x_1 + 2x_2 + 3x_3 = 6;
+          3x_1 + x_2 - x_3 = -2;
+          2x_1 - 3x_2 + 2x_3 = 14\rlap.
+        }
+      </men>
+      How do we solve this system?  You may have learned one or both of the following methods:
+      <ul>
+        <li>
+          <alert>Substitution:</alert> Solve for <m>x_1</m> in terms of <m>x_2,x_3</m>, then substitute that expression for <m>x_1</m>.
+        </li>
+        <li>
+          <alert>Elimination:</alert> Manipulate the equations to eliminate one of the variables from all but one equation.
+        </li>
+      </ul>
+      It turns out that elimination scales better: when solving a system of thousands of equations in thousands of variables by computer, it is more efficient to use elimination than substitution.  In this section, we explain the idea behind the elimination method, and give the rules for performing elimination; in <xref ref="gauss-jordan"/> we will present a systematic algorithm solving a system of equations using elimination.
+    </p>
+  </introduction>
+
+  <subsection>
+    <title>
+      The Idea of Elimination
+    </title>
+
+    <p>
+      Let us solve the system <xref ref="elimination-eg-1"/> using elimination.  In order to eliminate <m>x_1</m> from the second equation, we subtract 3 times the first equation from the second:
+      <me>
+        \syseq{
+          x_1 + 2x_2 + 3x_3 = 6;
+          3x_1 + x_2 - x_3 = -2;
+          2x_1 - 3x_2 + 2x_3 = 14\rlap.
+        } \quad\xrightarrow{R_2 \minuseq 3R_1}\quad
+        \syseq{
+          x_1 + 2x_2 + 3x_3 = 6;
+          \. - 5x_2 - 10x_3 = -20;
+          2x_1 - 3x_2 + 2x_3 = 14\rlap.
+        }
+      </me>
+      Here <m>R_i</m> means <q>the <m>i</m>th equation</q>; we use the letter <m>R</m> because it will soon refer to the <m>i</m>th row of a matrix.  The notation <m>R_2\minuseq 3R_1</m> means <q>replace the second equation by the second equation minus 3 times the first equation.</q>  Now we have <em>eliminated</em> <m>x_1</m> from the second equation.
+    </p>
+
+    <p>
+      Next we eliminate <m>x_1</m> from the third equation by subtracting twice the first equation:
+      <me>
+        \syseq{
+          x_1 + 2x_2 + 3x_3 = 6;
+          \. - 5x_2 - 10x_3 = -20;
+          2x_1 - 3x_2 + 2x_3 = 14\rlap.
+        } \quad\xrightarrow{R_3\minuseq 2R_1}\quad
+        \syseq{
+          x_1 + 2x_2 + 3x_3 = 6;
+          \. - 5x_2 - 10x_3 = -20;
+          \. - 7x_2 - 4x_3 = 2\rlap.
+        }
+      </me>
+      We have simplified our original system of equations: the second and third equations now form 2 equations in 2 variables.  Ignoring the first equation for the moment, we subtract <m>\frac 75</m> times the second from the third to eliminate <m>x_2</m> from the third equation:
+      <me>
+        \syseq{
+          x_1 + 2x_2 + 3x_3 = 6;
+          \. - 5x_2 - 10x_3 = -20;
+          \. - 7x_2 - 4x_3 = 2\rlap.
+        } \quad\xrightarrow{R_3 -= \frac57 R_2}\quad
+        \syseq{
+          x_1 + 2x_2 + 3x_3 = 6;
+          \. - 5x_2 - 10x_3 = -20;
+          \. \+ \. \+ 10x_3 = 30\rlap.
+        }
+      </me>
+      The third equation now only has <em>one</em> variable: we have <term>isolated</term> <m>x_3</m> in this equation.
+    </p>
+
+    <p>
+      <idx><h>Back-substitution</h></idx>
+      We can solve our simplified system of equations by solving for <m>x_3</m>, then <m>x_2</m>, then <m>x_1</m>, in a process called <term>back-substitution</term>.   The third equation gives us a value for <m>x_3</m>:
+      <me> 10x_3 = 30 \quad\implies\quad x_3 = 3.</me>
+      Substituting <m>x_3=3</m> into the second equation produces one equation in one variable: we have now <em>isolated</em> <m>x_2</m>.  Solving for <m>x_2</m> gives
+      <me> -5x_2 - 10(3) = -20 \quad\implies\quad x_2 = -2. </me>
+      Finally, substituting <m>x_2=-2</m> and <m>x_3=3</m> into the first equation isolates <m>x_1</m>, and we have
+      <me> x_1 + 2(-2) + 3(3) = 6 \quad\implies\quad x_1 = 1. </me>
+      We have found our solution:
+      <me> (x_1,x_2,x_3) = (1,-2,3). </me>
+      We can verify that this is indeed a solution of our original system of equations <xref ref="elimination-eg-1"/> by substituting these values for the unknowns:
+      <me>
+        \syseq{
+          x_1 + 2x_2 + 3x_3 = 6;
+          3x_1 + x_2 - x_3 = -2;
+          2x_1 - 3x_2 + 2x_3 = 14\rlap.
+        } \quad\xrightarrow{\text{substitute}}\quad
+        \syseq{
+          (1) + 2(-2) + 3(3) = 6;
+          3(1) + (-2) - (3) = -2;
+          2(1) - 3(-2) + 2(3) = 14\rlap.
+        } \qquad\bigcheck
+      </me>
+
+    </p>
+
+    <note xml:id="isolate-all-vars">
+      <p>
+        The system of equations <xref ref="elimination-eg-1"/> has <em>only one solution</em> <m>(x_1,x_2,x_3) = (1,-2,3)</m> because we were able to <em>isolate</em> each of the three unknowns when performing back-substitution.  Indeed, the equation <m>10x_3=30</m> has only one solution <m>x_3=3</m>; the equation <m>-5x_2-10(3)=-20</m> has only one solution <m>x_2=-2</m>, and <m>x_1+2(-2)+3(3)=6</m> has only one solution <m>x_1=1</m>.
+      </p>
+    </note>
+
+    <p>
+      To perform elimination systematically, it is convenient to require that the last variable be isolated in the last equation, the second-last variable be isolated in the second-last equation, etc.  In order for this to happen, it may be necessary to reorder the equations.
+    </p>
+
+    <specialcase hide-type="true">
+      <title>Reordering the Equations</title>
+      <p>
+        Let us solve the system of equations
+        <me>
+        \syseq{
+          \. \+ 4x_2 + 3x_3 = 3;
+          x_1 + x_2 - x_3 = 3;
+          5x_1 - 3x_2 - 6x_3 = -6
+        }
+        </me>
+        using elimination.  We could use the second equation to eliminate <m>x_1</m> from the third equation, but that would have the effect of isolating <m>x_1</m> in the second equation instead of the first.  To remedy this, we begin by interchanging the first two equations:
+        <me>
+        \syseq{
+          \. \+ 4x_2 + 3x_3 = 3;
+          x_1 + x_2 - x_3 = 3;
+          5x_1 - 3x_2 - 6x_3 = -6
+          } \quad\xrightarrow{R_1\longleftrightarrow R_2}\quad
+        \syseq{
+          x_1 + x_2 - x_3 = 3;
+          \. \+ 4x_2 + 3x_3 = 3;
+          5x_1 - 3x_2 - 6x_3 = -6\rlap.
+        }
+        </me>
+        Now we eliminate <m>x_1</m> from the third equation:
+        <me>
+        \syseq{
+          x_1 + x_2 - x_3 = 3;
+          \. \+ 4x_2 + 3x_3 = 3;
+          5x_1 - 3x_2 - 6x_3 = -6
+        } \quad\xrightarrow{R_3\minuseq 5R_1}\quad
+        \syseq{
+          x_1 + x_2 - x_3 = 3;
+          \. \+ 4x_2 + 3x_3 = 3;
+          \. - 8x_2 - x_3 = -21
+        }
+        </me>
+        and we eliminate <m>x_2</m> from the third equation by adding twice the second equation:
+        <me>
+        \syseq{
+          x_1 + x_2 - x_3 = 3;
+          \. \+ 4x_2 + 3x_3 = 3;
+          \. - 8x_2 - x_3 = -21
+        } \quad\xrightarrow{R_3\pluseq 2R_2}\quad
+        \syseq{
+          x_1 + x_2 - x_3 = 3;
+          \. \+ 4x_2 + 3x_3 = 3;
+          \. \+ \. \+ 5x_3 = -15\rlap.
+        }
+        </me>
+      </p>
+      <p>
+        <idx><h>Back-substitution</h></idx>
+        Now we solve the system using back-substitution. We have isolated <m>x_3</m> in the third equation, and we have
+        <me> 5x_3 = -15 \quad\implies\quad x_3 = -3. </me>
+        Substituting <m>x_3=-3</m> into the second equation isolates <m>x_2</m>:
+        <me> 4x_2 + 3(-3) = 3 \quad\implies\quad x_2 = 3. </me>
+        Finally, substituting <m>x_2=3</m> and <m>x_3=3</m> into the first equation isolates <m>x_1</m>:
+        <me> x_1 + (3) - (-3) = 3 \quad\implies\quad x_1 = -3. </me>
+        We have found our solution:
+        <me> (x_1,x_2,x_3) = (-3,3,-3). </me>
+        Let us check that we haven<rsq/>t made any mistakes by substituting these values into our original equation:
+        <me>
+        \syseq{
+          \. \+ 4x_2 + 3x_3 = 3;
+          x_1 + x_2 - x_3 = 3;
+          5x_1 - 3x_2 - 6x_3 = -6
+          } \quad\xrightarrow{\text{substitute}}\quad
+        \syseq{
+          \. \+ 4(3) + 3(-3) = 3;
+          (-3) + (3) - (-3) = 3;
+          5(-3) - 3(3) - 6(-3) = -6\rlap.
+        } \qquad\bigcheck
+        </me>
+      </p>
+      <p>
+        Note that this system of equations again has only one solution, as we were able to isolate each of the three unknowns, as in this <xref ref="isolate-all-vars"/>.
+      </p>
+    </specialcase>
+
+    <p>
+      Both systems of equations we have considered so far have had only one solution.  Of course, this is not always the case.
+    </p>
+
+    <specialcase hide-type="true" xml:id="elimination-infty-solns">
+      <title>Infinitely Many Solutions</title>
+      <p>
+        Condsider the system of equations
+        <me>
+        \syseq{
+          x_1 + 2x_2 + 3x_3 = 1;
+          4x_1 + 5x_2 + 6x_3 = 1;
+          7x_1 + 8x_2 + 9x_3 = 1\rlap.
+        }
+        </me>
+        Let us eliminate <m>x_1</m> from the second and third equations:
+        <me>
+        \syseq{
+          x_1 + 2x_2 + 3x_3 = 1;
+          4x_1 + 5x_2 + 6x_3 = 1;
+          7x_1 + 8x_2 + 9x_3 = 1\rlap.
+        } \quad\xrightarrow[R_3\minuseq 7R_1]{R_2 \minuseq 4R_1}\quad
+        \syseq{
+          x_1 + 2x_2 + 3x_3 = 1;
+          \. - 3x_2 - 6x_3 = -3;
+          \. - 6x_2 - 12x_3 = -6\rlap.
+        }
+        </me>
+        When we subtract twice the second equation from the third in order to eliminate <m>x_2</m>, we end up eliminating <m>x_3</m> from the third equation as well:
+        <me>
+        \syseq{
+          x_1 + 2x_2 + 3x_3 = 1;
+          \. - 3x_2 - 6x_3 = -3;
+          \. - 6x_2 - 12x_3 = -6
+        } \quad\xrightarrow[R_3\minuseq 7R_1]{R_3 \minuseq 2R_2}\quad
+        \syseq{
+          x_1 + 2x_2 + 3x_3 = 1;
+          \. - 3x_2 - 6x_3 = -3;
+         \. \+ \. \+ 0 = 0\rlap.
+        }
+        </me>
+        In this case, we were unable to isolate <m>x_3</m>, so we cannot solve for its value.  In fact, if we substitute <em>any</em> value for <m>x_3</m> into these equations, then we can solve for <m>x_2</m> and <m>x_1</m> using back-substitution.  For example, let us set <m>x_3=1</m>.  Now <m>x_2</m> is isolated in the second equation:
+        <me> -3x_2 - 6(1) = -3 \quad\implies\quad x_2 = -1. </me>
+        Substituting <m>x_2 = -1</m> and <m>x_3=1</m> into the first equation isolates <m>x_1</m>:
+        <me> x_1 + 2(-1) + 3(1) = 1 \quad\implies\quad x_1 = 0. </me>
+        We have found a solution <m>(x_1,x_2,x_3)=(0,-1,1)</m>, which we verify:
+        <me>
+        \syseq{
+          x_1 + 2x_2 + 3x_3 = 1;
+          4x_1 + 5x_2 + 6x_3 = 1;
+          7x_1 + 8x_2 + 9x_3 = 1\rlap.
+        } \quad\xrightarrow{\text{substitute}}\quad
+        \syseq{
+          (0) + 2(-1) + 3(1) = 1;
+          4(0) + 5(-1) + 6(1) = 1;
+          7(0) + 8(-1) + 9(1) = 1\rlap.
+        } \qquad\bigcheck
+        </me>
+      </p>
+      <p>
+        This system of equations has <em>infinitely many solutions</em>.  In fact, we saw above that there is exactly one solution for any given value of <m>x_3</m>.  We will discuss this situation in detail in <xref ref="parametric-form"/>.
+      </p>
+    </specialcase>
+
+    <specialcase hide-type="true" xml:id="elimination-no-solns">
+      <title>Zero Solutions</title>
+      <p>
+        We slightly modify the previous <xref ref="elimination-infty-solns"/> to obtain the system
+        <me>
+        \syseq{
+          x_1 + 2x_2 + 3x_3 = 1;
+          4x_1 + 5x_2 + 6x_3 = 1;
+          7x_1 + 8x_2 + 9x_3 = 2\rlap.
+        }
+        </me>
+        Eliminating <m>x_1</m> from the second and third equations gives:
+        <me>
+        \syseq{
+          x_1 + 2x_2 + 3x_3 = 1;
+          4x_1 + 5x_2 + 6x_3 = 1;
+          7x_1 + 8x_2 + 9x_3 = 2
+        } \quad\xrightarrow[R_3\minuseq 7R_1]{R_2 \minuseq 4R_1}\quad
+        \syseq{
+          x_1 + 2x_2 + 3x_3 = 1;
+          \. - 3x_2 - 6x_3 = -3;
+          \. - 6x_2 - 12x_3 = -5\rlap.
+        }
+        </me>
+        Now we subtract twice the second equation from the third in order to eliminate <m>x_2</m>:
+        <me>
+        \syseq{
+          x_1 + 2x_2 + 3x_3 = 1;
+          \. - 3x_2 - 6x_3 = -3;
+          \. - 6x_2 - 12x_3 = -5
+        } \quad\xrightarrow[R_3\minuseq 7R_1]{R_3 \minuseq 2R_2}\quad
+        \syseq{
+          x_1 + 2x_2 + 3x_3 = 1;
+          \. - 3x_2 - 6x_3 = -3;
+         \. \+ \. \+ 0 = 1\rlap.
+        }
+        </me>
+        Of course, there are no values of <m>x_1,x_2,x_3</m> that will make the equation <m>0=1</m> true, so we have found that this system has <em>no solutions</em>.  (Geometrically, the equations <m>-3x_2 - 6x_3 = -3</m> and <m>-6x_2-12x_3=-5</m> define parallel planes.)
+      </p>
+    </specialcase>
+
+  </subsection>
+
+  <subsection>
+    <title>Row Operations</title>
+
+    <p>
+      In the discussion above, we manipulated a system of equations in two different ways: we added a multiple of one equation to another (<m>R_i \pluseq cR_j</m>), and we interchanged two equations (<m>R_i\longleftrightarrow R_j</m>).  We allow ourselves one additional operation, namely, multiplying both sides of an equation by a nonzero scaler (<m>R_i\timeseq c</m>).  These three operations form the manipulations that we will allow in our elimination algorithms.
+    </p>
+
+    <definition>
+      <title>Row Operations</title>
+      <idx><h>Row operations</h><h>definition of</h></idx>
+      <idx><h>Row replacement</h></idx>
+      <notation><usage>R_i\pluseq R_j</usage><description>Row replacement</description></notation>
+      <notation><usage>R_i\longleftrightarrow R_j</usage><description>Row swap</description></notation>
+      <notation><usage>R_i\timeseq c</usage><description>Row scaling</description></notation>
+      <statement>
+        <p>
+          The following three operations on a system of equations are called <term>row operations</term>.
+          <ul>
+            <li>
+              <alert>Row Replacement:</alert> We can add a multiple of equation <m>j</m> to equation <m>i</m>, replacing equation <m>i</m> with the result (here <m>i\neq j</m>).  Notation: <m>R_i \mathrel{\pm}= cR_j</m>.
+              <me>
+                \def\r{\textcolor{seq-red}}
+                \syseq{
+                  x_1 + 2x_2 + 3x_3 = 6;
+                  3x_1 + x_2 - x_3 = -2;
+                  2x_1 - 3x_2 + 2x_3 = 14
+                } \quad\xrightarrow{R_3\minuseq 2R_1}\quad
+                \syseq{
+                  x_1 + 2x_2 + 3x_3 = 6;
+                  3x_1 + x_2 - x_3 = -2;
+                  \. \mathbin{\r-} \r{7x_2} \mathbin{\r-} \r{4x_3}, \mathbin{\r=} \r2\rlap.
+                }
+              </me>
+            </li>
+            <li>
+              <alert>Row Swap:</alert> We can interchange equations <m>i</m> and <m>j</m>.  Notation: <m>R_i \longleftrightarrow R_j</m>.
+              <me>
+                \def\r{\textcolor{seq-red}}
+                \syseq{
+                  x_1 + 2x_2 + 3x_3 = 6;
+                  3x_1 + x_2 - x_3 = -2;
+                  2x_1 - 3x_2 + 2x_3 = 14;
+                } \quad\xrightarrow{R_1\longleftrightarrow R_2}\quad
+                \syseq{
+                  \r{3x_1} \mathbin{\r+} \r{x_2} \mathbin{\r-} \r{x_3} \mathbin{\r=} \r{-2};
+                  \r{x_1} \mathbin{\r+} \r{2x_2} \mathbin{\r+} \r{3x_3} \mathbin{\r=} \r6;
+                  2x_1 - 3x_2 + 2x_3 = 14\rlap.
+                }
+              </me>
+            </li>
+            <li>
+              <alert>Row Scaling:</alert> We can multiply both sides of an equation by a nonzero scalar <m>c</m>.  Notation: <m>R_i \timeseq c</m> or <m>R_i \diveq c</m>.
+              <me>
+                \def\r{\textcolor{seq-red}}
+                \syseq{
+                  x_1 + 2x_2 + 3x_3 = 6;
+                  3x_1 + x_2 - x_3 = -2;
+                  2x_1 - 3x_2 + 2x_3 = 14
+                } \quad\xrightarrow{R_1\timeseq 2}\quad
+                \syseq{
+                  \r{2x_1} \mathbin{\r+} \r{4x_2} \mathbin{\r+} \r{6x_3} \mathbin{\r=} \r{12};
+                  3x_1 + x_2 - x_3 = -2;
+                  2x_1 - 3x_2 + 2x_3 = 14\rlap.
+                }
+              </me>
+            </li>
+          </ul>
+        </p>
+      </statement>
+    </definition>
+
+    <p>
+      If <m>(x_1,x_2,x_3)</m> is a solution of a system of equations, then it remains a solution after performing a row operation on that system.  For instance, we saw that <m>(x_1,x_2,x_3) = (1,-2,3)</m> is a solution of the system of equations
+      <me>
+        \syseq{
+          x_1 + 2x_2 + 3x_3 = 6;
+          3x_1 + x_2 - x_3 = -2;
+          2x_1 - 3x_2 + 2x_3 = 14\rlap.
+        }
+      </me>
+      This means that, after substituting <m>(x_1,x_2,x_3) = (1,-2,3)</m> into these equations, we obtain the equalities
+      <me>
+        \syseq{6 = 6; -2 = -2; 14 = 14\rlap.}
+      </me>
+      If we perform the row operation <m>R_3\minuseq 2R_1</m> on this system, then
+      <me>
+        \syseq{
+          x_1 + 2x_2 + 3x_3 = 6;
+          3x_1 + x_2 - x_3 = -2;
+          2x_1 - 3x_2 + 2x_3 = 14
+        } \quad\xrightarrow{R_3\minuseq 2R_1}\quad
+        \syseq{
+          x_1 + 2x_2 + 3x_3 = 6;
+          3x_1 + x_2 - x_3 = -2;
+          \. - 7x_2 - 4x_3 = 2\rlap.
+        }
+      </me>
+      becomes
+      <me>
+        \syseq{6 = 6; -2 = -2; 14 = 14}
+        \quad\xrightarrow{R_3\minuseq 2R_1}\quad
+        \syseq{6 = 6; -2 = -2; 2 = 2}
+      </me>
+      after substituting the values of the variables.  In other words, <m>(x_1,x_2,x_3) = (1,-2,3)</m> is a solution of the new system as well.
+    </p>
+
+    <note hide-type="true">
+      <title>Fact</title>
+      <p>
+        All three row operations are <em>reversible</em>.
+        <ul>
+          <li>
+            <m>R_i\minuseq R_j</m> undoes <m>R_i\pluseq R_j</m>.
+          </li>
+          <li>
+            <m>R_i\longleftrightarrow R_j</m> undoes itself.
+          </li>
+          <li>
+            <m>R_i\diveq c</m> undoes <m>R_i\timeseq c</m> (recall that <m>c\neq 0</m>).
+          </li>
+        </ul>
+      </p>
+    </note>
+
+    <p>
+      It follows from reversibility that if <m>(x_1,x_2,x_3)</m> is a solution of a system of equations <em>after</em> performing a row operation, then it is also a solution <em>before</em> performing the row operation.  In other words:
+    </p>
+
+    <proposition>
+      <statement>
+        <p>
+          Performing a row operation on a system of equations does not change its solution set.
+        </p>
+      </statement>
+    </proposition>
+
+    <p>
+      Of course, this is the whole point: in order to solve a system of equations, we use row operations to change it into a simpler system <em>with the same solutions</em>.  In diagram form:
+        <latex-code>
+            <![CDATA[
+    \begin{tikzpicture}
+      \node[align=center] (A) at (0,0) {system\\of\\equations};
+      \draw[thick] (A.south west) to[bend left=30, looseness=0.5] (A.north west);
+      \draw[thick] (A.south east) to[bend right=30, looseness=0.5] (A.north east);
+      \node[align=center, right=4cm of A] (B) {(simpler)\\system\\of\\equations};
+      \draw[thick] (B.south west) to[bend left=30, looseness=0.5] (B.north west);
+      \draw[thick] (B.south east) to[bend right=30, looseness=0.5] (B.north east);
+      \draw[thick, shorten=5mm, ->] (A.east) to["row", "operations"'] (B.west);
+      \coordinate (C) at ($(A.south) - (0,1.2cm)$);
+      \draw[very thick, seq-orange, <-] (A.south) -- (C);
+      \draw[very thick, seq-orange, ->] (C) to["SAME", "SOLUTIONS"'] (C -| B.south) -- (B.south);
+    \end{tikzpicture}
+            ]]>
+        </latex-code>
+    </p>
+
+  </subsection>
+
+  <subsection>
+    <title>From Systems of Equations to Matrices</title>
+
+    <p>
+      When performing row operations on a system of equations like
+      <me>
+        \syseq{
+          x_1 + 2x_2 + 3x_3 = 6;
+          3x_1 + x_2 - x_3 = -2;
+          2x_1 - 3x_2 + 2x_3 = 14{\rlap,}
+        }
+      </me>
+      only the <em>coefficients</em> of the unknowns change; the variables themselves stay exactly where they are.  In that sense, the variables are just placeholders, so it is more efficient to extract the numbers from the system and put them in a box, like so:
+      <me>
+        \amat{
+          1 2 3 6;
+          3 1 -1 -2;
+          2 -3 2 14
+        }.
+      </me>
+      Moreover, it is easy for a computer to understand a box full of numbers (a two-dimensional array of floating point values), whereas the concept of an <q>unknown</q> or a <q>solution</q> is much more abstract.  For these reasons, we will rewrite our equations using matrices.
+    </p>
+
+    <definition hide-type="true">
+      <title>Three Ways to Write a System of Equations</title>
+      <idx><h>Matrix equation</h></idx>
+      <idx><h>Coefficient matrix</h></idx>
+      <idx><h>Augmented matrix</h></idx>
+      <statement>
+        <p>
+          We can write a system of equations in the following equivalent ways.
+          <ul>
+            <li>
+              As a <term>system of equations</term>:
+              <me>
+                \def\r{\textcolor{seq-red}}
+                \syseq{
+                  \r1x_1 + \r2x_2 + \r3x_3 = \r6;
+                  \r3x_1 + \r1x_2 \mathbin{\r-} \r1x_3 = \r{-2}{\rlap.}
+                }
+              </me>
+            </li>
+            <li>
+              As a <term>matrix equation</term> <m>Ax=b</m>:
+              <me>
+                \def\r{\textcolor{seq-red}}
+                \mat{
+                  \r1 \r2 \r3;
+                  \r3 \r1 \r{-1}
+                }\vec{x_1 x_2 x_3} = \vec{\r6 \r{-2}}.
+              </me>
+              The matrix
+              <me> A = \mat{1 2 3; 3 1 -1} </me>
+              is called the <term>coefficient matrix</term>: it holds the <em>coefficients</em> of the unknowns in the system of equations.  The vector <m>x=(x_1,x_2,x_3)</m> contains the unknowns, and the vector <m>b=(6,-2)</m> contains the constants on the right side of the equation.
+            </li>
+            <li>
+              As an <term>augmented matrix</term> <m>\amat{A b}</m>:
+              <me>
+                \def\r{\textcolor{seq-red}}
+                \amat{
+                  \r1 \r2 \r3 \r6;
+                  \r3 \r1 \r{-1} \r{-2}
+                }.
+              </me>
+              This is a notational convenience: it is a matrix formed by joining the coefficient matrix <m>A</m> and the constant vector <m>b</m> together with a line between them.
+            </li>
+          </ul>
+        </p>
+      </statement>
+    </definition>
+
+    <p>
+      Expanding out the matrix-vector product <m>Ax</m> in <m>Ax=b</m> yields
+      <me>
+        \mat{
+          1 2 3;
+          3 1 {-1}
+        }\vec{x_1 x_2 x_3} = \vec{6 {-2}}
+        \quad\xrightarrow{\text{becomes}}\quad
+        \vec{
+          1x_1+2x_2+3x_3
+          3x_1+1x_2-1x_3
+        } = \vec{6 -2}.
+      </me>
+      Since two vectors are <xref ref="vector-equality-defn" text="title">equal</xref> if and only if they have the same size and the same coordinates, this is equivalent to the original system of equations
+      <me>
+        \syseq{
+          x_1 + 2x_2 + 3x_3 = 6;
+          3x_1 + x_2 - x_3 = -2\rlap.
+        }
+      </me>
+    </p>
+
+    <p>
+      When writing a system of equations as a matrix equation <m>Ax=b</m>:
+      <me>
+        \syseq{x_1 + 2x_2 + 3x_3 = 6; 3x_1 + x_2 - x_3 = -2}
+        \quad\xrightarrow{\text{becomes}}\quad
+        \mat{
+          1 2 3;
+          3 1 {-1}
+        }\vec{x_1 x_2 x_3} = \vec{6 {-2}},
+      </me>
+      the coefficient matrix <m>A</m> has 2 rows and 3 columns, the constant vector <m>b</m> has size 2, and the unknown vector <m>x</m> has size 3.  Each row of <m>A</m> (resp. coordinate of <m>b</m>) comes from the left (resp. right) side of one of the equations we started with, and each column of <m>A</m> and coordinate of <m>x</m> comes from one of the unknowns.
+    </p>
+
+    <bluebox>
+      <title>The Sizes in a Matrix Equation</title>
+      <p>
+        <latex-code mode="bare">
+          \def\r{\textcolor{seq-red}}
+          \def\b{\textcolor{seq-blue}}
+        </latex-code>
+        In the matrix equation <m>Ax=b</m>, the matrix <m>A</m> has size <m>\r m\times\b n</m>, the unknown vector <m>x</m> has size <m>\b n</m>, and the constant vector <m>b</m> has size <m>\r m</m>, where:
+        <ul>
+          <li>
+            <m>\textcolor{seq-red}m</m> is the <em>number of equations</em>, and
+          </li>
+          <li>
+            <m>\textcolor{seq-blue}n</m> is the <em>number of unknowns</em>.
+          </li>
+        </ul>
+      </p>
+    </bluebox>
+
+    <p>
+      Since row operations really only act on the coefficients of the variables and on the constants in a system of equations, augmented matrices are well-suited to performing row operations, both by hand and by computer.  In terms of augmented matrices, the row operations become:
+    </p>
+
+    <definition>
+      <title>Row Operations: Augmented Matrix Form</title>
+      <idx><h>Row operations</h><h>definition of</h></idx>
+      <idx><h>Row replacement</h></idx>
+      <statement>
+        <p>
+          The following three operations on an augmented matrix are called <term>row operations</term>.
+          <ul>
+            <li>
+              <alert>Row Replacement:</alert> We can add a multiple of row <m>j</m> to row <m>i</m>, replacing row <m>i</m> with the result.
+              <me>
+                \def\r{\textcolor{seq-red}}
+                \amat{1 2 3 6; 3 1 -1 -2; 2 -3 2 14}
+                \quad\xrightarrow{R_3\minuseq 2R_1}\quad
+                \amat{1 2 3 6; 3 1 -1 -2; \r0 \r{-7} \r{-4} \r2}.
+              </me>
+            </li>
+            <li>
+              <alert>Row Swap:</alert> We can interchange two rows.
+              <me>
+                \def\r{\textcolor{seq-red}}
+                \amat{1 2 3 6; 3 1 -1 -2; 2 -3 2 14}
+                \quad\xrightarrow{R_1\longleftrightarrow R_2}\quad
+                \amat{\r3 \r1 \r{-1} \r{-2}; \r1 \r2 \r3 \r6; 2 -3 2 14}.
+              </me>
+            </li>
+            <li>
+              <alert>Row Scaling:</alert> We can multiply a row by a nonzero scalar.
+              <me>
+                \def\r{\textcolor{seq-red}}
+                \amat{1 2 3 6; 3 1 -1 -2; 2 -3 2 14}
+                \quad\xrightarrow{R_1\timeseq 2}\quad
+                \amat{\r2 \r4 \r6 \r{12}; 3 1 -1 -2; 2 -3 2 14}.
+              </me>
+            </li>
+          </ul>
+        </p>
+      </statement>
+    </definition>
+
+    <p>
+      Eliminating a variable from an equation now corresponds to generating a zero entry in an augmented matrix.  For example,
+      <me>
+        \syseq{
+          x_1 + 2x_2 + 3x_3 = 6;
+          3x_1 + x_2 - x_3 = -2;
+          2x_1 - 3x_2 + 2x_3 = 14\rlap.
+        } \quad\xrightarrow{R_2 \minuseq 3R_1}\quad
+        \syseq{
+          x_1 + 2x_2 + 3x_3 = 6;
+          \. - 5x_2 - 10x_3 = -20;
+          2x_1 - 3x_2 + 2x_3 = 14\rlap.
+        }
+      </me>
+      becomes
+      <me>
+        \amat{
+          1 2 3 6;
+          3 1 -1 -2;
+          2 -3 2 14
+        } \quad\xrightarrow{R_2 \minuseq 3R_1}\quad
+        \amat{
+          1 2 3 6;
+          \textcolor{seq-red}0 -5 -10 -20;
+          2 -3 2 14
+        }.
+      </me>
+      With this in mind, we can perform elimination on augmented matrices exactly as on systems of equations.
+    </p>
+
+    <example xml:id="elimination-eg-1-amat">
+      <p>
+        Let us solve the system of equations <xref ref="elimination-eg-1"/> again, this time using row operations on augmented matrices.  First we translate the system into an augmented matrix:
+        <me>
+          \syseq{
+            x_1 + 2x_2 + 3x_3 = 6;
+            3x_1 + x_2 - x_3 = -2;
+            2x_1 - 3x_2 + 2x_3 = 14
+          }\quad\xrightarrow{\text{becomes}}\quad
+          \amat{
+            1 2 3 6;
+            3 1 -1 -2;
+            2 -3 2 14
+          }.
+        </me>
+        We eliminate <m>x_1</m> from the second and third equations:
+        <me>
+          \amat{
+            1 2 3 6;
+            3 1 -1 -2;
+            2 -3 2 14
+          } \quad\xrightarrow[R_3\minuseq 2R_1]{R_2\minuseq 3R_1}\quad
+          \amat{
+            1 2 3 6;
+            \textcolor{seq-red}0 -5 -10 -20;
+            \textcolor{seq-red}0 -7 -4 2
+          }.
+        </me>
+        Now we eliminate <m>x_2</m> from the third equation:
+        <me>
+          \amat{
+            1 2 3 6;
+            0 -5 -10 -20;
+            0 -7 -4 2
+          } \quad\xrightarrow{R_3\minuseq\frac57 R_2}\quad
+          \amat{
+            1 2 3 6;
+            0 -5 -10 -20;
+            0 \textcolor{seq-red}0 10 30
+          }.
+        </me>
+        The elimination procedure has now finished.  We translate our augmented matrix back into a system of equations:
+        <me>
+          \amat{
+            1 2 3 6;
+            0 -5 -10 -20;
+            0 0 10 30
+          }\quad\xrightarrow{\text{becomes}}\quad
+          \syseq{
+            x_1 + 2x_2 + 3x_3 = 6;
+            \. - 5x_2 - 10x_3 = -20;
+            \. \+ \. \+ 10x_3 = 30
+          }
+        </me>
+        and solve this system using back-substitution as before.
+      </p>
+    </example>
+
+  </subsection>
+
+  <subsection>
+    <title>Row Echelon Form and Pivots</title>
+
+    <p>
+      Before discussing the algorithm for performing elimination in <xref ref="gauss-jordan"/>, it is instructive to introduce the kind of matrices this algorithm produces.  In other words, we now answer the question, <q>what does it mean for elimination to be <em>done?</em></q>
+    </p>
+
+    <definition>
+      <idx><h>Row echelon form</h></idx>
+      <statement>
+        <p>A matrix is in <term>row echelon form</term> or <term>REF</term> if:
+        <ol>
+          <li>The first nonzero entry of a row is to the <em>right</em> of the first nonzero entry of the row above.</li>
+          <li>All zero rows are at the bottom.</li>
+        </ol>
+        </p>
+      </statement>
+    </definition>
+
+    <p>
+      Here is a picture of a matrix in row echelon form:
+      <me>
+        \def\r{\color{seq-red}}
+        \mat[c]{
+          \r\boxed\star,  \star,  \star,  \star,  \star ;
+          0  \r\boxed\star,  \star,  \star,  \star ;
+          0  0  0  \r\boxed\star, \star ;
+          0 0 0 0 0}\qquad
+        \begin{aligned}
+          \star &amp;= \text{any number} \\
+          \r\boxed\star &amp;= \text{any nonzero number}
+        \end{aligned}
+      </me>
+      Note that a matrix in REF need not have any zero rows<mdash/>just that if there are zero rows, they must come after all nonzero rows.  This condition is by convention and is secondary to the first condition.
+    </p>
+
+    <p>
+      The first condition translates into the statement <q>elimination has terminated</q>.  For example, the following matrix is not in REF because the first nonzero entry of the third row is not to the right of the first nonzero entry of the second:
+      <me>
+        \amat{
+          1 2 3 6;
+          0 \color{seq-red}-5 -10 -20;
+          0 \color{seq-red}-7 -4 2
+        }.
+      </me>
+      This just means that we can eliminate <m>x_3</m> from the third equation using the second:
+      <me>
+        \amat{
+          1 2 3 6;
+          0 -5 -10 -20;
+          0 -7 -4 2
+        } \quad\xrightarrow{R_3\minuseq\frac57 R_2}\quad
+        \amat{
+          1 2 3 6;
+          0 -5 -10 -20;
+          0 \textcolor{seq-red}0 10 30
+        }.
+      </me>
+      The matrix on the right <em>is</em> in row echelon form.
+    </p>
+
+    <p>
+      Back-substitution turns out to be much faster computationally than the elimination procedure: most of the <em>work</em> happens when doing elimination.  Since elimination terminates when the matrix is in REF, one should think:
+      <latex-code>
+            <![CDATA[
+\begin{tikzpicture}
+  \node[align=center] (A) {solving a\\system of\\linear equations};
+  \draw[thick] (A.south west) to[bend left=30, looseness=0.5] (A.north west);
+  \draw[thick] (A.south east) to[bend right=30, looseness=0.5] (A.north east);
+  \node[align=center, right=3cm of A] (B) {putting an\\augmented matrix\\into REF using\\row operations};
+  \draw[thick] (B.south west) to[bend left=30, looseness=0.5] (B.north west);
+  \draw[thick] (B.south east) to[bend right=30, looseness=0.5] (B.north east);
+  \draw[shorten=1em] (A.east) -- (B.west);
+  \draw[shorten=1em] ($(A.east) + (0,1mm)$) -- ($(B.west) + (0,1mm)$);
+  \draw[shorten=1em] ($(A.east) - (0,1mm)$) -- ($(B.west) - (0,1mm)$);
+\end{tikzpicture}
+            ]]>
+      </latex-code>
+    </p>
+
+    <example>
+      <p>
+        These matrices are in row echelon form:
+        <me>
+          \def\r{\color{seq-red}}
+          \mat{\r1 2 -1 4; 0 0 \r-3 12}
+          \qquad
+          \mat{\r1 2 3 6; 0 \r-5 -10 -20; 0 0 \r10 30}.
+        </me>
+        These matrices are not in row echelon form:
+        <me>
+          \def\r{\color{seq-red}}
+          \mat{1 2 -1 4; \r2 0 1 0}
+          \qquad
+          \amat{1 2 3 6; \r0 \r0 \r0 \r0; 0 0 1 0}.
+        </me>
+      </p>
+    </example>
+
+    <p>
+      The first nonzero entry in each row of a matrix in REF will tell us many important properties of the matrix.
+    </p>
+
+    <definition>
+      <idx><h>Pivot</h></idx>
+      <idx><h>Pivot position</h></idx>
+      <idx><h>Rank</h></idx>
+      <idx><h>Matrix</h><h>rank of</h></idx>
+      <statement>
+        <p>
+          The <term>pivot positions</term> or <term>pivots</term> of a matrix are the positions of the first nonzero entries of each row <em>after</em> putting the matrix into row echelon form using row operations.
+        </p>
+        <p>
+          The <term>rank</term> of a matrix is the number of pivot positions.
+        </p>
+      </statement>
+    </definition>
+
+    <p>
+      It is not clear that this definition makes sense: different sequences of row operations can produce <em>different</em> row echelon forms of the same matrix.  However, it turns out that all row echelon forms of a matrix have the <em>same pivot positions</em>.
+    </p>
+
+    <specialcase>
+      <p>
+        Consider the matrix and its row echelon form from this <xref ref="elimination-eg-1-amat"/>:
+        <me>
+          \def\r{\color{seq-red}}
+          \mat{
+            1 2 3 6;
+            3 1 -1 -2;
+            2 -3 2 14
+          } \quad\xrightarrow{\text{REF}}\quad
+          \mat{
+            \r1 2 3 6;
+            0 \r-5 -10 -20;
+            0 0 \r10 30
+          }.
+        </me>
+        The pivot positions (of either matrix) are <m>(1,1),\,(2,2),</m> and <m>(3,3)</m>, so the matrix has rank 3.
+      </p>
+      <p>
+        Now consider the matrix and its row echelon form from this <xref ref="elimination-no-solns"/>:
+        <me>
+          \def\r{\color{seq-red}}
+          \amat{1 2 3 1; 4 5 6 1; 7 8 9 2}
+          \quad\xrightarrow{\text{REF}}\quad
+          \amat{\r1 2 3 1; 0 \r-3 -6 -3; 0 0 0 \r1}.
+        </me>
+        The pivot positions are <m>(1,1),\,(2,2)</m>, and <m>(3,4)</m>, so this matrix again has rank 3.
+      </p>
+      <p>
+        Finally, consider the matrix and its row echelon form from this <xref ref="elimination-infty-solns"/>:
+        <me>
+          \def\r{\color{seq-red}}
+          \mat{1 2 3 1; 4 5 6 1; 7 8 9 1}
+          \quad\xrightarrow{\text{REF}}\quad
+          \mat{\r1 2 3 1; 0 \r-3 -6 -3; 0 0 0 0}.
+        </me>
+        The pivot positions are <m>(1,1)</m> and <m>(2,2)</m>, so the rank is 2.
+      </p>
+    </specialcase>
+
+    <p>
+      In the second example above, an augmented matrix had a pivot in the augmented column. It is important to note that when discussing row echelon forms and pivots of an augmented matrix, we ignore the augmentation line and treat it as an un-augmented matrix.
+    </p>
+
+    <bluebox>
+      <p>When deciding if an augmented matrix is in row echelon form and when computing the pivots of an augmented matrix, there is nothing special about the augmented column(s).  Just ignore the vertical line.</p>
+    </bluebox>
+
+    <p>
+      By definition, only the <em>first</em> nonzero entry of a row can be a pivot.  Moreover, all pivots of previous rows have to be to the <em>left</em>, and all pivots of subsequent rows must be to the <em>right</em>.  It follows that each row and each column can have at most one pivot.
+    </p>
+
+    <bluebox>
+      <p>
+        Each row and each column of a matrix has <em>at most one pivot</em>.
+      </p>
+    </bluebox>
+
+  </subsection>
+
+  <subsection>
+    <title>Number of Solutions</title>
+
+    <p>
+      The most basic question one can ask about a system of equations is: <em>how many solutions does it have?</em>  This is entirely determined by the pivot positions of the associated augmented matrix.
+    </p>
+
+    <p>
+      Consider the matrix and its row echelon form from this <xref ref="elimination-eg-1-amat"/>:
+      <me>
+        \def\r{\color{seq-red}}
+        \amat{
+          1 2 3 6;
+          3 1 -1 -2;
+          2 -3 2 14
+        } \quad\xrightarrow{\text{REF}}\quad
+        \amat{
+          \r1 2 3 6;
+          0 \r-5 -10 -20;
+          0 0 \r10 30
+        }.
+      </me>
+      The row echelon form translates into the system of equations
+      <me>
+        \def\r{\textcolor{seq-red}}
+        \syseq{
+          \r1x_1 + 2x_2 + 3x_3 = 6;
+          \. \mathbin{\r-} \r5x_2 - 10x_3 = -20;
+          \. \+ \. \+ \r{10}x_3 = 30\rlap.
+        }
+      </me>
+      Since there is a pivot position for each variable, it is possible to <em>isolate</em> each variable in turn when performing back-substitution.  Namely, the <m>(3,3)</m> pivot corresponds to an equation in which <m>x_3</m> is isolated; after substituting <m>x_3=3</m> into the second equation, the <m>(2,2)</m> pivot corresponds to an equation in which <m>x_2</m> is isolated; after substituting <m>x_2=-2</m> and <m>x_3=3</m> into the first equation, the <m>(1,1)</m> pivot corresponds to an equation in which <m>x_1</m> is isolated.  In particular, this system of equations has <em>exactly one</em> solution.
+    </p>
+
+    <p>
+      Now consider the matrix and its row echelon form from this <xref ref="elimination-infty-solns"/>:
+      <me>
+        \def\r{\color{seq-red}}
+        \amat{1 2 3 1; 4 5 6 1; 7 8 9 1}
+        \quad\xrightarrow{\text{REF}}\quad
+        \amat{\r1 2 3 1; 0 \r-3 -6 -3; 0 0 0 0}.
+      </me>
+      The row echelon form translates into the system of equations
+      <me>
+        \def\r{\textcolor{seq-red}}
+        \syseq{
+          \r1x_1 + 2x_2 + 3x_3 = 1;
+          \. \mathbin{\r-} \r3x_2 - 6x_3 = -3;
+         \. \+ \. \+ 0 = 0\rlap.
+        }
+      </me>
+      There is no equation in which we can isolate <m>x_3</m>; this is due to the lack of a pivot position for that variable.  Hence we can choose any value for <m>x_3</m>, so this system has <em>infinitely many</em> solutions.
+    </p>
+
+    <p>
+      Finally, consider the matrix and its row echelon form from this <xref ref="elimination-no-solns"/>:
+      <me>
+        \def\r{\color{seq-red}}
+        \amat{1 2 3 1; 4 5 6 1; 7 8 9 2}
+        \quad\xrightarrow{\text{REF}}\quad
+        \amat{\r1 2 3 1; 0 \r-3 -6 -3; 0 0 0 \r1}.
+      </me>
+      The row echelon form translates into the system of equations
+      <me>
+        \def\r{\textcolor{seq-red}}
+        \syseq{
+          \r1x_1 + 2x_2 + 3x_3 = 1;
+          \. \mathbin{\r-} \r3x_2 - 6x_3 = -3;
+         \. \+ \. \+ 0 = \r1\rlap.
+        }
+      </me>
+      The equation <m>0=1</m> comes from the fact that there is a pivot in the augmented column: indeed, if the first nonzero entry of a row of an augmented matrix is the last entry, then in the corresponding equation, the left side is zero and the right side is nonzero.  This system has <em>no solutions</em>.
+    </p>
+
+    <p>
+      In the above discussion, what was important was whether there was a pivot attached to a <em>variable</em> or a <em>constant</em>.  This is a question about which <em>columns</em> contain pivots.
+    </p>
+
+    <definition>
+      <idx><h>Pivot column</h></idx>
+      <statement>
+        <p>
+          The <term>pivot columns</term> of a matrix are the columns containing pivot positions.
+        </p>
+      </statement>
+    </definition>
+
+    <note hide-type="true" xml:id="number-of-solutions">
+      <title>Fact</title>
+      <idx><h>System of linear equations</h><h>number of solutions of</h></idx>
+      <p>
+        Consider the augmented matrix for a system of linear equations.
+        <ul>
+          <li>
+            If every column except the augmented column is a pivot column, then the system has <alert>one solution</alert>.
+            <latex-code>
+          <![CDATA[
+\begin{tikzpicture}[baseline]
+  \matrix[math matrix, nodes={left, inner sep=0}] (aij)
+    {
+      1 \& 2 \& 3 \& 6 \\
+      0 \& -5 \& 10 \& -20 \\
+      0 \& 0 \& 10 \& 30 \\
+    };
+  \draw ($(aij-1-3.north east) + (1.5mm,0)$)
+    -- ($(aij-3-3.south east) + (1.5mm,0)$);
+
+  \begin{scope}[on background layer, rounded corners=5pt]
+    \fill[seq-red, fill opacity=0.3]
+      ($(aij-1-1.north west) + (-2pt,2pt)$) rectangle
+      ($(aij-3-1.south east) + (2pt,-2pt)$);
+    \coordinate (c2left) at ($(aij-1-2.north west) + (-2pt,2pt)$);
+    \fill[seq-red, fill opacity=0.3]
+      (c2left -| aij-2-2.west) rectangle
+      ($(aij-3-2.south east) + (2pt,-2pt)$);
+    \fill[seq-red, fill opacity=0.3]
+      ($(aij-1-3.north east) + (2pt,2pt)$) rectangle
+      ($(aij-3-3.south west) + (-2pt,-2pt)$);
+    \coordinate (c4left) at ($(aij-1-2.north west) + (-2pt,2pt)$);
+    \fill[seq-green, fill opacity=0.3]
+      (c4left -| aij-2-4.west) rectangle
+      ($(aij-3-4.south east) + (2pt,-2pt)$);
+    \end{scope}
+
+  \node[right=1cm of aij-2-4.east, fill=seq-red, circle, opacity=0.3, yshift=3mm] (R) {};
+  \node[right=0mm of R] {$=$ pivot column};
+  \node[right=1cm of aij-2-4.east, fill=seq-green, circle, opacity=0.3, yshift=-3mm] (G) {};
+  \node[right=0mm of G] {$=$ not a pivot column};
+
+\end{tikzpicture}
+          ]]>
+            </latex-code>
+          </li>
+          <li>
+            If there is no pivot in the augmented column and in some other column, then the system has <alert>infinitely many solutions</alert>.
+            <latex-code>
+          <![CDATA[
+\begin{tikzpicture}[baseline]
+  \matrix[math matrix, nodes={left, inner sep=0}] (aij)
+    {
+      1 \& 2 \& 3 \& 1 \\
+      0 \& -3 \& -6 \& -3 \\
+      0 \& 0 \& 0 \& 0 \\
+    };
+  \draw ($(aij-1-3.north east) + (1.5mm,0)$)
+    -- ($(aij-3-3.south east) + (1.5mm,0)$);
+
+  \begin{scope}[on background layer, rounded corners=5pt]
+    \fill[seq-red, fill opacity=0.3]
+      ($(aij-1-1.north west) + (-2pt,2pt)$) rectangle
+      ($(aij-3-1.south east) + (2pt,-2pt)$);
+    \coordinate (c2left) at ($(aij-1-2.north west) + (-2pt,2pt)$);
+    \fill[seq-red, fill opacity=0.3]
+      (c2left -| aij-2-2.west) rectangle
+      ($(aij-3-2.south east) + (2pt,-2pt)$);
+    \coordinate (c3left) at ($(aij-1-3.north west) + (-2pt,2pt)$);
+    \fill[seq-green, fill opacity=0.3]
+      (c3left -| aij-2-3.west) rectangle
+      ($(aij-3-3.south east) + (2pt,-2pt)$);
+    \coordinate (c4left) at ($(aij-1-2.north west) + (-2pt,2pt)$);
+    \fill[seq-green, fill opacity=0.3]
+      (c4left -| aij-2-4.west) rectangle
+      ($(aij-3-4.south east) + (2pt,-2pt)$);
+    \end{scope}
+
+  \node[right=1cm of aij-2-4.east, fill=seq-red, circle, opacity=0.3, yshift=3mm] (R) {};
+  \node[right=0mm of R] {$=$ pivot column};
+  \node[right=1cm of aij-2-4.east, fill=seq-green, circle, opacity=0.3, yshift=-3mm] (G) {};
+  \node[right=0mm of G] {$=$ not a pivot column};
+
+\end{tikzpicture}
+          ]]>
+            </latex-code>
+          </li>
+          <li>
+            If the augmented column is a pivot column, then the system has <alert>no solutions</alert>.
+            <latex-code>
+          <![CDATA[
+\begin{tikzpicture}[baseline]
+  \matrix[math matrix, nodes={left, inner sep=0}] (aij)
+    {
+      1 \& 2 \& 3 \& 1 \\
+      0 \& -3 \& -6 \& -3 \\
+      0 \& 0 \& 0 \& 1 \\
+    };
+  \draw ($(aij-1-3.north east) + (1.5mm,0)$)
+    -- ($(aij-3-3.south east) + (1.5mm,0)$);
+
+  \begin{scope}[on background layer, rounded corners=5pt]
+    \fill[seq-red, fill opacity=0.3]
+      ($(aij-1-1.north west) + (-2pt,2pt)$) rectangle
+      ($(aij-3-1.south east) + (2pt,-2pt)$);
+    \coordinate (c2left) at ($(aij-1-2.north west) + (-2pt,2pt)$);
+    \fill[seq-red, fill opacity=0.3]
+      (c2left -| aij-2-2.west) rectangle
+      ($(aij-3-2.south east) + (2pt,-2pt)$);
+    \coordinate (c3left) at ($(aij-1-3.north west) + (-2pt,2pt)$);
+    \fill[seq-green, fill opacity=0.3]
+      (c3left -| aij-2-3.west) rectangle
+      ($(aij-3-3.south east) + (2pt,-2pt)$);
+    \coordinate (c4left) at ($(aij-1-2.north west) + (-2pt,2pt)$);
+    \fill[seq-red, fill opacity=0.3]
+      (c4left -| aij-2-4.west) rectangle
+      ($(aij-3-4.south east) + (2pt,-2pt)$);
+    \end{scope}
+
+  \node[right=1cm of aij-2-4.east, fill=seq-red, circle, opacity=0.3, yshift=3mm] (R) {};
+  \node[right=0mm of R] {$=$ pivot column};
+  \node[right=1cm of aij-2-4.east, fill=seq-green, circle, opacity=0.3, yshift=-3mm] (G) {};
+  \node[right=0mm of G] {$=$ not a pivot column};
+
+\end{tikzpicture}
+          ]]>
+            </latex-code>
+          </li>
+        </ul>
+      </p>
+    </note>
+
+    <p>
+      Note that it is necessary to perform elimination to find the pivot columns of a matrix, so determining the number of solutions of a system still takes work.
+    </p>
+
+    <p>
+      Recall from this <xref ref="defn-inconsistent"/> that a system of equations is called <em>consistent</em> if it has at least one solution.  As we saw in the <xref ref="number-of-solutions">fact</xref> above, if a system of equations is consistent, then it has exactly one or infinitely many solutions.  In particular, it cannot have 2 solutions, or 24.
+    </p>
+
+  </subsection>
 
 </section>

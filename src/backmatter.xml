@@ -27,9 +27,20 @@ the license is included in gfdl.xml.
 
       <p>Concepts</p>
 
-      <!-- <concept-library> -->
-
-      <!-- </concept-library> -->
+      <concept-library>
+        <concept tag="concept-library">
+          <desc>This concept library.</desc>
+        </concept>
+        <concept tag="linear-eqn">
+          <desc>What it means for an equation to be <em>linear</em>.</desc>
+        </concept>
+        <concept tag="solution-set">
+          <desc>The set of all solutions of a system of equations.</desc>
+        </concept>
+        <concept tag="inconsistent">
+          <desc>When a system of equations has no solutions.</desc>
+        </concept>
+      </concept-library>
 
     </appendix>
 

@@ -16,7 +16,7 @@ the license is included in gfdl.xml.
     <ol>
       <li>Learn what a system of linear equations is, and what its solutions are.</li>
       <li><em>Picture:</em> solutions of systems of linear equations.</li>
-      <li><em>Vocabulary words:</em> <term>consistent</term>, <term>inconsistent</term>, <term>solution set</term>.</li>
+      <li><em>Vocabulary words:</em> <term>consistent,</term> <term>inconsistent,</term> <term>solution set</term>.</li>
     </ol>
   </objectives>
 
@@ -134,7 +134,7 @@ the license is included in gfdl.xml.
       The most basic question one can ask about a system of equations is whether or not a solution exists.  This property has its own name.
     </p>
 
-    <definition>
+    <definition xml:id="defn-inconsistent">
       <idx><h>System of linear equations</h><h>inconsistent</h></idx>
       <idx><h>System of linear equations</h><h>consistent</h></idx>
       <idx><h>Consistent</h><see>System of linear equations</see></idx>
