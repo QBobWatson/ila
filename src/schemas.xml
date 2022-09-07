@@ -13,9 +13,9 @@
   <uri uri="../mathbook/build/pretext.rnc" resource="elimination.xml"/>
   <uri uri="../mathbook/build/pretext.rnc" resource="frontmatter.xml"/>
   <uri uri="../mathbook/build/pretext.rnc" resource="fundamental-subspaces.xml"/>
+  <uri uri="../mathbook/build/pretext.rnc" resource="gauss-jordan.xml"/>
   <uri uri="../mathbook/build/pretext.rnc" resource="gfdl.xml"/>
   <uri uri="../mathbook/build/pretext.rnc" resource="ila.xml"/>
-  <uri uri="../mathbook/build/pretext.rnc" resource="gauss-jordan.xml"/>
   <uri uri="../mathbook/build/pretext.rnc" resource="least-squares.xml"/>
   <uri uri="../mathbook/build/pretext.rnc" resource="linindep.xml"/>
   <uri uri="../mathbook/build/pretext.rnc" resource="lu-decomposition.xml"/>
@@ -25,6 +25,7 @@
   <uri uri="../mathbook/build/pretext.rnc" resource="ortho-projections.xml"/>
   <uri uri="../mathbook/build/pretext.rnc" resource="overview.xml"/>
   <uri uri="../mathbook/build/pretext.rnc" resource="parametric-form.xml"/>
+  <uri uri="../mathbook/build/pretext.rnc" resource="pivots-solutions.xml"/>
   <uri uri="../mathbook/build/pretext.rnc" resource="pca.xml"/>
   <uri uri="../mathbook/build/pretext.rnc" resource="quadratic-optimization.xml"/>
   <uri uri="../mathbook/build/pretext.rnc" resource="spans.xml"/>

@@ -1,0 +1,340 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--********************************************************************
+Copyright 2022 Dan Margalit and Joseph Rabinoff
+
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version 1.3 or
+any later version published by the Free Software Foundation.  A copy of
+the license is included in gfdl.xml.
+*********************************************************************-->
+
+<section xml:id="pivots-solutions">
+  <title>Pivots and Solutions</title>
+
+  <objectives>
+    <ol>
+      <li>Write the objectives.</li>
+    </ol>
+  </objectives>
+
+  <subsection>
+    <title>Pivots</title>
+
+    <p>
+      The pivots in the (reduced) row echelon form of a matrix will tell us many important properties of the matrix.
+    </p>
+
+    <definition>
+      <idx><h>Pivot</h></idx>
+      <idx><h>Pivot position</h></idx>
+      <idx><h>Rank</h></idx>
+      <idx><h>Matrix</h><h>rank of</h></idx>
+      <statement>
+        <p>
+          The <term>pivot positions</term> or <term>pivots</term> of a matrix are the positions of the first nonzero entries of each row <em>after</em> putting the matrix into row echelon form using row operations.
+        </p>
+        <p>
+          The <term>rank</term> of a matrix is the number of pivot positions.
+        </p>
+      </statement>
+    </definition>
+
+    <p>
+      The difference between this definition and the <xref ref="def-ref"/> is that this definition applies to an arbitrary matrix, not just a matrix in row echelon form.  Said differently: the pivot positions of a matrix are the positions of the pivots of any row echelon form of that matrix (for example, the reduced row echelon form).
+    </p>
+
+    <p>
+      It is not clear a priori that this definition makes sense: different sequences of row operations can produce <em>different</em> row echelon forms of the same matrix.  However, the reduced row echelon form of a matrix is unique by this <xref ref="rref-is-unique"/>, and the reduced row echelon form has the same pivot positions as any row echelon form, so the pivot positions are indeed well-defined.
+    </p>
+
+    <specialcase>
+      <p>
+        Consider the matrix and its row echelon form from this <xref ref="elimination-eg-1-amat"/>:
+        <me>
+          \def\r{\color{seq-red}}
+          \mat{
+            1 2 3 6;
+            3 1 -1 -2;
+            2 -3 2 14
+          } \quad\xrightarrow{\text{REF}}\quad
+          \mat{
+            \r1 2 3 6;
+            0 \r-5 -10 -20;
+            0 0 \r10 30
+          }.
+        </me>
+        The pivot positions (of either matrix) are <m>(1,1),\,(2,2),</m> and <m>(3,3)</m>, so the matrix has rank 3.
+      </p>
+      <p>
+        Now consider the matrix and its row echelon form from this <xref ref="elimination-no-solns"/>:
+        <me>
+          \def\r{\color{seq-red}}
+          \amat{1 2 3 1; 4 5 6 1; 7 8 9 2}
+          \quad\xrightarrow{\text{REF}}\quad
+          \amat{\r1 2 3 1; 0 \r-3 -6 -3; 0 0 0 \r1}.
+        </me>
+        The pivot positions are <m>(1,1),\,(2,2)</m>, and <m>(3,4)</m>, so this matrix again has rank 3.
+      </p>
+      <p>
+        Finally, consider the matrix and its row echelon form from this <xref ref="elimination-infty-solns"/>:
+        <me>
+          \def\r{\color{seq-red}}
+          \mat{1 2 3 1; 4 5 6 1; 7 8 9 1}
+          \quad\xrightarrow{\text{REF}}\quad
+          \mat{\r1 2 3 1; 0 \r-3 -6 -3; 0 0 0 0}.
+        </me>
+        The pivot positions are <m>(1,1)</m> and <m>(2,2)</m>, so the rank is 2.
+      </p>
+    </specialcase>
+
+    <p>
+      In the second example above, an augmented matrix had a pivot in the augmented column. It is important to note that when discussing row echelon forms and pivots of an augmented matrix, we ignore the augmentation line and treat it as an un-augmented matrix.
+    </p>
+
+    <bluebox>
+      <p>When computing the pivots of an augmented matrix, there is nothing special about the augmented column(s).  Just ignore the vertical line.</p>
+    </bluebox>
+
+    <p>
+      By definition, only the <em>first</em> nonzero entry of a row of a matrix in REF can be a pivot.  Moreover, all pivots of previous rows have to be to the <em>left</em>, and all pivots of subsequent rows must be to the <em>right</em>.  It follows that each row and each column can have at most one pivot.
+    </p>
+
+    <bluebox>
+      <p>
+        Each row and each column of a matrix has <em>at most one pivot</em>.  In particular, the rank is less than or equal to the number of rows and the number of columns.
+      </p>
+    </bluebox>
+
+  </subsection>
+
+  <subsection>
+    <title>Number of Solutions</title>
+
+    <p>
+      The most basic question one can ask about a system of equations is: <em>how many solutions does it have?</em>  This is entirely determined by the pivot positions of the associated augmented matrix.
+    </p>
+
+    <p>
+      Consider the matrix and its row echelon form from this <xref ref="elimination-eg-1-amat"/>:
+      <me>
+        \def\r{\color{seq-red}}
+        \amat{
+          1 2 3 6;
+          3 1 -1 -2;
+          2 -3 2 14
+        } \quad\xrightarrow{\text{REF}}\quad
+        \amat{
+          \r1 2 3 6;
+          0 \r-5 -10 -20;
+          0 0 \r10 30
+        }.
+      </me>
+      The row echelon form translates into the system of equations
+      <me>
+        \def\r{\textcolor{seq-red}}
+        \syseq{
+          \r1x_1 + 2x_2 + 3x_3 = 6;
+          \. \mathbin{\r-} \r5x_2 - 10x_3 = -20;
+          \. \+ \. \+ \r{10}x_3 = 30\rlap.
+        }
+      </me>
+      Since there is a pivot position for each variable, it is possible to <em>isolate</em> each variable in turn when performing back-substitution.  Namely, the <m>(3,3)</m> pivot corresponds to an equation in which <m>x_3</m> is isolated; after substituting <m>x_3=3</m> into the second equation, the <m>(2,2)</m> pivot corresponds to an equation in which <m>x_2</m> is isolated; after substituting <m>x_2=-2</m> and <m>x_3=3</m> into the first equation, the <m>(1,1)</m> pivot corresponds to an equation in which <m>x_1</m> is isolated.  In particular, this system of equations has <em>exactly one</em> solution.
+    </p>
+
+    <p>
+      Now consider the matrix and its row echelon form from this <xref ref="elimination-infty-solns"/>:
+      <me>
+        \def\r{\color{seq-red}}
+        \amat{1 2 3 1; 4 5 6 1; 7 8 9 1}
+        \quad\xrightarrow{\text{REF}}\quad
+        \amat{\r1 2 3 1; 0 \r-3 -6 -3; 0 0 0 0}.
+      </me>
+      The row echelon form translates into the system of equations
+      <me>
+        \def\r{\textcolor{seq-red}}
+        \syseq{
+          \r1x_1 + 2x_2 + 3x_3 = 1;
+          \. \mathbin{\r-} \r3x_2 - 6x_3 = -3;
+         \. \+ \. \+ 0 = 0\rlap.
+        }
+      </me>
+      There is no equation in which we can isolate <m>x_3</m>; this is due to the lack of a pivot position for that variable.  Hence we can choose any value for <m>x_3</m>, so this system has <em>infinitely many</em> solutions.
+    </p>
+
+    <p>
+      Finally, consider the matrix and its row echelon form from this <xref ref="elimination-no-solns"/>:
+      <me>
+        \def\r{\color{seq-red}}
+        \amat{1 2 3 1; 4 5 6 1; 7 8 9 2}
+        \quad\xrightarrow{\text{REF}}\quad
+        \amat{\r1 2 3 1; 0 \r-3 -6 -3; 0 0 0 \r1}.
+      </me>
+      The row echelon form translates into the system of equations
+      <me>
+        \def\r{\textcolor{seq-red}}
+        \syseq{
+          \r1x_1 + 2x_2 + 3x_3 = 1;
+          \. \mathbin{\r-} \r3x_2 - 6x_3 = -3;
+         \. \+ \. \+ 0 = \r1\rlap.
+        }
+      </me>
+      The equation <m>0=1</m> comes from the fact that there is a pivot in the augmented column: indeed, if the first nonzero entry of a row of an augmented matrix is the last entry, then in the corresponding equation, the left side is zero and the right side is nonzero.  This system has <em>no solutions</em>.
+    </p>
+
+    <p>
+      In the above discussion, what was important was whether there was a pivot attached to a variable or a constant.  This is a question about which <em>columns</em> contain pivots.
+    </p>
+
+    <definition>
+      <idx><h>Pivot column</h></idx>
+      <statement>
+        <p>
+          The <term>pivot columns</term> of a matrix are the columns containing pivot positions.
+        </p>
+      </statement>
+    </definition>
+
+    <note hide-type="true" xml:id="number-of-solutions">
+      <title>Fact</title>
+      <idx><h>System of linear equations</h><h>number of solutions of</h></idx>
+      <p>
+        Consider the augmented matrix for a system of linear equations.
+        <ul>
+          <li>
+            If every column except the augmented column is a pivot column, then the system has <alert>one solution</alert>.
+            <latex-code>
+          <![CDATA[
+\begin{tikzpicture}[baseline]
+  \matrix[math matrix, nodes={left, inner sep=0}] (aij)
+    {
+      1 \& 2 \& 3 \& 6 \\
+      0 \& -5 \& 10 \& -20 \\
+      0 \& 0 \& 10 \& 30 \\
+    };
+  \draw ($(aij-1-3.north east) + (1.5mm,0)$)
+    -- ($(aij-3-3.south east) + (1.5mm,0)$);
+
+  \begin{scope}[on background layer, rounded corners=5pt]
+    \fill[seq-red, fill opacity=0.3]
+      ($(aij-1-1.north west) + (-2pt,2pt)$) rectangle
+      ($(aij-3-1.south east) + (2pt,-2pt)$);
+    \coordinate (c2left) at ($(aij-1-2.north west) + (-2pt,2pt)$);
+    \fill[seq-red, fill opacity=0.3]
+      (c2left -| aij-2-2.west) rectangle
+      ($(aij-3-2.south east) + (2pt,-2pt)$);
+    \fill[seq-red, fill opacity=0.3]
+      ($(aij-1-3.north east) + (2pt,2pt)$) rectangle
+      ($(aij-3-3.south west) + (-2pt,-2pt)$);
+    \coordinate (c4left) at ($(aij-1-2.north west) + (-2pt,2pt)$);
+    \fill[seq-green, fill opacity=0.3]
+      (c4left -| aij-2-4.west) rectangle
+      ($(aij-3-4.south east) + (2pt,-2pt)$);
+    \end{scope}
+
+  \node[right=1cm of aij-2-4.east, fill=seq-red, circle, opacity=0.3, yshift=3mm] (R) {};
+  \node[right=0mm of R] {$=$ pivot column};
+  \node[right=1cm of aij-2-4.east, fill=seq-green, circle, opacity=0.3, yshift=-3mm] (G) {};
+  \node[right=0mm of G] {$=$ not a pivot column};
+
+\end{tikzpicture}
+          ]]>
+            </latex-code>
+          </li>
+          <li>
+            If the augmented column and a non-augmented column contain no pivot, then the system has <alert>infinitely many solutions</alert>.
+            <latex-code>
+          <![CDATA[
+\begin{tikzpicture}[baseline]
+  \matrix[math matrix, nodes={left, inner sep=0}] (aij)
+    {
+      1 \& 2 \& 3 \& 1 \\
+      0 \& -3 \& -6 \& -3 \\
+      0 \& 0 \& 0 \& 0 \\
+    };
+  \draw ($(aij-1-3.north east) + (1.5mm,0)$)
+    -- ($(aij-3-3.south east) + (1.5mm,0)$);
+
+  \begin{scope}[on background layer, rounded corners=5pt]
+    \fill[seq-red, fill opacity=0.3]
+      ($(aij-1-1.north west) + (-2pt,2pt)$) rectangle
+      ($(aij-3-1.south east) + (2pt,-2pt)$);
+    \coordinate (c2left) at ($(aij-1-2.north west) + (-2pt,2pt)$);
+    \fill[seq-red, fill opacity=0.3]
+      (c2left -| aij-2-2.west) rectangle
+      ($(aij-3-2.south east) + (2pt,-2pt)$);
+    \coordinate (c3left) at ($(aij-1-3.north west) + (-2pt,2pt)$);
+    \fill[seq-green, fill opacity=0.3]
+      (c3left -| aij-2-3.west) rectangle
+      ($(aij-3-3.south east) + (2pt,-2pt)$);
+    \coordinate (c4left) at ($(aij-1-2.north west) + (-2pt,2pt)$);
+    \fill[seq-green, fill opacity=0.3]
+      (c4left -| aij-2-4.west) rectangle
+      ($(aij-3-4.south east) + (2pt,-2pt)$);
+    \end{scope}
+
+  \node[right=1cm of aij-2-4.east, fill=seq-red, circle, opacity=0.3, yshift=3mm] (R) {};
+  \node[right=0mm of R] {$=$ pivot column};
+  \node[right=1cm of aij-2-4.east, fill=seq-green, circle, opacity=0.3, yshift=-3mm] (G) {};
+  \node[right=0mm of G] {$=$ not a pivot column};
+
+\end{tikzpicture}
+          ]]>
+            </latex-code>
+          </li>
+          <li>
+            If the augmented column is a pivot column, then the system has <alert>no solutions</alert>.
+            <latex-code>
+          <![CDATA[
+\begin{tikzpicture}[baseline]
+  \matrix[math matrix, nodes={left, inner sep=0}] (aij)
+    {
+      1 \& 2 \& 3 \& 1 \\
+      0 \& -3 \& -6 \& -3 \\
+      0 \& 0 \& 0 \& 1 \\
+    };
+  \draw ($(aij-1-3.north east) + (1.5mm,0)$)
+    -- ($(aij-3-3.south east) + (1.5mm,0)$);
+
+  \begin{scope}[on background layer, rounded corners=5pt]
+    \fill[seq-red, fill opacity=0.3]
+      ($(aij-1-1.north west) + (-2pt,2pt)$) rectangle
+      ($(aij-3-1.south east) + (2pt,-2pt)$);
+    \coordinate (c2left) at ($(aij-1-2.north west) + (-2pt,2pt)$);
+    \fill[seq-red, fill opacity=0.3]
+      (c2left -| aij-2-2.west) rectangle
+      ($(aij-3-2.south east) + (2pt,-2pt)$);
+    \coordinate (c3left) at ($(aij-1-3.north west) + (-2pt,2pt)$);
+    \fill[seq-green, fill opacity=0.3]
+      (c3left -| aij-2-3.west) rectangle
+      ($(aij-3-3.south east) + (2pt,-2pt)$);
+    \coordinate (c4left) at ($(aij-1-2.north west) + (-2pt,2pt)$);
+    \fill[seq-red, fill opacity=0.3]
+      (c4left -| aij-2-4.west) rectangle
+      ($(aij-3-4.south east) + (2pt,-2pt)$);
+    \end{scope}
+
+  \node[right=1cm of aij-2-4.east, fill=seq-red, circle, opacity=0.3, yshift=3mm] (R) {};
+  \node[right=0mm of R] {$=$ pivot column};
+  \node[right=1cm of aij-2-4.east, fill=seq-green, circle, opacity=0.3, yshift=-3mm] (G) {};
+  \node[right=0mm of G] {$=$ not a pivot column};
+
+\end{tikzpicture}
+          ]]>
+            </latex-code>
+          </li>
+        </ul>
+      </p>
+    </note>
+
+    <p>
+      Note that it is necessary to perform elimination to find the pivot columns of a matrix, so determining the number of solutions of a system still takes work.
+    </p>
+
+    <p>
+      Recall from this <xref ref="defn-inconsistent"/> that a system of equations is called <em>consistent</em> if it has at least one solution.  As we saw in the <xref ref="number-of-solutions">fact</xref> above, if a system of equations is consistent, then it has exactly one or infinitely many solutions.  In particular, it cannot have 2 solutions, or 24.
+    </p>
+
+  </subsection>
+
+</section>

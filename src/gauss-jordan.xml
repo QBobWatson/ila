@@ -10,7 +10,7 @@ the license is included in gfdl.xml.
 *********************************************************************-->
 
 <section xml:id="gauss-jordan">
-  <title>The Gaussian Elimination Algorithm</title>
+  <title>Gaussian Elimination</title>
 
   <objectives>
     <ol>
@@ -18,8 +18,989 @@ the license is included in gfdl.xml.
     </ol>
   </objectives>
 
-  <p>
-    Write the content.
-  </p>
+  <introduction>
+    <p>
+      In this section we formalize the methods from <xref ref="elimination"/>, namely, elimination and back-substitution, into two algorithms: Gaussian elimination and Jordan substitution.  We will touch on the computational complexity of these algorithms, and draw some consequences.
+    </p>
+  </introduction>
+
+  <subsection>
+    <title>Echelon Forms</title>
+
+    <p>
+      Before discussing the algorithms for performing elimination and back-substitution, it is necessary to introduce the kinds of matrices these algorithms produce, i.e., the outputs of the algorithms.  Said differently, we now answer the question: <q>what does it mean for elimination and substitution to be <em>done?</em></q>
+    </p>
+
+    <p>
+      The Gaussian elimination algorithm will output a matrix of the following form.
+    </p>
+
+    <definition xml:id="def-ref">
+      <idx><h>Row echelon form</h></idx>
+      <idx><h>Pivot</h></idx>
+      <statement>
+        <p>A matrix is in <term>row echelon form</term> or <term>REF</term> if:
+        <ol>
+          <li>The first nonzero entry of each row is to the <em>right</em> of the first nonzero entry of the row above.</li>
+          <li>All zero rows are at the bottom.</li>
+        </ol>
+        The first nonzero entry of a row of a matrix in row echelon form is called a <term>pivot</term>.
+        </p>
+      </statement>
+    </definition>
+
+    <p>
+      Here is a picture of a matrix in row echelon form:
+      <me>
+        \def\r{\color{seq-red}}
+        \mat[c]{
+          \r\boxed\star,  \star,  \star,  \star,  \star ;
+          0  \r\boxed\star,  \star,  \star,  \star ;
+          0  0  0  \r\boxed\star, \star ;
+          0 0 0 0 0}\qquad
+        \begin{aligned}
+          \star &amp;= \text{any number} \\
+          \r\boxed\star &amp;= \text{\textbf{pivot} (any nonzero number)}
+        \end{aligned}
+      </me>
+    </p>
+
+    <p>
+      The first condition translates into the statement <q>elimination has terminated</q>.  For example, the following matrix is not in REF because the first nonzero entry of the third row is not to the right of the first nonzero entry of the second:
+      <me>
+        \amat{
+          1 2 3 6;
+          0 \color{seq-red}-5 -10 -20;
+          0 \color{seq-red}-7 -4 2
+        }.
+      </me>
+      This just means that we can eliminate <m>x_3</m> from the third equation using the pivot in the second row:
+      <me>
+        \amat{
+          1 2 3 6;
+          0 -5 -10 -20;
+          0 -7 -4 2
+        } \quad\xrightarrow{R_3\minuseq\frac57 R_2}\quad
+        \amat{
+          1 2 3 6;
+          0 -5 -10 -20;
+          0 \textcolor{seq-red}0 10 30
+        }.
+      </me>
+      The matrix on the right <em>is</em> in row echelon form.
+    </p>
+
+    <p>
+      Condition 2 simply reflects the convention that any equations of the form <m>0=0</m> should come last.  Note that a matrix in REF need not have any zero rows<mdash/>just that if there are zero rows, they must come after all nonzero rows.
+    </p>
+
+    <example>
+      <p>
+        These matrices are in row echelon form:
+        <me>
+          \def\r{\color{seq-blue}}
+          \mat{\r1 2 -1 4; 0 0 \r-3 12}
+          \qquad
+          \mat{\r1 2 3 6; 0 \r-5 -10 -20; 0 0 \r10 30}.
+        </me>
+        The entries in blue are the pivots.  These matrices are not in row echelon form:
+        <me>
+          \def\r{\color{seq-red}}
+          \mat{1 2 -1 4; \r2 0 1 0}
+          \qquad
+          \amat{1 2 3 6; \r0 \r0 \r0 \r0; 0 0 1 0}.
+        </me>
+      </p>
+    </example>
+
+    <remark>
+      <title>Why the word <q>pivot</q>?</title>
+      <p>
+        Consider the following system of equations:
+        <latex-code mode="bare">
+          \def\r{\color{seq-red}}
+          \def\b{\color{seq-blue}}
+        </latex-code>
+        <me>
+          \syseq{\r x \mathbin{\r-} \r y \mathbin{\r=} \r0;
+          \b x \mathbin{\b+} \b y \mathbin{\b=} \b2\rlap.
+          }
+        </me>
+  	We can visualize this system as a pair of lines in <m>\R^2</m> (red and blue, respectively, in the picture below) that intersect at the point <m>(1,1)</m>.  If we subtract the first equation from the second, we obtain the equation <m>2y=2</m>, or <m>y=1</m>.  This results in the system of equations:
+        <me>
+          \syseq{\r x \mathbin{\r-} \r y \mathbin{\r =} \r0;
+          \.  \+ \b y \mathbin{\b =} \b1\rlap.
+          }
+        </me>
+  	In terms of row operations on matrices, we can write this as:
+        <me>
+          \begin{split}
+            \amat{\r1 \r-1 \r0; \b1 \b1 \b2}
+            \quad\xrightarrow{R_2\minuseq R_1}\quad&amp;
+            \amat{\r1 \r-1 \r0; 0 \b2 \b2} \\
+            \quad\xrightarrow{R_2\diveq 2}\quad&amp;
+            \amat{\r1 \r-1 \r0; 0 \b1 \b1}
+          \end{split}
+        </me>
+        <latex-code>
+          <![CDATA[
+  \begin{tikzpicture}[scale=1.5]
+    \draw[help lines, opacity=.3] (-3, -3) grid (3, 3);
+    \draw[thick, opacity=.2] (-3, 0) -- (3, 0);
+    \draw[thick, opacity=.2] (0, -3) -- (0, 3);
+
+    \draw[seq-red, thick] (-3, -3) to["$x-y=0$" {inner sep=2pt, sloped}] (3, 3);
+    \draw[seq-blue, thick] (-1, 3) to["$x+y=2$" {inner sep=2pt, sloped, pos=1.0, swap}] (3, -1);
+    \draw[seq-blue!70, thick] (-3, 1) to["$y=1$" {inner sep=2pt, pos=.2, swap}] (3, 1);
+    \point at (1, 1);
+
+    \draw[<-, opacity=.5, thick] (-1, 1) arc[start angle=180, end angle=135, radius=2] node[pos=.5, left] {``pivot''};
+
+  \end{tikzpicture}
+          ]]>
+        </latex-code>
+  	What has happened geometrically is that the original blue line has been replaced with the new blue line <m>y=1</m>.  We can think of the blue line as rotating, or pivoting, around the solution <m>(1,1)</m>.  We used the first pivot position in the matrix in order to make the blue line rotate horizontal.  This is one possible explanation for the terminology <q>pivot</q>.
+      </p>
+    </remark>
+
+    <p>
+      The Jordan substitution algorithm will output a matrix of the following form.
+    </p>
+
+    <definition>
+      <idx><h>Reduced row echelon form</h></idx>
+      <statement>
+        <p>A matrix is in <term>reduced row echelon form</term> if it is in row echelon form, and in addition:
+        <ol start="3">
+          <li>Each pivot is equal to 1.</li>
+          <li>Each pivot is the only nonzero entry in its column.</li>
+        </ol>
+        </p>
+      </statement>
+    </definition>
+
+    <p>Here is a picture of a matrix in reduced row echelon form:
+    <me>
+      \def\r{\color{seq-red}}
+      \mat{
+        \r1   0   \star,   0   \star ;
+        0   \r1   \star , 0   \star ;
+        0   0   0   \r1   \star ;
+        0 0 0 0 0
+      } \qquad
+      \begin{aligned}
+        \star &amp;= \text{any number} \\
+        \r1 &amp;= \text{pivot}
+      \end{aligned}
+    </me>
+    </p>
+
+    <p>
+      Being in reduced row echelon form is a <em>stronger</em> condition than being in row echelon form.  In particular:
+    </p>
+
+    <bluebox>
+      <p>
+        Any matrix in reduced row echelon form is also in row echelon form.
+      </p>
+    </bluebox>
+
+    <p>
+      Condition 3 corresponds to <q>solving for an isolated variable</q> in the back-substitution process.  For example, consider this augmented matrix and its associated system of equations:
+      <me>
+        \def\r{\textcolor{seq-red}}
+        \amat{1 2 3 6; 0 -5 -10 -20; 0 0 \r{10} 30}
+        \quad\longleftrightarrow\quad
+        \syseq{
+          x_1 + 2x_2 + 3x_3 = 6;
+          \. - 5x_2 - 10x_3 = -20;
+          \. \+ \. \+ \r{10}x_3 = 30\rlap.
+        }
+      </me>
+      Solving for <m>x_3</m> means dividing the third equation by 10, i.e., performing the row operation <m>R_3 \diveq 10</m>.  This has the effect of changing the third pivot to a 1:
+      <me>
+        \def\r{\textcolor{seq-red}}
+        \amat{1 2 3 6; 0 -5 -10 -20; 0 0 \r1 3}
+        \quad\longleftrightarrow\quad
+        \syseq{
+          x_1 + 2x_2 + 3x_3 = 6;
+          \. - 5x_2 - 10x_3 = -20;
+          \. \+ \. \+ x_3 = 3\rlap.
+        }
+      </me>
+      Condition 4 represents the idea that the computed value for each variable has been back-substituted in the other equations.  In the system of equations above, substituting <m>x_3=3</m> in the second equation and moving the constant to the right side of the equation amounts to adding <m>10x_3</m> to the left side of the equation and <m>30</m> to the right side, i.e., performing the row operation <m>R_2\pluseq 10R_3</m>:
+      <me>
+        \def\r{\textcolor{seq-red}}
+        \amat{1 2 3 6; 0 -5 \r0 \r{10}; 0 0 1 3}
+        \quad\longleftrightarrow\quad
+        \syseq{
+          x_1 + 2x_2 + 3x_3 = 6;
+          \. - 5x_2 \. \+ = \r{10};
+          \. \+ \. \+ x_3 = 3\rlap.
+        }
+      </me>
+      We do the same to the first equation / first row with the row operation <m>R_1\minuseq 3R_3</m>:
+      <me>
+        \def\r{\textcolor{seq-red}}
+        \amat{1 2 \r0 \r{-3}; 0 -5 0 10; 0 0 1 3}
+        \quad\longleftrightarrow\quad
+        \syseq{
+          x_1 + 2x_2 \. \+ = \r{-3};
+          \. - 5x_2 \. \+ = 10;
+          \. \+ \. \+ x_3 = 3\rlap.
+        }
+      </me>
+      Now the third pivot is the only nonzero entry in the third column: substituting <m>x_3=3</m> in the other equations had the effect of clearing the entries above the third pivot.
+    </p>
+
+    <example>
+      <p>
+        The following matrices are in reduced row echelon form:
+        <me>
+          \mat{1 0 2; 0 1 -1}
+          \qquad \mat{0 1 8 0}
+          \qquad \amat{1 17 0; 0 0 1}
+          \qquad \mat{0 0 0; 0 0 0}.
+        </me>
+        The following matrices are in row echelon form but not reduced row echelon form:
+        <me>
+          \mat{2 1; 0 1}
+          \qquad \amat{2 7 1 4; 0 0 2 1; 0 0 0 3}
+          \qquad \amat{1 17 0; 0 1 1}
+          \qquad \mat{2 1 3; 0 0 0}.
+        </me>
+        The following matrices are not in echelon form:
+        <me>
+          \amat{2 7 1 4; 0 0 2 1; 0 0 1 3}
+          \qquad \amat{0 17 0; 0 2 1}
+          \qquad \mat{2 1; 2 1}
+          \qquad \vec{0 1 0 0}.
+        </me>
+      </p>
+    </example>
+
+    <p>
+      It is important to note that when discussing echelon forms of an augmented matrix, we ignore the augmentation line and treat it as an un-augmented matrix.
+    </p>
+
+    <bluebox>
+      <p>When deciding if an augmented matrix is in (reduced) row echelon form, there is nothing special about the augmented column(s).  Just ignore the vertical line.</p>
+    </bluebox>
+
+  </subsection>
+
+
+  <subsection>
+    <title>The Gaussian Elimination Algorithm</title>
+
+    <p>
+      Now we can present a systematic and computationally effective way of performing elimination.
+    </p>
+
+    <algorithm xml:id="algo-elimination">
+      <title>Gaussian Elimination</title>
+      <idx><h>Gaussian elimination</h><h>algorithm</h></idx>
+      <idx><h>Row reduction</h><see>Gaussian elimination</see></idx>
+      <idx><h>Pivot</h></idx>
+      <statement>
+        <p>
+          The <alert>input</alert> is any matrix, and the <alert>output</alert> is a <xref ref="def-row-equivalence" text="title">row-equivalent</xref> matrix in row echelon form.
+        </p>
+        <p>
+          <ul label="">
+            <li>
+              <alert>Step 1a:</alert>
+              If necessary, perform a row swap so that the first nonzero entry of the first row is <alert>not</alert> to the right of the first nonzero entry of any later row.
+              <me>
+                \mat{0 \textcolor{seq-red}4 3 3; \textcolor{seq-red}1 1 -1 3; 5 -3 -6 -6}
+                \quad\xrightarrow{R_1\longleftrightarrow R_2}\quad
+                \mat{\textcolor{seq-green}1 1 -1 3; 0 4 3 3; 5 -3 -6 -6}
+              </me>
+              The first nonzero entry of the first row is the first pivot.
+            </li>
+            <li>
+              <alert>Step 1b</alert> (elimination step):
+              Perform row replacements to clear all entries below the first pivot.
+              <me>
+                \mat{\textcolor{seq-green}1 1 -1 3; 0 4 3 3; \textcolor{seq-red}5 -3 -6 -6}
+                \quad\xrightarrow{R_3\minuseq 5R_1}\quad
+                \mat{
+                  \textcolor{seq-green}1 1 -1 3;
+                  \textcolor{seq-blue}0 4 3 3;
+                  \textcolor{seq-blue}0 -8 -1 -21
+                }
+              </me>
+            </li>
+          </ul>
+          Now recurse into the submatrix below and to the right of the first pivot, ignoring the rest of the matrix.
+          <me>
+            \def\g{\color{black!30!white}}
+            \mat{\g1 \g1 \g-1 \g3; \g0 4 3 3; \g0 -8 -1 -21}
+          </me>
+          <ul label="">
+            <li>
+              <alert>Step 2a:</alert>
+              If necessary, perform a row swap so that the first nonzero entry of the second row is <alert>not</alert> to the right of the first nonzero entry of any later row.
+              <me>
+                \def\g{\color{black!30!white}}
+                \mat{\g1 \g1 \g-1 \g3; \g0 \textcolor{seq-green}4 3 3; \g0 -8 -1 -21}
+                \qquad
+                \left(
+                \text{not applicable to this matrix}
+                \right)
+              </me>
+              The first nonzero entry of the second row is the second pivot.
+            </li>
+            <li>
+              <alert>Step 2b</alert> (elimination step):
+              Perform row replacements to clear all entries below the second pivot.
+              <me>
+                \def\g{\color{black!30!white}}
+                \mat{
+                  \g1 \g1 \g-1 \g3;
+                  \g0 \textcolor{seq-green}4 3 3;
+                  \g0 \color{seq-red}-8 -1 -21
+                } \quad\xrightarrow{R_3\pluseq 2R_2}\quad
+                \mat{
+                  \g1 \g1 \g-1 \g3;
+                  \g0 \textcolor{seq-green}4 3 3;
+                  \g0 \color{seq-blue}0 5 -15
+                }
+              </me>
+            </li>
+          </ul>
+          Now recurse into the submatrix below and to the right of the second pivot and continue as above.  Stop the algorithm once there is only one nonzero row left.  The result is in row echelon form.
+          <me>
+            \def\r{\color{seq-red}}
+            \mat{\r1 1 -1 3; 0 \r4 3 3; 0 0 \r5 -15}
+          </me>
+        </p>
+      </statement>
+    </algorithm>
+
+    <p>
+      Note that step 2 does not change any column to the left of the second pivot: all of those entries are equal to zero.  In this way, subsequent steps do not undo any of the elimination steps already performed.
+    </p>
+
+    <p>
+      When applying Gaussian elimination to an augmented matrix, just ignore the pivot line and treat the matrix as un-augmented.
+    </p>
+
+    <example>
+      <statement>
+        <p>
+          Perform Gaussian elimination on the matrix
+          <me>
+            \amat{
+              1 7 2 4;
+              -2 -14 -4 -14;
+              2 18 2 8;
+              -1 -5 -3 -7
+            }.
+          </me>
+        </p>
+      </statement>
+      <solution>
+        <p>
+          After removing the augmentation line, we apply the algorithm:
+          <latex-code>
+            <![CDATA[
+\begin{tikzpicture}[all nodes={font=\small}]
+  \tikzset{
+    my matrix/.style={
+      matrix, math matrix,
+      every node/.append style={anchor=base east}},
+      column sep={2.5em,between origins},
+    blue box/.style={
+      draw,thick,rounded corners,blue!50,fit=#1,inner xsep=.8mm}
+    };
+
+  \path node[my matrix] (m1) {
+     |[seq-red]| 1 \&   7 \&  2 \&   4 \\
+    -2 \& -14 \& -4 \& -14 \\
+     2 \&  18 \&  2 \&   8 \\
+    -1 \&  -5 \& -3 \&  -7 \\
+  } (m1.east) ++(3.cm,0) node[my matrix, anchor=west] (m2) {
+     |[seq-red]| 1 \&  7 \&  2 \&  4 \\
+     |[seq-blue]| 0 \&  0 \&  0 \& -6 \\
+    -2 \& 18 \&  2 \&  8 \\
+    -1 \& -5 \& -3 \& -7 \\
+  } ++(0,-2cm) node[my matrix, anchor=west] (m3) {
+     |[seq-red]| 1 \&  7 \&  2 \&  4 \\
+     |[seq-blue]| 0 \&  0 \&  0 \& -6 \\
+     |[seq-blue]| 0 \&  4 \& -2 \&  0 \\
+    -1 \& -5 \& -3 \& -7 \\
+  } ++(0,-2cm) node[my matrix, anchor=west] (m4) {
+     |[seq-red]| \phantom{-}1 \&  \phantom{-}7 \&  2 \&  4 \\
+     |[seq-blue]| 0 \&  0 \&  0 \& -6 \\
+     |[seq-blue]| 0 \&  4 \& -2 \&  0 \\
+     |[seq-blue]| 0 \&  2 \& -1 \& -3 \\
+  };
+  \path (m1.east |- m4.south) ++(0,-5mm)
+  node[my matrix, anchor=north east,
+        row 1/.style={color=light gray},
+        column 1/.style={color=light gray}] (m4') {
+     \phantom{-}1 \&  \phantom{-}7 \&  2 \&  4 \\
+     0 \&  0 \&  0 \& -6 \\
+     0 \&  4 \& -2 \&  0 \\
+     0 \&  2 \& -1 \& -3 \\
+  } ++(3cm,0) node[my matrix, anchor=north west,
+        row 1/.style={color=light gray},
+        column 1/.style={color=light gray}] (m5) {
+     \phantom{-}1 \&  \phantom{-}7 \&  2 \&  4 \\
+     0 \&  |[red]| 2 \& -1 \& -3 \\
+     0 \&  4 \& -2 \&  0 \\
+     0 \&  0 \&  0 \& -6 \\
+  } ++(0,-3.2cm) node[my matrix, anchor=north west,
+        row 1/.style={color=light gray},
+        column 1/.style={color=light gray}] (m6) {
+     \phantom{-}1 \&  \phantom{-}7 \&  2 \&  4 \\
+     0 \&  |[red]| 2 \& -1 \& -3 \\
+     0 \&  |[seq-blue]| 0 \&  0 \&  6 \\
+     0 \&  0 \&  0 \& -6 \\
+  };
+  \path (m4'.east |- m6.south) ++(0,-5mm)
+  node[my matrix, anchor=north east,
+        row 1/.style={color=light gray},
+        row 2/.style={color=light gray},
+        column 1/.style={color=light gray},
+        column 2/.style={color=light gray},
+        column 3/.style={color=light gray}] (m6') {
+     \phantom{-}1 \&  \phantom{-}7 \&  2 \&  4 \\
+     0 \&  2 \& -1 \& -3 \\
+     0 \&  0 \&  0 \&  |[red]| 6 \\
+     0 \&  0 \&  0 \& -6 \\
+  } ++(3cm,0) node[my matrix, anchor=north west,
+        row 1/.style={color=light gray},
+        row 2/.style={color=light gray},
+        column 1/.style={color=light gray},
+        column 2/.style={color=light gray},
+        column 3/.style={color=light gray}] (m7) {
+     \phantom{-}1 \&  \phantom{-}7 \&  2 \&  4 \\
+     0 \&  2 \& -1 \& -3 \\
+     0 \&  0 \&  0 \&  |[red]| 6 \\
+     0 \&  0 \&  0 \&  |[seq-blue]| 0 \\
+  };
+
+  \def\rowop #1 $#2${
+    \node[left=1em of #1.west, anchor=south east] (op#1) {$#2$};
+    \draw[->] (op#1.south west) -- (op#1.south east)
+  }
+
+  \rowop m2  $R_2 \pluseq 2R_1$;
+  \rowop m3  $R_3 \minuseq 2R_1$;
+  \rowop m4  $R_3 \pluseq R_1$;
+  \rowop m5  $R_2 \longleftrightarrow R_4$;
+  \rowop m6  $R_3 \minuseq 2R_2$;
+  \rowop m7  $R_4 \pluseq R_3$;
+
+  \node [blue box=(m1-2-1) (m1-4-1)] (bm1-1-1) {};
+  \node [blue!50, below=1.5mm of m1-4-1, anchor=north west, xshift=-1.3cm, align=left, text width=4.5cm]
+    (expl1) {Step 1b: Subtract multiples of the first row to clear these.};
+  \draw[->, blue!50, rounded corners]
+    let \p1=($(expl1.north west) + (5mm,0)$) in
+    (\p1) |- (bm1-1-1.west);
+
+  \node [blue box=(m4'-2-2)] (bm4'-2-2) {};
+  \node [blue!50, anchor=north west, align=left, text width=4.5cm, yshift=-1.5mm]
+    (expl2) at (expl1.west |- m4'-4-1.south)
+    {Step 2a: Swap with a later row to make this nonzero.};
+  \draw[->, blue!50, rounded corners]
+    (expl2.north west -| m4'-4-1.east) ++(1mm,0) |- (bm4'-2-2.west);
+
+  \node [blue box=(m5-3-2)] (bm5-3-2) {};
+  \node [blue!50, anchor=north west, align=left, text width=5.5cm, xshift=-2.5cm]
+    (expl3) at (expl2.north east -| m5-4-1)
+    {Step 2b: Subtract a multiple of the second row to clear this.};
+  \draw[->, blue!50, rounded corners]
+    (expl3.north west -| m5-4-1.east) ++(1mm,0) |- (bm5-3-2.west);
+
+  \node [blue box=(m6'-4-4)] (bm6'-4-4) {};
+  \node [blue!50, anchor=north west, align=left, text width=4.5cm, yshift=-1.5mm]
+    (expl4) at (expl2.west |- m6'-4-1.south)
+    {Step 3b: Subtract a multiple of the third row to clear this.};
+  \draw[->, blue!50, rounded corners]
+    (expl4.east) ++(-4mm,0) -- ++(4mm,0) |- (bm6'-4-4.east);
+
+\end{tikzpicture}
+            ]]>
+          </latex-code>
+          Putting the augmentation line back in, the row echelon form is
+          <me>
+            \amat{1 7 2 4; 0 2 -1 -3; 0 0 0 6; 0 0 0 0}.
+          </me>
+          The third equation is <m>0=6</m>, so this system has no solutions.
+        </p>
+      <figure>
+        <caption>Animated slideshow of the row reduction in this example.</caption>
+        <mathbox source="demos/rowred4.html" height="500px"/>
+      </figure>
+      </solution>
+    </example>
+
+    <p>
+      In steps 1a, 2a, 3a, etc. of the Gaussian elimination algorithm, there may be a choice of pivot involved.  For instance, using the matrix in the statement of the algorithm, we could have chosen to swap the first and third rows instead:
+      <me>
+        \mat{0 4 3 3; 1 1 -1 3; 5 -3 -6 -6}
+        \quad\xrightarrow{R_1\longleftrightarrow R_3}\quad
+        \mat{5 -3 -6 -6; 1 1 -1 3; 0 4 3 3}.
+      </me>
+      Continuing the algorithm leads to a different row echelon form
+      <me>
+        \def\r{\color{seq-red}}
+        \mat{\r5 -3 -6 -6; 0 \r8/5 1/5 21/5; 0 0 \r5/2 -15/2}.
+      </me>
+    </p>
+
+    <bluebox>
+      <p>
+        There are many row echelon forms of a given matrix.
+      </p>
+    </bluebox>
+
+  </subsection>
+
+
+  <subsection>
+    <title>The Jordan Substitution Algorithm</title>
+
+    <p>
+      The following algorithm formalizes the back-substitution procedure.
+    </p>
+
+    <algorithm xml:id="algo-substitution">
+      <title>Jordan Substitution</title>
+      <idx><h>Jordan substitution</h><h>algorithm</h></idx>
+      <statement>
+        <p>
+          The <alert>input</alert> is a matrix in row echelon form, and the <alert>output</alert> is a <xref ref="def-row-equivalence" text="title">row-equivalent</xref> matrix in reduced row echelon form.
+        </p>
+        <p>
+          Do the following operations for each pivot, starting with the <em>last</em>:
+          <ul label="">
+            <li>
+              <alert>Step 1:</alert>
+              Scale the pivot row so that the pivot is equal to 1.
+              <me>
+                \def\r{\color{seq-red}}
+                \mat{1 1 -1 3; 0 4 3 3; 0 0 \r5 -15}
+                \quad\xrightarrow{R_3\diveq 5}\quad
+                \mat{1 1 -1 3; 0 4 3 3; 0 0 \r1 -3}
+              </me>
+            </li>
+            <li>
+              <alert>Step 2</alert> (substitution step):
+              Perform row replacements to clear all entries above the pivot.
+              <me>
+                \def\r{\color{seq-red}}\def\b{\color{seq-blue}}
+                \mat{1 1 -1 3; 0 4 3 3; 0 0 \r1 -3}
+                \quad\xrightarrow[R_1\pluseq R_3]{R_2\minuseq 3R_3}\quad
+                \mat{1 1 \b0 0; 0 4 \b0 12; 0 0 \r1 -3}
+              </me>
+            </li>
+          </ul>
+          The result is in reduced row echelon form.
+        </p>
+      </statement>
+    </algorithm>
+
+    <p>
+      The algorithm would also work if we started with the second pivot instead of the last, but this would result in more arithmetic operations.  For instance, performing <m>R_2\diveq 4</m> requires two divisions on the matrix on the left (replacing the pivot by 1 does not require division), but only one division on the matrix on the right:
+      <me>
+        \def\r{\color{seq-red}}
+        \mat{1 1 -1 3; 0 4 \r3 \r3; 0 0 1 -3}
+        \qquad
+        \mat{1 1 0 0; 0 4 0 \r12; 0 0 1 -3}.
+      </me>
+    </p>
+
+    <p>
+      When applying Jordan substitution to an augmented matrix, just ignore the pivot line and treat the matrix as un-augmented.
+    </p>
+
+    <p>
+      Note that the Jordan substitution algorithm does not change the positions of the pivot of a matrix: the pivots of the output are in the same positions as the pivots of the input.
+    </p>
+
+    <example>
+      <statement>
+        <p>
+          Perform Jordan substitution on the matrix
+          <me>
+            \amat{1 2 3 6; 0 -5 -10 -20; 0 0 10 30}.
+          </me>
+        </p>
+      </statement>
+      <solution>
+        <p>
+          In order to demonstrate the relationship between Jordan substitution and back-substitution, we apply the algorithm on the left and show the effect on the associated system of equations on the right.
+          <latex-code>
+            <![CDATA[
+\begin{tikzpicture}[all nodes={font=\small}]
+  \tikzset{
+    my matrix/.style={
+      matrix, math matrix,
+      every node/.append style={anchor=base east}},
+      column sep={2.5em,between origins},
+    blue box/.style={
+      draw,thick,rounded corners,blue!50,fit=#1,inner xsep=.8mm},
+    syseq/.style={
+      yshift=4pt},
+    rowop arrow/.style={
+      thick, ->}
+    };
+
+  \def\r{\textcolor{seq-red}}
+
+  \node[seq-violet] (title-left) {Row Operations};
+  \node[seq-violet, right=3cm of title-left] (title-right) {Back-Substitution};
+
+  \node[my matrix, below=1mm of title-left] (m1) {
+    1 \&  2 \&   3 \&   6 \\
+    0 \& -5 \& -10 \& \,-20 \\
+    0 \&  0 \&  |[seq-red]| 10 \&  30 \\
+  };
+
+  \node [blue box=(m1-3-3)] (bm3-3-1) {};
+  \node [blue!50, below=1.5mm of m1-3-1, anchor=north west, xshift=-.8cm,
+         align=left, text width=2.7cm]
+    (expl1) {Step 1: Scale so this pivot is 1};
+  \draw[->, blue!50, rounded corners]
+    (expl1.north -| bm3-3-1.west) ++(-3mm,0) |- (bm3-3-1.west);
+
+  \node[syseq, anchor=north] (e1) at (m1.north -| title-right.south) {
+    $\syseq{
+      x_1 + 2x_2 + 3x_3 = 6;
+      \. - 5x_2 - 10x_3 = -20;
+      \. \+ \. \+ \r{10}x_3 = 30
+    }$
+  };
+
+  \draw[rowop arrow] ($(m1.south east)!.5!(e1.south west)$)
+    to["$R_3\diveq 10$"' seq-orange, "solve for $x_3$" seq-orange] ++(0,-1.5cm);
+
+  \node[my matrix, below=1.7cm of m1] (m2) {
+    1 \&  2 \&   3 \&   6 \\
+    0 \& -5 \& -10 \& \,-20 \\
+    0 \&  0 \&  |[seq-red]| 1 \& 3 \\
+  };
+
+  \node [blue box=(m2-2-3) (m2-1-3)] (bm2-2-3) {};
+  \node [blue!50, below=1.5mm of m2-3-1, anchor=north west, xshift=-.8cm,
+         align=left, text width=2.7cm]
+         (expl2) {Step 2: Clear these entries};
+  \draw[->, blue!50] (expl2.north -| bm2-2-3.250) -- (bm2-2-3.250);
+
+  \node[syseq, anchor=north west] (e2) at (m2.north east -| e1.south west) {
+    $\syseq{
+      x_1 + 2x_2 + 3x_3 = 6;
+      \. - 5x_2 - 10x_3 = -20;
+      \. \+ \. \+ x_3 = 3
+    }$
+  };
+
+  \draw[rowop arrow] ($(m2.south east)!.5!(e2.south west)$)
+    to
+    node[right, seq-orange, align=left] {
+      substitute $x_3=3$\\
+      in first two equations}
+    node[left, seq-orange, align=right] {$R_1\minuseq 3R_3$\\$R_2\pluseq 10R_3$}
+    ++(0,-1.5cm);
+
+  \node[my matrix, below=1.7cm of m2] (m3) {
+    1 \&  2 \& |[seq-blue]| 0 \& -3 \\
+    0 \& |[seq-red]| -5 \& |[seq-blue]| 0 \& \phantom{\,-}10 \\
+    0 \&  0 \& \phantom{-1}1 \& 3 \\
+  };
+
+  \node [blue box=(m3-2-2)] (bm3-2-2) {};
+  \node [blue!50, below=1.5mm of m3-3-1, anchor=north west, xshift=-.8cm,
+         align=left, text width=2.7cm]
+    (expl3) {Step 1: Scale so this pivot is 1};
+  \draw[->, blue!50]
+    (expl3.north -| bm3-2-2.250) |- (bm3-2-2.250);
+
+  \node[syseq, anchor=north west] (e3) at (m3.north east -| e2.south west) {
+    $\syseq{
+      x_1 + 2x_2 \+ \. = -3;
+      \. \mathbin{\r-} \r5x_2 \+ \. = 10;
+      \. \+ \. \+ x_3 = 3
+    }$
+  };
+
+  \draw[rowop arrow] ($(m3.south east)!.5!(e3.south west)$)
+    to
+    node[right, seq-orange] {solve for $x_2$}
+    node[left, seq-orange] {$R_2\diveq -5$}
+    ++(0,-1.5cm);
+
+  \node[my matrix, below=1.7cm of m3] (m4) {
+    1 \&  2 \& 0 \& -3 \\
+    0 \& |[seq-red]| \phantom{-}1 \& 0 \& -2 \\
+    0 \&  0 \& \phantom{-1}1 \& \phantom{\,-1}3 \\
+  };
+
+  \node [blue box=(m4-1-2)] (bm4-1-2) {};
+  \node [blue!50, below=1.5mm of m4-3-1, anchor=north west, xshift=-.8cm,
+         align=left, text width=2.7cm]
+    (expl4) {Step 2: Clear this entry};
+  \draw[->, blue!50, rounded corners]
+    (expl4.north -| bm4-1-2.west) ++(-3mm,0) |- (bm4-1-2.west);
+
+  \node[syseq, anchor=north west] (e4) at (m4.north east -| e3.south west) {
+    $\syseq{
+      x_1 + 2x_2 \+ \. = -3;
+      \. \+ x_2 \+ \. = -2;
+      \. \+ \. \+ x_3 = 3
+    }$
+  };
+
+  \draw[rowop arrow] ($(m4.south east)!.5!(e4.south west)$)
+    to
+    node[right, seq-orange, align=left] {substitute $x_2=-2$\\in the first equation}
+    node[left, seq-orange] {$R_1 \minuseq 2R_2$}
+    ++(0,-1.5cm);
+
+  \node[my matrix, below=1.7cm of m4] (m5) {
+    1 \&  0 \& 0 \& 1 \\
+    0 \& \phantom{-}1 \& 0 \& -2 \\
+    0 \&  0 \& \phantom{-1}1 \& \phantom{\,-1}3 \\
+  };
+
+  \node[syseq, anchor=north west] (e5) at (m5.north east -| e4.south west) {
+    $\syseq{
+      x_1 \+ \. \+ \. = 1;
+      \. \+ x_2 \+ \. = -2;
+      \. \+ \. \+ x_3 = 3
+    }$
+  };
+
+  \foreach \i in {1,...,5} {
+    \draw ([xshift=0.5em]m\i-1-3.north east-|m\i-3-3.south east) -|
+          ([xshift=0.5em]m\i-3-3.south east);
+  }
+            ]]>
+\end{tikzpicture}
+          </latex-code>
+          The result is in reduced row echelon form:
+          <me>
+            \amat{1 0 0 1; 0 1 0 -2; 0 0 1 3}.
+          </me>
+          This translates into the system of equations <m>x_1=1,\;x_2=-2,\;x_3=3</m>, so there is only one solution <m>(x_1,x_2,x_3)=(1,-2,3)</m>.
+        </p>
+      <figure>
+        <caption>Animated slideshow of the row reduction in this example.</caption>
+        <mathbox source="demos/rowred5.html" height="500px"/>
+      </figure>
+      </solution>
+    </example>
+
+    <p>
+      Unlike with Gaussian elimination and row echelon form, each matrix has a <em>unique</em> reduced row echelon form.
+    </p>
+
+    <theorem xml:id="rref-is-unique">
+      <idx><h>Reduced row echelon form</h><h>uniqueness of</h></idx>
+      <statement>
+        <p>
+          The reduced row echelon form of a matrix is <alert>unique</alert>: any sequence of row operations transforming a matrix into a matrix in RREF produces the same RREF matrix.
+        </p>
+      </statement>
+    </theorem>
+
+    <example>
+      <p>
+        We saw above that the matrix
+        <me>
+          \mat{0 4 3 3; 1 1 -1 3; 5 -3 -6 -6}
+        </me>
+        has row echelon forms
+        <me>
+          \mat{1 1 -1 3; 0 4 3 3; 0 0 5 -15} \sptxt{and}
+          \mat{5 -3 -6 -6; 0 8/5 1/5 21/5; 0 0 5/2 -15/2}.
+        </me>
+        Performing Jordan substitution on the first matrix gives
+        <me>
+          \begin{split}
+            \mat{1 1 -1 3; 0 4 3 3; 0 0 5 -15}
+            \quad\xrightarrow{R_3\diveq 5}\quad&amp;
+            \mat{1 1 -1 3; 0 4 3 3; 0 0 1 -3} \\
+            \quad\xrightarrow[R_1\pluseq R_3]{R_2\minuseq 3R_3}\quad&amp;
+            \mat{1 1 0 0; 0 4 0 12; 0 0 1 -3} \\
+            \quad\xrightarrow{R_2\diveq 4}\quad&amp;
+            \mat{1 1 0 0; 0 1 0 3; 0 0 1 -3} \\
+            \quad\xrightarrow{R_1\minuseq R_2}\quad&amp;
+            \mat{1 0 0 -3; 0 1 0 3; 0 0 1 -3}.
+          \end{split}
+        </me>
+        Performing Jordan substitution on the second matrix gives
+        <me>
+          \begin{split}
+            \mat{5 -3 -6 -6; 0 8/5 1/5 21/5; 0 0 5/2 -15/2}
+            \quad\xrightarrow{R_3\timeseq \frac25}\quad&amp;
+            \mat{5 -3 -6 -6; 0 8/5 1/5 21/5; 0 0 1 -3} \\
+            \quad\xrightarrow[R_1\pluseq 6R_3]{R_2\minuseq \frac 15R_3}\quad&amp;
+            \mat{5 -3 -6 -6; 0 8/5 0 24/5; 0 0 1 -3} \\
+            \quad\xrightarrow{R_2\timeseq\frac 58}\quad&amp;
+            \mat{5 -3 0 -24; 0 1 0 3; 0 0 1 -3} \\
+            \quad\xrightarrow{R_1\pluseq 3R_2}\quad&amp;
+            \mat{5 0 0 -15; 0 1 0 3; 0 0 1 -3} \\
+            \quad\xrightarrow{R_1\diveq 5}\quad&amp;
+            \mat{1 0 0 -3; 0 1 0 3; 0 0 1 -3}.
+          \end{split}
+        </me>
+      </p>
+    </example>
+
+  </subsection>
+
+  <subsection>
+    <title>Computational Complexity</title>
+
+    <p>
+      <idx><h>Floating point operation</h></idx>
+      <idx><h>Flop</h><see>Floating point operation</see></idx>
+      It is straightforward to implement Gaussian elimination and Jordan substitution on a computer.  This leads to the question: how much processor time do these algorithms require?  Processor time is usually measured by the number of <term>floating point operations</term>, or <term>flops</term>, that need to be performed: that is, how many additions, subtractions, multiplications, and divisions are involved.
+    </p>
+
+    <p>
+      For Gaussian elimination, we restrict ourselves to square matrices for simplicity.
+    </p>
+
+    <fact>
+      <idx><h>Gaussian elimination</h><h>computational complexity of</h></idx>
+      <statement>
+        <p>
+          Gaussian elimination on an <m>n\times n</m> matrix requires approximately <m>\frac 23n^3</m> flops.
+        </p>
+      </statement>
+      <proof>
+        <p>
+          Row swaps do not involve any floating point operations, so we only need to tally the row replacements.  Let us denote the <m>(i,j)</m>-entry of our matrix by <m>a_{ij}</m>, and assume that the first pivot is in the <m>(1,1)</m>-entry.
+        </p>
+        <p>
+          <ul label="">
+            <li>
+              <alert>Step 1b:</alert> To clear the <m>(i,1)</m>-entry (<m>i\geq 2</m>), we perform the row replacement <m>R_i \minuseq (a_{i1}/a_{11})R_1</m>.  To do this, first we must compute the quotient <m>c_i = a_{i1}/a_{11}</m>, then for each <m>j \geq 2</m>, we replace <m>a_{ij}</m> by <m>a_{ij} - c_i\cdot a_{1j}</m>.  (We do not have to compute the new <m>(i,1)</m>-entry, as this will be zero.)  Therefore, for each entry of the matrix <m>(i,j)</m> with <m>i,j\geq 2</m>, we need one multiplication and one subtraction; in addition, each quotient <m>c_2,c_3,\ldots,c_n</m> requires one division.  There are <m>(n-1)\cdot(n-1)</m> matrix entries with <m>i,j\geq 2</m>, for a total of
+              <me>
+                \begin{split}
+                (n-1)^2&amp;\text{ multiplications} + (n-1)^2\text{ additions} + (n-1)\text{ divisions} \\
+                &amp;= 2(n-1)^2+(n-1)\text{ flops.}
+                \end{split}
+              </me>
+            </li>
+            <li>
+              <alert>Step 2b:</alert> This is exactly the same as step 1b, but performed on a submatrix of size <m>(n-2)\times(n-2)</m>, for a total of
+              <me>
+                \begin{split}
+                (n-2)^2&amp;\text{ multiplications} + (n-2)^2\text{ additions} + (n-2)\text{ divisions} \\
+                &amp;= 2(n-2)^2+(n-2)\text{ flops.}
+                \end{split}
+              </me>
+            </li>
+            <li>
+              Et cetera.
+            </li>
+          </ul>
+          Adding up all of the steps, the total number of floating point operations required is
+          <me>
+            \begin{split}
+              &amp;\;  2(n-1)^2 + (n-1) \\
+              +&amp;\; 2(n-2)^2 + (n-2) \\
+              +&amp;\; 2(n-3)^2 + (n-3) \\
+              +&amp;\quad\cdots \\
+              +&amp;\; 2(1)^2 + 1 \\
+              =&amp;\; 2\bigl[(n-1)^2+(n-2)^2+\cdots+1^2\bigr]
+              + \bigl[(n-1) + (n-2) + \cdots + 1\bigr].
+            \end{split}
+          </me>
+          The number <m>(n-1)^2+(n-2)^2+\cdots+1^2</m> is called a <url href="https://en.wikipedia.org/wiki/Square_pyramidal_number">pyramidal number</url> (it is the number of blocks you would use to build a pyramid whose base has size <m>(n-1)\times(n-1)</m>); the formula for the sum is
+          <me>(n-1)^2+(n-2)^2+\cdots+1^2 = \frac{n(n-1)(2n-1)}6.</me>
+          The number <m>(n-1) + (n-2) + \cdots + 1</m> is called a <url href="https://en.wikipedia.org/wiki/Triangular_number">triangular number</url> for a similar reason; the formula is
+          <me>(n-1) + (n-2) + \cdots + 1 = \frac{n(n-1)}2.</me>
+          Hence Gaussian elimination requires
+          <me>
+            \frac{n(n-1)(2n-1)}6 + \frac{n(n-1)}2
+            = \frac{2n^3 - 3n^2 + n}6 + \frac{n^2-n}2
+            = \frac 23n^3 - \frac 23n
+          </me>
+          flops.  When <m>n</m> is large, the dominant term is <m>\frac 23n^3</m>, so Gaussian elimination requires about <m>\frac 23n^3</m> flops.
+        </p>
+      </proof>
+    </fact>
+
+    <p>
+      For Jordan substitution, we assume that we are working with an (augmented) matrix of size <m>n\times(n+1)</m>, with <m>n</m> pivots along the main diagonal.
+    </p>
+
+    <fact>
+      <idx><h>Jordan substitution</h><h>computational complexity of</h></idx>
+      <statement>
+        <p>
+          Jordan substitution on an <m>n\times(n+1)</m> matrix requires <m>n^2</m> flops.
+        </p>
+      </statement>
+      <proof>
+        <p>
+          We denote the <m>(i,j)</m>-entry of the matrix by <m>a_{ij}</m>.
+          <ul label="">
+            <li>
+              <alert>Step 1:</alert> Each scaling step requires one division: divide the entry in the last column by the pivot, and replace the pivot by 1.
+            </li>
+            <li>
+              <alert>Step 2:</alert> The first substitution step involves <m>n-1</m> row replacements, all of the form <m>R_i\minuseq a_{in}R_n</m> (for <m>i&lt;n</m>).  The only entries affected are the <m>(i,n)</m>-entry, which becomes zero, and the <m>(i,n+1)</m>-entry, which we replace by <m>a_{i,n+1} - a_{in}a_{i,n+1}</m>.  Thus each row replacement requires one addition and one multiplication, for a total of <m>2(n-1)</m> flops in this step.
+            </li>
+          </ul>
+          Adding up all of the steps, the total number of floating point operations required is
+          <me>
+            \begin{split}
+              &amp;\;2(n-1) + 1 \\
+              +&amp;\;2(n-2) + 1 \\
+              +&amp;\;2(n-3) + 1 \\
+              +&amp;\quad\cdots \\
+              +&amp;\;\phantom{2(n-1) + 1}\llap1 \\
+              =&amp;\;2\bigl[(n-1)+(n-2)+\cdots+1\bigr] + n.
+            \end{split}
+          </me>
+          Using the formula
+          <me>(n-1) + (n-2) + \cdots + 1 = \frac{n(n-1)}2,</me>
+          the total number of floating point operations required is
+          <me>
+            2\frac{n(n-1)}2 + n = n^2 - n + n = n^2.
+          </me>
+        </p>
+      </proof>
+    </fact>
+
+    <p>
+      The important thing to notice here is that <m>\frac 23n^3</m> is an order of magnitude larger than <m>n^2</m>.  Indeed, if <m>n=1,000,000</m>, then Gaussian elimination takes about <m>\frac 23\times 10^{18}</m> flops, which would take a supercomputer a few days.  However, Jordan substitution takes about one trillion flops (teraflop), which amounts to a few seconds at most.
+    </p>
+
+    <bluebox>
+      <p>
+        Gaussian elimination takes much longer than Jordan substitution.
+      </p>
+    </bluebox>
+
+    <p>
+      Since back-substitution is much faster than Gaussian elimination, most of the <em>work</em> happens when doing elimination.  Since elimination terminates when the matrix is in REF, one should think:
+      <latex-code>
+            <![CDATA[
+\begin{tikzpicture}
+  \node[align=center] (A) {solving a\\system of\\linear equations};
+  \draw[thick] (A.south west) to[bend left=30, looseness=0.5] (A.north west);
+  \draw[thick] (A.south east) to[bend right=30, looseness=0.5] (A.north east);
+  \node[align=center, right=3cm of A] (B) {putting an\\augmented matrix\\into REF using\\row operations};
+  \draw[thick] (B.south west) to[bend left=30, looseness=0.5] (B.north west);
+  \draw[thick] (B.south east) to[bend right=30, looseness=0.5] (B.north east);
+  \draw[shorten=1em] (A.east) -- (B.west);
+  \draw[shorten=1em] ($(A.east) + (0,1mm)$) -- ($(B.west) + (0,1mm)$);
+  \draw[shorten=1em] ($(A.east) - (0,1mm)$) -- ($(B.west) - (0,1mm)$);
+\end{tikzpicture}
+            ]]>
+      </latex-code>
+    </p>
+
+  </subsection>
 
 </section>

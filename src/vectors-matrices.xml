@@ -433,6 +433,10 @@ the license is included in gfdl.xml.
           The <term>diagonal entries</term> of a matrix are the <m>(1,1)</m>, <m>(2,2)</m>, <m>(3,3),\,\ldots</m> entries:
           <me>
             <![CDATA[
+  \tikzset{
+    blue box/.style={
+      draw,thick,rounded corners,blue!50,fit=#1,inner xsep=.8mm}
+    }
 \begin{tikzpicture}[baseline]
   \matrix[math matrix] (aij)
     {
@@ -440,11 +444,11 @@ the license is included in gfdl.xml.
       a_{21} \& a_{22} \& a_{23} \& a_{24} \\
       a_{31} \& a_{32} \& a_{33} \& a_{34} \\
     };
-  \draw[thick, seq-green] (aij-1-1.center) circle[radius=1.4ex]
-                          (aij-2-2.center) circle[radius=1.4ex]
-                          (aij-3-3.center) circle[radius=1.4ex];
-  \draw[thick, seq-green] (aij-2-4.east) ++(3cm,0) circle[radius=1.4ex]
-                          node[right=5mm] {diagonal entries};
+  \node[blue box=(aij-1-1)] {};
+  \node[blue box=(aij-2-2)] {};
+  \node[blue box=(aij-3-3)] {};
+  \path (aij-2-4.east) ++(3cm,0) node[draw,thick,rounded corners,blue!50] {\phantom{M}}
+     ++(5mm,0) node[blue!50, right] {diagonal entries};
 \end{tikzpicture}
             ]]>
           </me>
@@ -453,6 +457,10 @@ the license is included in gfdl.xml.
           A matrix is <term>diagonal</term> if all non-diagonal entries are zero:
           <me>
             <![CDATA[
+  \tikzset{
+    blue box/.style={
+      draw,thick,rounded corners,blue!50,fit=#1,inner xsep=.8mm}
+    }
 \begin{tikzpicture}[baseline]
   \matrix[math matrix] (aij)
     {
@@ -460,11 +468,11 @@ the license is included in gfdl.xml.
       0 \& a_{22} \& 0 \& 0 \\
       0 \& 0 \& a_{33} \& 0 \\
     };
-  \draw[thick, seq-green] (aij-1-1.center) circle[radius=1.4ex]
-                          (aij-2-2.center) circle[radius=1.4ex]
-                          (aij-3-3.center) circle[radius=1.4ex];
-  \draw[thick, seq-green] (aij-2-4.east) ++(3cm,0) circle[radius=1.4ex]
-                          node[right=5mm] {any number};
+  \node[blue box=(aij-1-1)] {};
+  \node[blue box=(aij-2-2)] {};
+  \node[blue box=(aij-3-3)] {};
+  \path (aij-2-4.east) ++(3cm,0) node[draw,thick,rounded corners,blue!50] {\phantom{M}}
+     ++(5mm,0) node[blue!50, right] {any number};
 \end{tikzpicture}
             ]]>
           </me>
@@ -947,7 +955,7 @@ the license is included in gfdl.xml.
       </definition>
 
       <p>
-        If <m>v</m> is a column vector with <m>m</m> entries (a <m>1\times m</m> matrix) and <m>w</m> is a row vector with <m>n</m> entries (an <m>n\times 1</m> matrix), then <m>vw</m> is an <m>m\times n</m> matrix.  For instance,
+        If <m>v</m> is a column vector with <m>m</m> entries (an <m>m\times 1</m> matrix) and <m>w</m> is a row vector with <m>n</m> entries (a <m>1\times n</m> matrix), then <m>vw</m> is an <m>m\times n</m> matrix.  For instance,
         <me>
           \vec{1 2}\mat{3 4 5}
           = \mat{3\vec{1 2} 4\vec{1 2} 5\vec{1 2}}
@@ -1007,10 +1015,10 @@ the license is included in gfdl.xml.
               \begin{split}
               &amp;\mat{\r1 \g2 \b3; \r-\r1 \g2 \b-\b4}\mat{\r1 \r3; \g2 \g1; \b4 \b-\b1} \\
               &amp;\qquad= \textcolor{seq-red}{\vec{1 -1}\mat{1 3}}
-              + \textcolor{seq-green}{\vec{2 2}\mat{2 -1}}
+              + \textcolor{seq-green}{\vec{2 2}\mat{2 1}}
               + \textcolor{seq-blue}{\vec{3 -4}\mat{4 -1}} \\
               &amp;\qquad= \textcolor{seq-red}{\mat{1 3; -1 -3}}
-              + \textcolor{seq-green}{\mat{4 -2; 4 -2}}
+              + \textcolor{seq-green}{\mat{4 2; 4 2}}
               + \textcolor{seq-blue}{\mat{12 -3; -16 4}}
               = \mat{17 2; -13 3}.
               \end{split}
