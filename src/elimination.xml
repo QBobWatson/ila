@@ -16,10 +16,7 @@ the license is included in gfdl.xml.
     <ol>
       <li>Understand how to solve a system of equations using elimination and back-substitution.</li>
       <li>Learn how the elimination method corresponds to performing row operations on an augmented matrix.</li>
-      <li>Understand when a matrix is in row echelon form.</li>
-      <li>Understand how the pivots of an augmented matrix determine how many solutions the corresponding system of equations has.</li>
-      <li><em>Recipe:</em> back-substitution.</li>
-      <li><em>Vocabulary words:</em> <term>row operation,</term> <term>matrix equation,</term> <term>augmented matrix,</term> <term>row echelon form,</term> <term>pivot position,</term> <term>pivot column,</term> <term>rank.</term></li>
+      <li><em>Vocabulary words:</em> <term>row operation,</term> <term>matrix equation,</term> <term>augmented matrix,</term> <term>row equivalence.</term></li>
     </ol>
   </objectives>
 
@@ -131,7 +128,7 @@ the license is included in gfdl.xml.
     </note>
 
     <p>
-      To perform elimination systematically, it is convenient to require that the last variable be isolated in the last equation, the second-last variable be isolated in the second-last equation, etc.  In order for this to happen, it may be necessary to reorder the equations.
+      To perform elimination systematically, it is convenient to require that the first variable be isolated in the first equation, the second variable be isolated in the second equation, etc.  In order for this to happen, it may be necessary to reorder the equations.
     </p>
 
     <specialcase hide-type="true">

@@ -14,7 +14,11 @@ the license is included in gfdl.xml.
 
   <objectives>
     <ol>
-      <li>Write the objectives.</li>
+      <li>Understand when a matrix is in (reduced) row echelon form.</li>
+      <li>Learn how to perform elimination and substitution systematically using Gaussian elimination and Jordan substitution, respectivly.</li> 
+      <li>Gain some idea of the computational complexity of elimination and substitution.</li>
+      <li><em>Recipes:</em> Gaussian elimination, Jordan substitution.</li>
+      <li><em>Vocabulary words:</em> <term>row echelon form,</term> <term>reduced row echelon form,</term> <term>pivot.</term></li>
     </ol>
   </objectives>
 
@@ -290,7 +294,7 @@ the license is included in gfdl.xml.
   </subsection>
 
 
-  <subsection>
+  <subsection xml:id="gaussian-elimination">
     <title>The Gaussian Elimination Algorithm</title>
 
     <p>

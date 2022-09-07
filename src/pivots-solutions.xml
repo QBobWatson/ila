@@ -14,7 +14,8 @@ the license is included in gfdl.xml.
 
   <objectives>
     <ol>
-      <li>Write the objectives.</li>
+      <li>Understand how the pivots of an augmented matrix determine how many solutions the corresponding system of equations has.</li>
+      <li><em>Vocabulary words:</em> <term>pivot position,</term> <term>pivot column,</term> <term>rank.</term></li>
     </ol>
   </objectives>
 
@@ -45,7 +46,7 @@ the license is included in gfdl.xml.
     </p>
 
     <p>
-      It is not clear a priori that this definition makes sense: different sequences of row operations can produce <em>different</em> row echelon forms of the same matrix.  However, the reduced row echelon form of a matrix is unique by this <xref ref="rref-is-unique"/>, and the reduced row echelon form has the same pivot positions as any row echelon form, so the pivot positions are indeed well-defined.
+      It is not clear a priori that this definition makes sense: different sequences of row operations can produce <em>different</em> row echelon forms of the same matrix, as we saw in this <xref ref="gaussian-elimination"/>.  However, the reduced row echelon form of a matrix is unique by this <xref ref="rref-is-unique"/>, and the reduced row echelon form has the same pivot positions as any row echelon form, so the pivot positions are indeed well-defined.
     </p>
 
     <specialcase>
