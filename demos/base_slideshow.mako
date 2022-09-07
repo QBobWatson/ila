@@ -97,15 +97,11 @@ camera = mathbox.camera
     fov: Math.atan(height/ortho) * 360 / π
     lookAt: [width/4,0,0]
 # 2D cartesian
-view = mathbox.cartesian
+view = window.view = mathbox.cartesian
     range: [[-width/2, width/2], [-height/2, height/2], [-50,50]]
     scale: [width, height, 100]
 # Calibrate focus distance for units
 mathbox.set('focus', ortho)
-
-window.rrmat = new RRMatrix 3, 4, view, mathbox,
-    augmentCol:     2
-    startAugmented: true
 
 window.blink = blink = (color, entries, times) ->
     times = 2 if !times

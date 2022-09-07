@@ -1,11 +1,13 @@
-## -*- coffee -*-
-
 <%inherit file="base_slideshow.mako"/>
 
-<%block name="title">Row Reducing a Matrix</%block>
-<%block name="first_caption">Let's row reduce this matrix.</%block>
+<%block name="title">Gaussian Elimination</%block>
+<%block name="first_caption">Let's perform Gaussian elimination on this matrix.</%block>
 
 ## '
+
+rrmat = window.rrmat = new RRMatrix 3, 4, view, mathbox,
+    augmentCol:     2
+    startAugmented: true
 
 rrmat.setMatrix [[0, -7, -4,  2],
                  [2,  4,  6, 12],

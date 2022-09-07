@@ -1,11 +1,13 @@
-## -*- coffee -*-
-
 <%inherit file="base_slideshow.mako"/>
 
 <%block name="title">"Solving" a matrix</%block>
 <%block name="first_caption">We want to "solve" this matrix.</%block>
 
 ##
+
+rrmat = window.rrmat = new RRMatrix 3, 4, view, mathbox,
+    augmentCol:     2
+    startAugmented: true
 
 rrmat.setMatrix [[1, 2, 3, 6],
                  [2, -3, 2, 14],
