@@ -424,7 +424,7 @@ the license is included in gfdl.xml.
       after substituting the values of the variables.  In other words, <m>(x_1,x_2,x_3) = (1,-2,3)</m> is a solution of the new system as well.
     </p>
 
-    <note hide-type="true">
+    <note hide-type="true" xml:id="row-ops-are-reversible">
       <title>Fact</title>
       <p>
         All three row operations are <em>reversible</em>.

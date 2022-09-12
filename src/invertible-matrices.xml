@@ -14,7 +14,13 @@ the license is included in gfdl.xml.
 
   <objectives>
     <ol>
-      <li>Write the objectives.</li>
+      <li>Understand what it means for a square matrix to be invertible</li>
+      <li>Learn how to check invertibility using elimination.</li>
+      <li>Learn to do basic algebraic manipulations with invertible matrices.</li>
+      <li>Understand the relationship between elementary matrices and row operations.</li>
+      <li>Understand the relationship between elementary matrices and matrix inverses.</li>
+      <li><em>Recipes:</em> compute the inverse of a matrix, solve a linear system by taking inverses.</li>
+      <li><em>Vocabulary words:</em> <term>invertible,</term> <term>singular,</term> <term>elementary matrix.</term></li>
     </ol>
   </objectives>
 
@@ -240,10 +246,15 @@ the license is included in gfdl.xml.
           </ol>
         </p>
       </statement>
+      <proof>
+        <p>
+          The only <m>n\times n</m> matrix with <m>n</m> pivots in reduced row echelon form is <m>I_n</m>, so it is clear that (2) is equivalent to (3).  We will see <xref ref="invertibility-criterion-proof">below</xref> that (2) implies (1).  To show that (1) implies (3), we prove the contrapositive: suppose that <m>A</m> has fewer than <m>n</m> pivots.  Then some column of <m>A</m> lacks a pivot.  The augmented matrix for the system <m>Ax=0</m> therefore satisfies the <xref ref="number-of-solutions">criterion</xref> for a system of equations to have infinitely many solutions (certainly <m>\amat{A 0}</m> does not have a pivot in the augmented column).  According to this <xref ref="solve-by-dividing-by-A"/> below, the matrix <m>A</m> is not invertible.
+        </p>
+      </proof>
     </theorem>
 
     <p>
-      We will prove this theorem when we discuss elementary matrices <xref provisional="invertibility-criterion-proof"/> below.  In terms of systems of equations, it is important to think of the matrix <m>A</m> in this theorem as the <em>coefficient matrix</em>: after all, we are trying to solve <m>Ax=b</m> by <q>dividing by <m>A</m></q>.
+      In terms of systems of equations, it is important to think of the matrix <m>A</m> in this theorem as the <em>coefficient matrix</em>: after all, we are trying to solve <m>Ax=b</m> by <q>dividing by <m>A</m></q>.
     </p>
 
     <bluebox>
@@ -296,7 +307,7 @@ the license is included in gfdl.xml.
     </algorithm>
 
     <p>
-      We will prove this theorem in <xref provisional="invertibility-criterion-proof"/> below.
+      We will prove this theorem <xref ref="invertibility-criterion-proof">below</xref>.
     </p>
 
     <example>
@@ -435,7 +446,7 @@ the license is included in gfdl.xml.
       In other words, <m>Ax=b</m> has <em>exactly one solution</em> for every value of <m>b</m>, namely, <m>b = A\inv x</m>.
     </p>
 
-    <bluebox>
+    <bluebox xml:id="solve-by-dividing-by-A">
       <p>
         If <m>A</m> is invertible, then
         <me> Ax = b \quad\iff\quad x = A\inv b.</me>
@@ -481,6 +492,206 @@ the license is included in gfdl.xml.
         </p>
       </answer>
     </example>
+
+  </subsection>
+
+  <subsection>
+    <title>Elementary Matrices</title>
+
+    <p>
+      In this subsection we introduce <em>elementary matrices</em>, which allow us to perform row operations by matrix multiplication.  We will use them to explain why the matrix inverse <xref ref="matrix-inv-how-to-compute"/> works.  They are also a key ingredient in understanding the LU decomposition in <xref ref="lu-decomposition"/>.
+    </p>
+
+    <definition>
+      <title>Elementary Matrices</title>
+      <idx><h>Elementary matrix</h><h>definition of</h></idx>
+      <statement>
+        <p>An <term>elementary matrix</term> is a matrix obtained from the identity matrix by performing <em>one</em> row operation.</p>
+      </statement>
+    </definition>
+
+    <specialcase xml:id="three-elem-matrices">
+      <p>
+        There are three types of row operations, which lead to three types of elementary matrices.
+        <ul label="">
+          <li>
+            <alert>Row Replacement:</alert> for instance,
+            <me>
+              R_1 \pluseq 2R_2 \quad\xrightarrow[\text{matrix}]{\text{elementary}}\quad
+              \mat{1 2 0; 0 1 0; 0 0 1}.
+            </me>
+          </li>
+          <li>
+            <alert>Row Swap:</alert> for instance,
+            <me>
+              R_1 \longleftrightarrow R_2 \quad\xrightarrow[\text{matrix}]{\text{elementary}}\quad
+              \mat{0 1 0; 1 0 0; 0 0 1}.
+            </me>
+          </li>
+          <li>
+            <alert>Row Scale:</alert> for instance,
+            <me>
+              R_1 \timeseq 3 \quad\xrightarrow[\text{matrix}]{\text{elementary}}\quad
+              \mat{3 0 0; 0 1 0; 0 0 1}.
+            </me>
+          </li>
+        </ul>
+      </p>
+    </specialcase>
+
+    <p>
+      Elementary matrices perform row operations in the following sense.
+    </p>
+
+    <fact>
+      <idx><h>Elementary matrix</h><h>left-multiplication by</h></idx>
+      <p>
+        If <m>E</m> is the <m>m\times m</m> matrix obtained by performing a row operation on <m>I_m</m>, and if <m>A</m> is an <m>m\times n</m> matrix, then <m>EA</m> is the matrix obtained from <m>A</m> by performing the same row operation:
+        <me>
+          EA = \text{(the matrix you get by performing the row operation on $A$)}.
+        </me>
+      </p>
+    </fact>
+
+    <p>
+      In other words,
+      <latex-code>
+            <![CDATA[
+\begin{tikzpicture}
+  \node[align=center] (A) {row operations};
+  \draw[thick] (A.south west) to[bend left=30, looseness=0.5] (A.north west);
+  \draw[thick] (A.south east) to[bend right=30, looseness=0.5] (A.north east);
+  \node[align=center, right=3cm of A] (B) {left-multiplication by\\elementary matrices.};
+  \draw[thick] (B.south west) to[bend left=30, looseness=0.5] (B.north west);
+  \draw[thick] (B.south east) to[bend right=30, looseness=0.5] (B.north east);
+  \draw[shorten=1em] (A.east) -- (B.west);
+  \draw[shorten=1em] ($(A.east) + (0,1mm)$) -- ($(B.west) + (0,1mm)$);
+  \draw[shorten=1em] ($(A.east) - (0,1mm)$) -- ($(B.west) - (0,1mm)$);
+\end{tikzpicture}
+            ]]>
+      </latex-code>
+    </p>
+
+    <example>
+      <p>
+        Consider the matrix
+        <me>
+          A = \mat{-2 -3 0 -7; 1 2 3 4; 0 1 0 1}.
+        </me>
+        We perform the row operation <m>R_1\pluseq 2R_2</m> on <m>A</m> to obtain
+        <me>
+          \mat{-2 -3 0 -7; 1 2 3 4; 0 1 0 1}
+          \quad\xrightarrow{R_1\pluseq 2R_2}\quad
+          \color{seq-green}\mat{0 1 6 1; 1 2 3 4; 0 1 0 1}.
+        </me>
+        The elementary matrix for this row operation is
+        <me>
+          \mat{1 0 0; 0 1 0; 0 0 1}
+          \quad\xrightarrow{R_1\pluseq 2R_2}\quad
+          \mat{1 2 0; 0 1 0; 0 0 1} = E.
+        </me>
+        Multiplying <m>E</m> by <m>A</m> gives:
+        <me>
+          EA = \mat{1 2 0; 0 1 0; 0 0 1}\mat{-2 -3 0 -7; 1 2 3 4; 0 1 0 1}
+          = \color{seq-green}\mat{0 1 6 1; 1 2 3 4; 0 1 0 1}.
+        </me>
+        In other words, left-multiplication by <m>E</m> has performed the row operation <m>R_1\pluseq 2R_2</m> on <m>A</m>.
+      </p>
+    </example>
+
+    <p>
+      Elementary matrices are important examples of invertible matrices.  Recall from this <xref ref="row-ops-are-reversible">fact</xref> that row operations are <em>reversible</em>: every row operation can be undone by an opposite row operation.
+    </p>
+
+    <fact>
+      <idx><h>Elementary matrix</h><h>inverse of</h></idx>
+      <statement>
+        <p>
+          An elementary matrix is invertible.  Its inverse is the elementary matrix corresponding to the opposite row operation.
+        </p>
+      </statement>
+      <proof>
+        <p>
+          Let <m>E_1</m> be an elementary matrix and let <m>E_2</m> be the elementary matrix for the opposite row operation.  Then <m>E_2E_1 = E_2E_1I_n</m> is the matrix that first performs the row operation on <m>I_n</m>, then immediately undoes that row operation, to produce the identity matrix.  Since <m>E_2E_1 = I_n</m>, we know that <m>E_2 = E_1\inv</m>.
+        </p>
+      </proof>
+    </fact>
+
+    <specialcase>
+      <p>
+        The inverses of the elementary matrices in the above <xref ref="three-elem-matrices"/> are as follows.
+        <ul label="">
+          <li>
+            <alert>Row Replacement:</alert> the row operation that undoes <m>R_1\pluseq 2R_2</m> is <m>R_1\minuseq 2R_2</m>, so
+            <me>
+              \mat{1 2 0; 0 1 0; 0 0 1}\inv = \mat[c]{1 -2 0; 0 1 0; 0 0 1}.
+            </me>
+          </li>
+          <li>
+            <alert>Row Swap:</alert> the row operation <m>R_1\longleftrightarrow R_2</m> undoes itself, so
+            <me>
+              \mat{0 1 0; 1 0 0; 0 0 1}\inv = \mat{0 1 0; 1 0 0; 0 0 1}.
+            </me>
+          </li>
+          <li>
+            <alert>Row Scale:</alert> the row operation that undoes <m>R_1\timeseq 3</m> is <m>R_1\diveq 3</m>, so
+            <me>
+              \mat{3 0 0; 0 1 0; 0 0 1}\inv = \mat[c]{1/3 0 0; 0 1 0; 0 0 1}.
+            </me>
+          </li>
+        </ul>
+      </p>
+    </specialcase>
+
+    <paragraphs>
+      <title>Multiple Row Operations</title>
+      <p>
+        Consider the following row operations and their elementary matrices:
+        <me>
+          E_1\colon R_1\pluseq 2R_2 \qquad
+          E_2\colon R_1\longleftrightarrow R_2 \qquad
+          E_3\colon R_1\timeseq 3.
+        </me>
+        If we apply these three row operations, in order, to a matrix <m>A</m>, we multiply by the corresponding elementary matrices as follows:
+        <me>
+          A \;\xrightarrow{R_1\pluseq 2R_2}\; E_1A
+          \;\xrightarrow{R_1\longleftrightarrow R_2}\; E_2(E_1A)
+          \;\xrightarrow{R_1\timeseq 3}\; E_3(E_2(E_1A)).
+        </me>
+        Left-multiplying <m>A</m> by <m>E_1</m> performs <m>R_1\pluseq 2R_2</m>; if we then want to swap the first two rows, we want to multiply the resulting matrix <m>E_1A</m> on the left by <m>E_2</m>, which results in <m>E_2(E_1A)</m>, <em>not</em> <m>E_1E_2A</m>.  In other words, the matrix <m>E_3E_2E_1A</m> is obtained from <m>A</m> by <em>first</em> multiplying on the left by <m>E_1</m>, <em>then</em> multipyling by <m>E_2</m>, and <em>last</em> by <m>E_3</m>.
+      </p>
+
+      <bluebox>
+        <p>
+          If <m>E_1,E_2,\ldots,E_r</m> are elementary matrices, then
+          <me> E_r\cdots E_2E_1\,A</me>
+          is the matrix obtained by doing the corresponding row operations <em>in the order</em> <m>E_1,E_2,\ldots,E_r</m>.
+        </p>
+      </bluebox>
+    </paragraphs>
+
+    <paragraphs xml:id="invertibility-criterion-proof">
+      <title>Application to Invertibility</title>
+
+      <p>
+        At this point we can explain why the matrix inverse <xref ref="matrix-inv-how-to-compute"/> works.  Suppose that <m>A</m> is an invertible <m>n\times n</m> matrix, so that its reduced row echelon form is <m>I_n</m> by the <xref ref="invertibility-criterion">invertibility criterion</xref>.  This means that we can perform a number of row operations on <m>A</m> to produce <m>I_n</m>.  These row operations have corresponding elementary matrices <m>E_1,E_2,\ldots,E_r</m>, and left-multiplication by <m>E_i</m> performs the <m>i</m>th row operations.  Therefore,
+        <me>
+          I_n = (E_r\cdots E_2E_1)\,A,
+        </me>
+        which means that <m>E_r\cdots E_2E_1 = A\inv</m>.
+      </p>
+
+      <p>
+        Let us perform the same row operations on the augmented matrix <m>\amat{A I_n}</m>.  This amounts to forming the product <m>(E_r\cdots E_2E_1)\,\amat{A I_n}</m>.  Matrix products can be computed column by column in the second factor: see the <xref ref="matrix-product-col-form"/>.  It follows that
+        <me>
+          (E_r\cdots E_2E_1)\,\amat{A I_n}
+          = \amat{(E_r\cdots E_2E_1)\,A (E_r\cdots E_2E_1)\,I_n}
+          = \amat{I_n A\inv}.
+        </me>
+        The matrix on the right is in reduced row echelon form, so performing Gaussian elimination and Jordan substitution on <m>\amat{A I_n}</m> yields <m>\amat{I_n A\inv}</m>, as claimed.
+      </p>
+
+    </paragraphs>
 
   </subsection>
 
