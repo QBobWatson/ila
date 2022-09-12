@@ -15,6 +15,7 @@
   <uri uri="../mathbook/build/pretext.rnc" resource="fundamental-subspaces.xml"/>
   <uri uri="../mathbook/build/pretext.rnc" resource="gauss-jordan.xml"/>
   <uri uri="../mathbook/build/pretext.rnc" resource="gfdl.xml"/>
+  <uri uri="../mathbook/build/pretext.rnc" resource="invertible-matrices.xml"/>
   <uri uri="../mathbook/build/pretext.rnc" resource="ila.xml"/>
   <uri uri="../mathbook/build/pretext.rnc" resource="least-squares.xml"/>
   <uri uri="../mathbook/build/pretext.rnc" resource="linindep.xml"/>

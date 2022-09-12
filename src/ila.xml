@@ -50,6 +50,7 @@ Free Documentation License"
       <xi:include href="./elimination.xml" />
       <xi:include href="./gauss-jordan.xml" />
       <xi:include href="./pivots-solutions.xml" />
+      <xi:include href="./invertible-matrices.xml" />
       <xi:include href="./lu-decomposition.xml" />
       <xi:include href="./parametric-form.xml" />
       <xi:include href="./spans.xml" />

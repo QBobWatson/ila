@@ -1,0 +1,487 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--********************************************************************
+Copyright 2022 Dan Margalit and Joseph Rabinoff
+
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version 1.3 or
+any later version published by the Free Software Foundation.  A copy of
+the license is included in gfdl.xml.
+*********************************************************************-->
+
+<section xml:id="invertible-matrices">
+  <title>Invertible and Elementary Matrices</title>
+
+  <objectives>
+    <ol>
+      <li>Write the objectives.</li>
+    </ol>
+  </objectives>
+
+  <introduction>
+    <p>
+      In this <xref ref="defn-three-ways"/>, we learned to write a system of linear equations as a matrix equation <m>Ax=b</m>.  This notation is suggestive: can we solve the system by dividing by <m>A</m>?  In other words, does the expression
+      <me> \text{\raisebox{1em}{``}}x = \frac bA\text{\raisebox{1em}{''}} </me>
+      make sense?  If so, then <m>Ax=b</m> would have exactly one solution for every value of <m>b</m>, namely, <m>x=\text{\raisebox{1mm}{``}}\frac bA\text{\raisebox{1mm}{''}}</m>.  According to this <xref ref="number-of-solutions">fact</xref>, this is the case if and only if the augmented matrix <m>\mat{A b}</m> has a pivot in every non-augmented column and no pivot in the augmented column, for every value of <m>b</m>.  That is, the row echelon form would have to look like this:
+      <me>
+        \def\r{\color{seq-red}}
+        \amat{
+          \r\star, \star,   \star, b_1;
+          0,     \r\star,   \star, b_2;
+          0,           0, \r\star, b_3}
+        \qquad
+          {\r\star} = \text{pivot.}
+      </me>
+      Each non-augmented column must have a pivot, and there can be no row of zeros to the left of the augmentation line, since
+      <me>
+        \def\r{\color{seq-red}}
+        \amat{
+          \r\star, \star,   \star, b_1;
+          0,     \r\star,   \star, b_2;
+          0,           0, \r\star, b_3;
+          0,           0,       0, b_4;
+        }
+      </me>
+      has no solution when <m>b_4 = 0</m>.  It follows that every row and every column of the coefficient matrix <m>A</m> needs to have a pivot, which can happen only when <m>A</m> is square.
+    </p>
+
+    <p>
+      The point of this discussion is that there are nontrivial conditions on <m>A</m> in order for the expresion <m>x=\text{\raisebox{1mm}{``}}\frac bA\text{\raisebox{1mm}{''}}</m> to make sense.  This condition is called <term>invertibility</term>.
+    </p>
+
+  </introduction>
+
+  <subsection>
+    <title>Invertible Matrices</title>
+
+    <p>
+      An inverse matrix is meant to behave like the reciprocal of a nonzero number.  In order to motivate our definition, first we notice that a number <m>a</m> is equal to <m>1</m> if and only if <m>ab = b</m> for every number <m>b</m>: in other words, <m>1</m> is the <term>multiplicative identity</term>.  Since <m>I_mA = A</m> for every <m>m\times n</m> matrix <m>A</m>, the identity matrix is the multiplicative identity: it plays the role of the number <m>1</m> in the context of matrices.  Moreover, two numbers <m>a</m> and <m>b</m> are reciprocals if <m>ab=1</m>; therefore, two matrices <m>A</m> and <m>B</m> should be inverses if <m>AB</m> is the identity matrix..
+    </p>
+
+    <definition>
+      <idx><h>Invertible matrix</h><h>definition of</h></idx>
+      <idx><h>Singular matrix</h><h>definition of</h></idx>
+      <idx><h>Matrix</h><h>inverse of</h><see>Invertible matrix</see></idx>
+      <idx><h>Matrix</h><h>invertible</h><see>Invertible matrix</see></idx>
+      <notation><usage>A\inv</usage><description>Inverse of a matrix</description></notation>
+      <statement>
+        <p>
+          Let <m>A</m> be an <m>n\times n</m> (square) matrix.  We say that <m>A</m> is <term>invertible</term> if there is an <m>n\times n</m> matrix <m>B</m> such that
+          <me>AB = I_n \sptxt{and} BA = I_n.</me>
+          In this case, the matrix <m>B</m> is called the <term>inverse</term> of <m>A</m>, and we write <m>B = A\inv</m>.
+        </p>
+        <p>
+          If <m>A</m> is not invertible, we say that it is <term>singular</term>.
+        </p>
+      </statement>
+    </definition>
+
+    <example xml:id="matrix-inverse-eg-1">
+      <p>
+        Let
+        <me>
+          A = \mat{2 3; 1 2} \sptxt{and} B = \mat{2 -3; -1 2}.
+        </me>
+        Verify that <m>AB = I_2</m> and <m>BA = I_2</m>, so that <m>A</m> is invertible and <m>B = A\inv</m>.
+      </p>
+    </example>
+
+    <example xml:id="matrix-inverse-eg-2">
+      <p>
+        Let
+        <me>
+          A = \mat{1 0; 0 0}.
+        </me>
+        We claim that <m>A</m> is singular.  We will give a <xref ref="invertibility-criterion">criterion</xref> below for invertibility; in the absence of this criterion, we simply have to verify that there is no matrix <m>B</m> such that <m>AB=I_2</m>:
+        <me>
+          \mat{1 0; 0 0}\mat{a b; c d} = \mat{a b; 0 0} \neq I_2.
+        </me>
+        Since the product of <m>A</m> with an arbitrary matrix <m>B</m> does not give the identity matrix, <m>A</m> is not invertible.
+      </p>
+    </example>
+
+    <p>
+      Since matrix multiplication is not commutative, it is a priori necessary to require <m>AB=I_n</m> and <m>BA=I_n</m>.  However, if <m>A</m> and <m>B</m> are <em>square</em> matrices such that <m>AB=I_n</m>, then it turns out that <m>BA=I_n</m> automatically, so the definition given above is a bit pedantic.
+    </p>
+
+    <bluebox>
+      <p>
+        If <m>A</m> and <m>B</m> are <m>n\times n</m> matrices then
+        <me>
+          AB = I_n \quad\iff\quad B = A\inv \quad\iff\quad BA = I_n.
+        </me>
+      </p>
+    </bluebox>
+
+    <p>
+      When discussing invertible matrices, we restrict ourselves to <em>square</em> matrices.  There is a good reason for this: if <m>A</m> is an <m>m\times n</m> matrix with <m>m\neq n</m>, then there does not exist an <m>n\times m</m> matrix <m>B</m> such that <m>AB = I_m</m> and <m>BA = I_n</m>.  We will see why in <xref provisional="exercise-no-inverse-nonsquare"/>.
+    </p>
+
+    <fact hide-type="true" xml:id="matrix-inv-facts">
+      <title>Facts about invertible matrices</title>
+      <idx><h>Invertible matrix</h><h>basic facts</h></idx>
+      <statement>
+        <p>
+          Let <m>A</m> and <m>B</m> be invertible <m>n\times n</m> matrices.
+          <ol>
+            <li>
+              <idx><h>Invertible matrix</h><h>inverse of</h></idx>
+              <m>A\inv</m> is invertible, and its inverse is <m>(A\inv){}\inv = A.</m>
+            </li>
+            <li>
+              <idx><h>Matrix multiplication</h><h>inverse of</h></idx>
+              <m>AB</m> is invertible, and its inverse is <m>(AB)\inv = B\inv A\inv</m> (note the order).
+            </li>
+            <li>
+              <idx><h>Matrix</h><h>transpose of</h><h>inverse of</h></idx>
+              <m>A^T</m> is invertible, and its inverse is <m>(A\inv)^T</m>.
+            </li>
+          </ol>
+        </p>
+      </statement>
+      <proof visible="true">
+        <p>
+          In each case, showing that two matrices are inverses amounts to proving that their product is the identity matrix.
+          <ol>
+            <li>
+              The equations <m>AA^{-1}=I_n</m> and <m>A^{-1}A = I_n</m> at the same time exhibit <m>A^{-1}</m> as the inverse of <m>A</m> and <m>A</m> as the inverse of <m>A^{-1}.</m>
+            </li>
+            <li>
+              We compute
+              <me>(B\inv A\inv)AB = B\inv(A\inv A)B = B\inv I_n B = B\inv B = I_n.</me>
+              Here we used the associativity of matrix multiplication and the fact that <m>I_n B = B</m>.  This shows that <m>B\inv A\inv</m> is the inverse of <m>AB</m>.
+            </li>
+            <li>
+              Since the identity matrix is symmetric, we have
+              <me>
+                I_n = I_n^T = (A\inv A)^T = A^T(A\inv)^T.
+              </me>
+              This means that <m>(A\inv)^T</m> is the inverse of <m>A^T</m>.
+            </li>
+          </ol>
+        </p>
+      </proof>
+    </fact>
+
+    <remark>
+      <p>
+        It is rarely true that <m>(AB)\inv = A\inv B\inv</m>.  If we try to multiply <m>AB</m> by <m>A\inv B\inv</m> as in the proof of the second <xref ref="matrix-inv-facts"/> above, we get:
+        <me>(AB)(A\inv B\inv) = A(BA\inv)B\inv.</me>
+        In this case, there is no cancellation because we cannot change the order of the terms in the product.
+      </p>
+      <p>
+        More concretely, let
+        <me> A = \mat{2 3; 1 2} \sptxt{and} B = \mat{2 1; 3 2} = A^T.</me>
+        According to this <xref ref="matrix-inverse-eg-1"/> and the third <xref ref="matrix-inv-facts"/> above, we have
+        <me>
+          B\inv = (A^T)\inv = (A\inv)^T = \mat{2 -3; -1 2}^T = \mat{2 -1; -3 2}.
+        </me>
+        Then we compute
+        <me>
+          A\inv B\inv = \mat{2 -3; -1 2}\mat{2 -1; -3 2}
+          = \mat{13 -8; -8 5}.
+        </me>
+        On the other hand, we have
+        <me>
+          AB = \mat{13 8; 8 5},
+        </me>
+        so
+        <me>
+          AB(A\inv B\inv) = \mat{13 8; 8 5}\mat{13 -8; -8 5}
+          = \mat{105 -64; 64 -39}\neq \mat{1 0; 0 1}.
+        </me>
+        It follows that <m>A\inv B\inv</m> is not the inverse of <m>AB</m>.  Indeed,
+        <me>
+          (AB)\inv = B\inv A\inv = \mat{2 -1; -3 2}\mat{2 -3; -1 2} = \mat{5 -8; -8 13}.
+        </me>
+      </p>
+    </remark>
+
+    <p>
+      Recall from the <xref ref="matrix-mult-caveats">matrix algebra caveats</xref> that matrix multiplication is not cancelative: that is, <m>AB=AC</m> does not generally imply <m>B=C</m>.  However, if <m>A</m> is <em>invertible</em> then we can multiply both sides on the left by <m>A\inv</m> to obtain:
+      <me>
+        AB = AC \quad\implies\quad A\inv(AB) = A\inv(AC) \quad\implies\quad
+        I_nB = I_nC \quad\implies\quad B = C.
+      </me>
+      Multiplying on the right by <m>A\inv</m> shows that <m>BA=CA</m> implies <m>B=C</m>.
+    </p>
+
+    <bluebox>
+      <title>Cancelativity for Invertible Matrices</title>
+      <p>
+        If <m>A</m> is invertible then
+        <me>
+          AB = AC \quad\implies\quad B = C \sptxt{and}
+          BA = CA \quad\implies\quad B = C.
+        </me>
+      </p>
+    </bluebox>
+
+    <p>
+      The following is our first (of many) useful <em>criteria</em> for a matrix to be invertible.  It says that one can check invertibility using Gaussian elimination: it is not necessary to evaluate <m>AB</m> for an arbitrary matrix <m>B</m>, as we did in this <xref ref="matrix-inverse-eg-2"/>.
+    </p>
+
+    <theorem xml:id="invertibility-criterion">
+      <title>Invertibility Criterion</title>
+      <idx><h>Invertible matrix</h><h>criterion</h></idx>
+      <statement>
+        <p>
+          Let <m>A</m> be an <m>n\times n</m> matrix.  The following are equivalent:
+          <ol>
+            <li>
+              <m>A</m> is invertible.
+            </li>
+            <li>
+              The reduced row echelon form of <m>A</m> is the identity matrix <m>I_n</m>.
+            </li>
+            <li>
+              <m>A</m> has rank <m>n</m>: i.e., it has a pivot in each row and each column.
+            </li>
+          </ol>
+        </p>
+      </statement>
+    </theorem>
+
+    <p>
+      We will prove this theorem when we discuss elementary matrices <xref provisional="invertibility-criterion-proof"/> below.  In terms of systems of equations, it is important to think of the matrix <m>A</m> in this theorem as the <em>coefficient matrix</em>: after all, we are trying to solve <m>Ax=b</m> by <q>dividing by <m>A</m></q>.
+    </p>
+
+    <bluebox>
+      <p>
+        The phrase <q>the following are equivalent</q> means that, for a given matrix <m>A</m>, either all of the properties are true, or all of them are false: it is not possible for one to be true and the others to be false.
+      </p>
+    </bluebox>
+
+    <example>
+      <p>
+        Consider the matrix and its row echelon form from this <xref ref="matrix-inverse-eg-1"/>:
+        <me>
+          \mat{2 3; 1 2} \quad\xrightarrow{\text{REF}}\quad
+          \mat{\color{seq-red}2 3; 0 \color{seq-red}1/2}.
+        </me>
+        This matrix has two pivots, one in each row and each column, so it is invertible according to the third property in the <xref ref="invertibility-criterion">criterion</xref>.
+      </p>
+      <p>
+        On the other hand, the matrix
+        <me>
+          \mat{1 0; 0 0}
+        </me>
+        from this <xref ref="matrix-inverse-eg-2"/> is in reduced row echelon form, and it is not the identity matrix, so it is not invertible by the second property.
+      </p>
+    </example>
+
+    <p>
+      We now come to the issue of how to <em>compute</em> an inverse matrix.  This turns out to be a Gauss<mdash/>Jordan calculation.
+    </p>
+
+    <algorithm xml:id="matrix-inv-how-to-compute">
+      <idx><h>Invertible matrix</h><h>computation</h><h>in general</h></idx>
+      <statement>
+        <p>
+          The <alert>input</alert> is an <m>n\times n</m> matrix <m>A</m>, and the <alert>output</alert> is the inverse matrix <m>A\inv</m>, or <q>not invertible</q>.
+        </p>
+        <p>
+          <ol>
+            <li>Form the augmented matrix <m>\amat{A I_n}</m>, the <m>n\times 2n</m> augmented matrix with the <m>n\times n</m> identity matrix on the right half.
+            </li>
+            <li>
+              Perform Gaussian elimination on <m>\amat{A I_n}</m>.  If there is a pivot to the right of the augmentation line, the matrix is not invertible.
+            </li>
+            <li>
+              Otherwise, perform Jordan substitution on the result of the previous step.  The reduced row echelon form of <m>\amat{A I_n}</m> has the form <m>\amat{I_n B}</m>, and <m>B = A\inv</m>.
+            </li>
+          </ol>
+        </p>
+      </statement>
+    </algorithm>
+
+    <p>
+      We will prove this theorem in <xref provisional="invertibility-criterion-proof"/> below.
+    </p>
+
+    <example>
+      <title>An invertible matrix</title>
+      <statement>
+        <p>
+          Determine if the matrix
+          <me>A = \mat{1 0 4; 0 1 2; 0 -3 -4},</me>
+          is invertible, and if so, find its inverse.
+        </p>
+      </statement>
+      <solution>
+        <p>
+          We augment by the identity and perform Gaussian elimination, which only requires one row operation in this case:
+          <me>
+            \def\r{\color{seq-red}}
+            \hmat{1 0 4 1 0 0; 0  1 2 0 1 0; 0 -3 -4 0 0 1}
+            \quad\xrightarrow{R_3 \pluseq 3R_2}\quad
+            \hmat{\r1 0 4 1 0 0; 0 \r1 2 0 1 0; 0 0 \r2 0 3 1}.
+          </me>
+          All three pivots are to the left of the augmentation line, so <m>A</m> is invertible.  We continue with Jordan substitution:
+          <me>
+            \begin{split}
+              \hmat{1 0 4 1 0 0; 0 1 2 0 1 0; 0 0 2 0 3 1}
+              \quad\xrightarrow{R_3\diveq 2}\quad
+              &amp;\hmat{1 0 4 1 0 0; 0 1 2 0 1 0; 0 0 1 0 3/2 1/2} \\
+              \quad\xrightarrow[R_2\minuseq 2R_3]{R_1\minuseq 4R_3}\quad
+              &amp;\hmat{1 0 0 1 -6 -2; 0 1 0 0 -2 -1; 0 0 1 0 3/2 1/2}.
+            \end{split}
+          </me>
+          According to the <xref ref="matrix-inv-how-to-compute"/>, the inverse matrix is
+          <me>\mat{1 0 4; 0 1 2; 0 -3 -4}\inv = \mat{1 -6 -2; 0 -2 -1; 0 3/2 1/2}.</me>
+          We check:
+          <me>\mat{1 0 4; 0 1 2; 0 -3 -4}\mat{1 -6 -2; 0 -2 -1; 0 3/2 1/2}
+= \ mat{1 0 0; 0 1 0; 0 0 1}. \qquad\bigcheck</me>
+        </p>
+      </solution>
+    </example>
+
+    <example>
+      <title>A singular matrix</title>
+      <statement>
+        <p>
+          Determine if the matrix
+          <me>A = \mat{1 0 4; 0 1 2; 0 -3 -6}.</me>
+          is invertible, and if so, find its inverse.
+        </p>
+      </statement>
+      <solution>
+        <p>
+          We augment by the identity and perform Gaussian elimination:
+          <me>
+            \def\r{\color{seq-red}}
+            \hmat{1 0 4 1 0 0; 0  1 2 0 1 0; 0 -3 -6 0 0 1}
+            \quad\xrightarrow{R_3\pluseq 3R_2}\quad
+            \hmat{\r1 0 4 1 0 0; 0 \r1 2 0 1 0; 0 0 0 0 \r3 1}.
+          </me>
+          At this point we can stop, because one of the pivots is to the right of the augmentation line: the matrix <m>A</m> is not invertible.
+        </p>
+      </solution>
+    </example>
+
+    <p>
+      There is a shortcut for finding the inverse of a <m>2\times 2</m> matrix.  This only works on <m>2\times 2</m> matrices; there is a <xref provisional="cayley-hamilton-inverse">version</xref> for larger matrices, but it is not a shortcut.
+    </p>
+
+    <proposition xml:id="matrix-inv-22">
+      <idx><h>Invertible matrix</h><h>computation</h><h><m>2\times 2</m> case</h></idx>
+      <statement>
+        <p>
+          Let <m>A = \mat{a b; c d}</m>.
+          <ol>
+            <li>
+              If <m>ad-bc \neq 0</m>, then <m>A</m> is invertible, and
+              <me>A\inv = \frac 1{ad-bc}\mat{d -b; -c a}.</me>
+            </li>
+            <li>If <m>ad-bc = 0,</m> then <m>A</m> is not invertible.</li>
+          </ol>
+        </p>
+      </statement>
+      <proof>
+        <p>
+          <ol>
+            <li>
+              Suppose that <m>ad-bc\neq 0</m>.  Define
+              <m>\displaystyle
+                B = \frac 1{ad-bc}\mat{d -b; -c a}.
+              </m>
+              Then
+              <me>
+                AB = \mat{a b; c d}\frac 1{ad-bc}\mat{d -b; -c a}
+                = \frac 1{ad-bc}\mat[c]{ad-bc 0; 0 ad-bc} = I_2.
+              </me>
+              This means that <m>A</m> is invertible and <m>B=A\inv</m>.
+            </li>
+            <li>
+              Suppose now that <m>ad-bc=0</m>.  Define <m>B = \mat{d -b; -c a}.</m>  Then
+              <me>AB = \mat{a b; c d}\mat{d -b; -c a} = \mat[c]{ad-bc 0; 0 ad-bc} = 0.</me>
+              If <m>A</m> were invertible then we could multiply both sides of this equation by <m>A\inv</m> to obtain
+              <me> 0 = A\inv0 = A\inv(AB) = (A\inv A)B = I_2B = B,</me>
+              which means <m>B=0</m>, and hence <m>d=0,\,-b=0,\,-c=0,\,a=0</m>.  But this implies <m>A=0</m>, and the zero matrix is not invertible (it has no pivots).  Hence <m>A</m> could not have been invertible.
+            </li>
+          </ol>
+        </p>
+      </proof>
+    </proposition>
+
+    <example xml:id="matrix-inverse-eg-3">
+      <statement>
+        <p>
+          Compute the inverse of the matrix
+          <me> A = \mat{2 3; 1 2} </me>
+          from this <xref ref="matrix-inverse-eg-1"/>.
+        </p>
+      </statement>
+      <answer>
+        <p>
+          Here we have <m>a=2,\,b=3,\,c=1,</m> and <m>d=2</m>, so <m>ad-bc=4-3=1</m>.  Hence
+          <me>
+            A\inv = \frac 1{ad-bc}\mat{d -b; -c a} = \mat{2 -3; -1 2}.
+          </me>
+        </p>
+      </answer>
+    </example>
+
+    <p>
+      Now we return to the question of solving <m>Ax=b</m> by <q>dividing by <m>A</m>.</q>  Suppose that <m>A</m> is invertible.  Then
+      <me>
+        \begin{split}
+          Ax = b &amp;\iff A\inv(Ax) = A\inv b \\
+          &amp;\iff (A\inv A)x = A\inv b \\
+          &amp;\iff I_nx = A\inv b \\
+          &amp;\iff x = A\inv b.
+        \end{split}
+      </me>
+      In other words, <m>Ax=b</m> has <em>exactly one solution</em> for every value of <m>b</m>, namely, <m>b = A\inv x</m>.
+    </p>
+
+    <bluebox>
+      <p>
+        If <m>A</m> is invertible, then
+        <me> Ax = b \quad\iff\quad x = A\inv b.</me>
+      </p>
+    </bluebox>
+
+    <p>
+      The expression <m>x = A\inv b</m> is in fact a linear formula for the coordinates of <m>x</m> in terms of the coordinates of <m>b</m>.  This makes it easy to solve <m>Ax=b</m> for multiple values of <m>b</m> given <m>A\inv</m>.
+    </p>
+
+    <example>
+      <statement>
+        <p>
+          Solve the system
+          <me>
+            \syseq{2x_1 + 3x_2 = b_1; x_1 + 2x_2 = b_2}
+          </me>
+          for <m>x_1,x_2</m> in terms of <m>b_1,b_2</m>.
+        </p>
+      </statement>
+      <answer>
+        <p>
+          We rewrite this system as <m>Ax=b</m> for
+          <me> A = \mat{2 3; 1 2} \qquad b = \vec{b_1 b_2}. </me>
+          We saw in this <xref ref="matrix-inverse-eg-3"/> that
+          <me> A\inv = \mat{2 -3; -1 2}, </me>
+          so that
+          <me>
+            \vec{x_1 x_2} = A\inv\vec{b_1 b_2}
+            = \mat{2 -3; -1 2}\vec{b_1 b_2}
+            = \vec{2b_1-3b_2 -b_1+2b_2}.
+          </me>
+          Hence the solution is <m>x_1 = 2b_1-3b_2</m> and <m>x_2 = -b_1 + 2b_2</m>.
+        </p>
+        <p>
+          We can check our solution by substituting our expressions for <m>x_1,x_2</m> into our original equations:
+          <me>
+            \syseq{
+              2x_1 + 3x_2 = 2(2b_1-3b_2) + 3(-b_1+2b_2) = (4-3)b_1 + (-6+6)b_2 = b_1;
+              x_1 + 2x_2 = (2b_1-3b_2) + 2(-b_1+2b_2) = (2-2)b_1 + (-3+4)b_2 = b_2\rlap.
+            }
+          </me>
+        </p>
+      </answer>
+    </example>
+
+  </subsection>
+
+</section>

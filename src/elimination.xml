@@ -499,7 +499,7 @@ the license is included in gfdl.xml.
       Moreover, it is easy for a computer to understand a box full of numbers (a two-dimensional array of floating point values), whereas the concept of an <q>unknown</q> or a <q>solution</q> is much more abstract.  For these reasons, we will rewrite our equations using matrices.
     </p>
 
-    <definition hide-type="true">
+    <definition hide-type="true" xml:id="defn-three-ways">
       <title>Three Ways to Write a System of Equations</title>
       <idx><h>Matrix equation</h></idx>
       <idx><h>Coefficient matrix</h></idx>
