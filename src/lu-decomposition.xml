@@ -10,7 +10,7 @@ the license is included in gfdl.xml.
 *********************************************************************-->
 
 <section xml:id="lu-decomposition">
-  <title>The LU Decomposition</title>
+  <title>LU Decompositions</title>
 
   <objectives>
     <ol>
@@ -18,8 +18,823 @@ the license is included in gfdl.xml.
     </ol>
   </objectives>
 
-  <p>
-    Write the content.
-  </p>
+  <introduction>
+    <p>
+      In this section we turn to computational considerations.  Recall from this <xref ref="complexity-of-elimination"/> that Gaussian elimination on an <m>n\times n</m> matrix <m>A</m> requires about <m>\frac 23n^3</m> floating point operations to perform.  If <m>n=1,000,000</m>, then Gaussian elimination takes about <m>\frac 23\times 10^{18}</m> flops, which would take a supercomputer a few days.  Solving <m>Ax=b</m> for 1,000 different values of <m>b</m> would then take years.
+    </p>
+    <p>
+      On the other hand, by this <xref ref="complexity-of-substitution"/>, Jordan substitution only requires <m>n^2</m> flops, which for <m>n=1,000,000</m> equals one trillion flops (one teraflop).  This only takes a few seconds, and can easily be performed 1,000 times.
+    </p>
+    <p>
+      The point of LU decompositions is to <q>store</q> the elimination steps in a matrix <m>L</m>.  The upshot is that elimination only needs to be applied <em>once</em>; after that, solving <m>Ax=b</m> for different values of <m>b</m> only requires substitution.
+    </p>
+    <p>
+      We will also address the problem of <em>numerical stability</em>, or how to avoid rounding errors when performing elimination on a computer.  We will introduce <term>maximal partial pivoting,</term> which is a simple pivoting strategy that helps produce numerically accurate results.
+    </p>
+  </introduction>
+
+  <subsection>
+    <title>Triangular Matrices</title>
+
+    <p>
+      In order to understand LU decompositions, we need one more ingredient in addition to inverse matrices and elementary matrices: namely, <em>triangular</em> matrices.
+    </p>
+
+    <definition>
+      <idx><h>Matrix</h><h>triangular</h></idx>
+      <idx><h>Matrix</h><h>upper-triangular</h></idx>
+      <idx><h>Matrix</h><h>upper-unitriangular</h></idx>
+      <idx><h>Matrix</h><h>lower-triangular</h></idx>
+      <idx><h>Matrix</h><h>lower-unitriangular</h></idx>
+      <idx><h>Upper-triangular</h><h>see Matrix</h></idx>
+      <idx><h>Upper-unitriangular</h><h>see Matrix</h></idx>
+      <idx><h>Lower-triangular</h><h>see Matrix</h></idx>
+      <idx><h>Lower-unitriangular</h><h>see Matrix</h></idx>
+      <statement>
+        <p>
+          <ul>
+            <li>
+              A matrix is called <term>upper-triangular</term> if all of the entries below the main diagonal are equal to zero, and it is called <term>lower-triangular</term> if all of the entries above the main diagonal are equal to zero.
+              <latex-code>
+                <![CDATA[
+\pgfdeclarelayer{background}
+\pgfsetlayers{background,main}
+\begin{tikzpicture}
+
+  \node[math matrix, nodes={minimum width=1em,minimum height=1em}] (ut) {
+    \star \& \star \& \star \& \star \& \star \\
+        0 \& \star \& \star \& \star \& \star \\
+        0 \&     0 \& \star \& \star \& \star \\
+        0 \&     0 \&     0 \& \star \& \star \\
+  };
+
+  \node[above] at (ut.north) {upper-triangular};
+
+  \begin{pgfonlayer}{background}
+  \fill[fill=seq-green!20!white, rounded corners=1.4mm]
+    ($(ut-1-1.west)+(-1mm,0)$)
+    -- (ut-1-1.north west)
+    -- (ut-1-5.north east)
+    -- (ut-4-5.south east)
+    -- ($(ut-4-4.south west)+(1pt,0)$)
+    -- cycle;
+  \end{pgfonlayer}
+
+\end{tikzpicture}
+\qquad\qquad
+\begin{tikzpicture}
+
+  \node[math matrix, nodes={minimum width=1em,minimum height=1em}] (lt) {
+    \star \&     0 \&     0 \&     0 \& 0 \\
+    \star \& \star \&     0 \&     0 \& 0 \\
+    \star \& \star \& \star \&     0 \& 0 \\
+    \star \& \star \& \star \& \star \& 0 \\
+  };
+
+  \node[above] at (lt.north) {lower-triangular};
+
+  \begin{pgfonlayer}{background}
+  \fill[fill=seq-green!20!white, rounded corners=1.4mm]
+    ($(lt-1-1.north)+(0,1mm)$)
+    -- (lt-1-1.north west)
+    -- (lt-4-1.south west)
+    -- (lt-4-4.south east)
+    -- ($(lt-4-4.east)+(1mm,0)$)
+    -- cycle;
+  \end{pgfonlayer}
+
+\end{tikzpicture}
+                ]]>
+              </latex-code>
+            </li>
+            <li>
+              A matrix is called <term>upper-unitriangular</term> (resp. <term>lower-unitriangular</term>) if it is upper-triangular (resp. lower-triangular) and all of the diagonal entries are equal to 1.
+              <latex-code>
+                <![CDATA[
+\pgfdeclarelayer{background}
+\pgfsetlayers{background,main}
+\begin{tikzpicture}
+
+  \node[math matrix, nodes={minimum width=1em,minimum height=1em}] (ut) {
+ |[seq-red]|1 \& \star \& \star \& \star \& \star \\
+        0 \&|[seq-red]|1 \& \star \& \star \& \star \\
+        0 \&     0 \&|[seq-red]|1 \& \star \& \star \\
+        0 \&     0 \&     0 \&|[seq-red]|1 \& \star \\
+  };
+
+  \node[above] at (ut.north) {upper-\textcolor{seq-red}{uni}triangular};
+
+  \begin{pgfonlayer}{background}
+  \fill[fill=seq-green!20!white, rounded corners=1.4mm]
+    ($(ut-1-1.west)+(-1mm,0)$)
+    -- (ut-1-1.north west)
+    -- (ut-1-5.north east)
+    -- (ut-4-5.south east)
+    -- ($(ut-4-4.south west)+(1pt,0)$)
+    -- cycle;
+  \end{pgfonlayer}
+
+\end{tikzpicture}
+\qquad\qquad
+\begin{tikzpicture}
+
+  \node[math matrix, nodes={minimum width=1em,minimum height=1em}] (lt) {
+    |[seq-red]|1\&     0 \&     0 \&     0 \& 0 \\
+    \star \& |[seq-red]|1\&     0 \&     0 \& 0 \\
+    \star \& \star \& |[seq-red]|1\&     0 \& 0 \\
+    \star \& \star \& \star \& |[seq-red]|1\& 0 \\
+  };
+
+  \node[above] at (lt.north) {lower-\textcolor{seq-red}{uni}triangular};
+
+  \begin{pgfonlayer}{background}
+  \fill[fill=seq-green!20!white, rounded corners=1.4mm]
+    ($(lt-1-1.north)+(0,1mm)$)
+    -- (lt-1-1.north west)
+    -- (lt-4-1.south west)
+    -- (lt-4-4.south east)
+    -- ($(lt-4-4.east)+(1mm,0)$)
+    -- cycle;
+  \end{pgfonlayer}
+
+\end{tikzpicture}
+                ]]>
+              </latex-code>
+            </li>
+          </ul>
+        </p>
+      </statement>
+    </definition>
+
+    <p>
+      In the pictures above, an entry marked <m>\star</m> could also be equal to zero: for instance, the zero matrix is both upper- and lower-triangular.  Note that a matrix is <xref ref="diagonal-matrix" text="title">diagonal</xref> if and only if it is both upper- and lower-triangular.
+    </p>
+
+    <specialcase>
+      <p>
+        Any matrix in row echelon form is upper-triangular:
+        <latex-code>
+          <![CDATA[
+\pgfdeclarelayer{background}
+\pgfsetlayers{background,main}
+\begin{tikzpicture}
+
+  \node[math matrix, nodes={minimum width=1em,minimum height=1em}] (ut) {
+        3 \& 2 \& 5 \& 8 \& 9 \\
+        0 \& 2 \& 0 \& 3 \& 7 \\
+        0 \& 0 \& 0 \& 5 \& 1 \\
+        0 \& 0 \& 0 \& 0 \& 0 \\
+  };
+
+  \node[above] at (ut.north) {REF};
+
+  \begin{pgfonlayer}{background}
+  \fill[fill=seq-green!20!white, rounded corners=1.4mm]
+    ($(ut-1-1.west)+(-1mm,0)$)
+    -- (ut-1-1.north west)
+    -- (ut-1-5.north east)
+    -- (ut-4-5.south east)
+    -- ($(ut-4-4.south west)+(1pt,0)$)
+    -- cycle;
+  \end{pgfonlayer}
+
+\end{tikzpicture}
+          ]]>
+        </latex-code>
+      </p>
+    </specialcase>
+
+    <specialcase xml:id="row-replacement-lower-unitri">
+      <p>
+        If <m>i&gt;j</m> then the matrix for the row operation <m>R_i\pluseq cR_j</m> (add a multiple of a higher row to a lower row) is lower-unitriangular:
+        <latex-code>
+          <![CDATA[
+\pgfdeclarelayer{background}
+\pgfsetlayers{background,main}
+\begin{tikzpicture}
+
+  \node[math matrix, nodes={minimum width=1em,minimum height=1em}] (id) {
+    1 \& 0 \& 0 \\
+    0 \& 1 \& 0 \\
+    0 \& 0 \& 1 \\
+    };
+
+  \node[math matrix, nodes={minimum width=1em,minimum height=1em},
+        right=3cm of id.east] (lt) {
+    |[seq-red]|1 \& 0 \& 0 \\
+    0 \& |[seq-red]|1 \& 0 \\
+    2 \& 0 \& |[seq-red]|1 \\
+  };
+
+  \draw[thick, ->]
+    (id.east) ++(5mm,0)
+    to["$R_3\pluseq 3R_1$"]
+    ($(lt.west) - (5mm,0)$);
+
+  \begin{pgfonlayer}{background}
+  \fill[fill=seq-green!20!white, rounded corners=1.4mm]
+    ($(lt-1-1.north)+(0,1mm)$)
+    -- (lt-1-1.north west)
+    -- (lt-3-1.south west)
+    -- (lt-3-3.south east)
+    -- ($(lt-3-3.east)+(1mm,0)$)
+    -- cycle;
+  \end{pgfonlayer}
+
+\end{tikzpicture}
+          ]]>
+        </latex-code>
+      </p>
+    </specialcase>
+
+    <p>
+      The main fact we will use about triangular matrices is that triangularity is preserved under multiplication and inversion.
+    </p>
+
+    <fact xml:id="triangular-matrix-mult">
+      <idx><h>Matrix</h><h>triangular</h><h>product of</h></idx>
+      <idx><h>Matrix</h><h>triangular</h><h>inverse of</h></idx>
+      <statement>
+        <p>
+          If <m>A</m> and <m>B</m> are <m>n\times n</m> upper-triangular (resp. upper-unitriangular, lower-triangular, or lower-unitriangular) matrices, then so is <m>AB</m>.  If <m>A</m> is invertible, then <m>A\inv</m> is also upper-triangular (resp. upper-unitriangular, lower-triangular, or lower-unitriangular).
+        </p>
+        <p>
+          Moreover, an upper- or lower-<alert>uni</alert>triangular matrix is always invertible.
+        </p>
+      </statement>
+      <proof>
+        <p>
+          We will prove that a product of upper-triangular square matrices <m>A</m> and <m>B</m> is again upper-triangular, and leave the other cases to the reader.  The <m>(i,j)</m>-entry of <m>AB</m> is the dot product of the <m>i</m>th row of <m>A</m> and the <m>j</m>th column of <m>B</m>.  Since <m>A</m> and <m>B</m> are upper-triangular, the coordinates <m>1,2,\ldots,i-1</m> of the <m>i</m>th row of <m>A</m> are equal to zero, and the last <m>n-j</m> coordinates of the <m>j</m>th column of <m>B</m> are equal to zero, so that the nonzero coordinates of the <m>j</m>th column of <m>B</m> are among the first <m>j</m>.  If <m>i&gt;j</m> then the <m>(i,j)</m> entry is below the main diagonal; in this case, <m>i-1\geq j</m>, so that the nonzero coordinates of the <m>j</m>th column of <m>B</m> are all multiplied by zero coordinates of the <m>i</m>th column of <m>A</m>.  This shows that the <m>(i,j)</m>-entry of <m>AB</m> is equal to zero.
+          <latex-code>
+            <![CDATA[
+\begin{tikzpicture}
+
+  \node[math matrix, nodes={minimum width=1em,minimum height=1em}] (A) {
+    \star \& \star \& \star \& \star \\
+        0 \& \star \& \star \& \star \\
+        0 \&     0 \& \star \& \star \\
+        |[seq-red]|0 \& |[seq-red]|0 \& |[seq-red]|0 \& \star \\
+  };
+
+  \node[above] at (A.north) {$A$};
+
+  \node[fit=(A-4-1) (A-4-4), inner sep=2pt,
+        draw=blue!50, thick, rounded corners,
+        label={[text=blue!50]below:\small$i=4$}] {};
+
+  \node[math matrix, nodes={minimum width=1em,minimum height=1em},
+        right=7mm of A.east] (B) {
+    \star \& \star \& \star \& \star \\
+        0 \& \star \& \star \& \star \\
+        0 \&     0 \& \star \& \star \\
+        0 \&     0 \& |[seq-red]|0 \& \star \\
+  };
+
+  \node[above] at (B.north) {$B$};
+
+  \node[fit=(B-1-3) (B-4-3), inner sep=2pt,
+        draw=blue!50, thick, rounded corners,
+        label={[text=blue!50]below:\small$j=3$}] {};
+
+  \node[right=5mm of B.east, font=\large] (equal) {$=$};
+
+  \node[math matrix, nodes={minimum width=1em,minimum height=1em},
+        right=5mm of equal.east] (AB) {
+    \star \& \star \& \star \& \star \\
+        0 \& \star \& \star \& \star \\
+        0 \&     0 \& \star \& \star \\
+        0 \&     0 \& |[seq-red]|0 \& \star \\
+  };
+
+  \node[above] at (AB.north) {$AB$};
+
+  \node[fit=(AB-4-3), inner sep=2pt,
+        draw=blue!50, thick, rounded corners,
+        label={[text=blue!50]below:\small$(4,3)$-entry}] {};
+
+\end{tikzpicture}
+            ]]>
+          </latex-code>
+        </p>
+        <p>
+          Next we will prove that a lower-unitriangular matrix is always invertible and that its inverse is again lower-unitriangular; we leave the other cases to the reader.  When <m>A</m> is lower-unitriangular, Gaussian elimination produces a matrix in reduced row echelon form; Jordan substitution is not needed.  Hence <m>A</m> is invertible by the <xref ref="invertibility-criterion">invertibility criterion</xref>.  Moreover, only row replacements of the form <m>R_i\pluseq cR_j\;(i&gt;j)</m> are needed to perform elimination.  Applying such a row operation to a lower-unitriangular matrix only affects the entries below the main diagonal, and therefore produces another lower-unitriangular matrix:
+          <latex-code>
+            <![CDATA[
+\begin{tikzpicture}
+
+  \node[math matrix, nodes={minimum width=1em,minimum height=1em}] (A) {
+        1 \&     0 \&     0 \&     0 \& 0 \\
+    \star \&     1 \&     0 \&     0 \& 0 \\
+    \star \& \star \&     1 \&     0 \& 0 \\
+    \star \& \star \& \star \&     1 \& 0 \\
+  };
+
+  \node[fit=(A-2-1) (A-2-2), inner sep=2pt,
+        draw=blue!50, thick, rounded corners] (from) {};
+  \node[fit=(A-4-1) (A-4-2), inner sep=2pt,
+        draw=seq-red!50, thick, rounded corners] (to) {};
+  \draw[thick, blue!50, ->] (from.south) -- (to.north);
+
+  \node[math matrix, nodes={minimum width=1em,minimum height=1em},
+        right=3cm of A.east] (B) {
+        1 \&     0 \&     0 \&     0 \& 0 \\
+    \star \&     1 \&     0 \&     0 \& 0 \\
+    \star \& \star \&     1 \&     0 \& 0 \\
+    |[seq-red]|\star \& |[seq-red]|\star \& \star \&     1 \& 0 \\
+  };
+
+  \node[fit=(B-4-1) (B-4-2), inner sep=2pt,
+        draw=seq-red!50, thick, rounded corners] {};
+
+  \draw[thick, ->]
+    (A.east) ++(5mm,0)
+    to["$R_4\pluseq cR_2$"]
+    ($(B.west) - (5mm,0)$);
+
+\end{tikzpicture}
+            ]]>
+          </latex-code>
+          The identity matrix is lower-unitriangular, so applying Gaussian elimination to the augmented matrix <m>\amat{A I_n}</m> produces a lower-unitriangular matrix on the right side of the augmentation line.  This matrix is the inverse of <m>A</m>.
+        </p>
+      </proof>
+    </fact>
+
+    <example>
+      <p>
+        A product of two upper-triangular matrices is upper-triangular:
+        <me>
+          \mat{1 2 3; 0 4 5; 0 0 6}
+          \mat{7 8 9; 0 1 2; 0 0 3}
+          = \mat{7 10 22; 0 4 23; 0 0 18}.
+        </me>
+      </p>
+      <p>
+        The inverse of a lower-unitriangular matrix is lower-unitriangular:
+        <me>
+          \mat{1 2 3; 0 1 4; 0 0 1}\inv = \mat{1 -2 5; 0 1 -4; 0 0 1}.
+        </me>
+      </p>
+    </example>
+
+  </subsection>
+
+  <subsection>
+    <title>LU Decompositions</title>
+
+    <p>
+      First we state the LU decomposition as a fact, and then show how an LU decomposition speeds up the process of solving <m>Ax=b</m>.
+    </p>
+
+    <fact>
+      <title>LU Decomposition</title>
+      <idx><h>LU Decomposition</h></idx>
+      <p>
+        If Gaussian elimination on an <m>m\times n</m> matrix <m>A</m> can be accomplished without row swaps, then it is possible to write <m>A</m> as a product
+        <men xml:id="lu-decomposition-equation">
+          A = \textcolor{seq-red}{L}\textcolor{seq-green}{U}
+        </men>
+        for a lower-unitriangular <m>m\times m</m> matrix <m>\color{seq-red}L</m> and a row echelon form <m>\color{seq-green}U</m> of <m>A</m>.
+      </p>
+    </fact>
+
+    <p>
+      Equation <xref ref="lu-decomposition-equation"/> is called the <term>LU decomposition</term> of <m>A</m>.
+    </p>
+
+    <example>
+      <p>
+        The matrix
+        <me> A = \mat{2 1 0 1; 4 4 4 3; 6 1 0 1} </me>
+        has the LU decomposition
+        <me>
+          A = \textcolor{seq-red}{L}\textcolor{seq-green}{U}
+          = \textcolor{seq-red}{
+              \mat{1 0 0; 2 1 0; 3 -1 1}
+            }\textcolor{seq-green}{
+              \mat{2 1 0 1; 0 2 4 1; 0 0 4 -1}.
+            }
+        </me>
+      </p>
+    </example>
+
+    <note>
+      <p>
+        The LU decomposition is an example of a <term>matrix factorization</term>: it is a way of writing a matrix as a product of <em>simpler</em> matrices.  Matrix factorizations are very useful; we will see several more examples of matrix factorizations throughout this book.
+      </p>
+    </note>
+
+    <p>
+      Here is the algorithm for solving <m>Ax=b</m> using an LU decomposition of <m>A</m>.
+    </p>
+
+    <algorithm>
+      <title>Solving <m>Ax=b</m> using <m>A=LU</m></title>
+      <idx><h>LU Decomposition</h><h>solving <m>Ax=b</m></h></idx>
+      <statement>
+        <p>
+          The <alert>inputs</alert> are an <m>m\times n</m> matrix <m>A</m> along with an LU factorization <m>A=LU</m>, and a vector <m>b\in\R^m</m>.  The <alert>output</alert> is a solution <m>x</m> of <m>Ax=b</m>.
+          <ul label="">
+            <li>
+              <alert>Step 1:</alert> Solve the equation <m>Ly=b</m> using <alert>forward-substitution</alert>:
+              <me>
+                \def\s{\textcolor{seq-red}{\text{\Large$\star$}}}
+                \mat[c]{1 0 0; \s, 1 0; \s, \s, 1}
+                \vec{y_1 y_2 y_3} = \vec{b_1 b_2 b_3}
+                \quad\xrightarrow{\text{becomes}}\quad
+                \syseq{
+                  y_1 \+ \. \+ \. = b_1;
+                  \s y_1 + y_2 \+ \. = b_2;
+                  \s y_1 + \s y_2 + y_3 = b_3\rlap.
+                }
+              </me>
+            </li>
+            <li>
+              <alert>Step 2:</alert> Solve the equation <m>Ux=y</m> using <alert>back-substitution</alert>:
+              <me>
+                \def\s{\textcolor{seq-red}{\text{\Large$\star$}}}
+                \mat[c]{\s, \s, \s; 0 \s, \s; 0 0 \s}
+                \vec{x_1 x_2 x_3} = \vec{y_1 y_2 y_3}
+                \quad\xrightarrow{\text{becomes}}\quad
+                \syseq{
+                  \s x_1 + \s x_2 + \s x_3 = y_1;
+                  \. \+ \s x_2 + \s x_3 = y_2;
+                  \. \+ \. \+ \s x_3 = y_3\rlap.
+                }
+              </me>
+            </li>
+          </ul>
+          Then
+          <me>
+            Ax = (LU)x = L(Ux) = Ly = b.
+          </me>
+        </p>
+      </statement>
+    </algorithm>
+
+    <p>
+      Solving an equation using forward-substitution is the same as using back-substitution, except that one starts with the first equation instead of the last.  If <m>A</m> is an <m>n\times n</m> matrix, then the back-substitution step takes <m>n^2</m> flops by this <xref ref="complexity-of-substitution"/>; forward-substitution actually takes <m>n^2-n</m> flops, because there are no division steps (the diagonal entries of <m>L</m> are already equal to <m>1</m>).  It follows that the above algorithm requires <m>n^2 + n^2-n\approx 2n^2</m> flops.  This is much less than the <m>\frac 23n^3</m> flops necessary to perform elimination on <m>\amat{A b}</m>.
+    </p>
+
+    <bluebox>
+      <p>
+        Solving <m>Ax=b</m> is much faster given an <m>LU</m> decomposition.
+      </p>
+    </bluebox>
+
+    <example>
+      <statement>
+        <p>
+          Solve <m>Ax=(1,0,1)</m> given the LU decomposition
+          <me>
+            A = \mat{2 1 0; 4 4 4; 6 1 0}
+            = LU = \mat{1 0 0; 2 1 0; 3 -1 1}
+            \mat{2 1 0; 0 2 4; 0 0 4}.
+          </me>
+        </p>
+      </statement>
+      <answer>
+        <p>
+          We solve <m>Ly=b</m> using forward-substitution:
+          <me>
+            Ly=b
+            \quad\xrightarrow{\text{becomes}}\quad
+            \syseq{y_1 \+ \. \+ \. = 1; 2y_1 + y_2 \+ \. = 0; 3y_1 - y_2 + y_3 = 1}
+            \quad\xrightarrow[\text{substitution}]{\text{forward}}\quad
+            \vec{y_1 y_2 y_3} = \vec{1 -2 -4}.
+          </me>
+          Next we solve <m>Ux=y</m> using back-substitution:
+          <me>
+            Ux = b
+            \quad\xrightarrow{\text{becomes}}\quad
+            \syseq{2x_1 + x_2 \+ \. = 1; \. \+ 2x_2 + 4x_3 = -2; \. \+ \. \+ 4x_3 = -4}
+            \quad\xrightarrow[\text{substitution}]{\text{back}}\quad
+            \vec{x_1 x_2 x_3} = \vec{0 1 -1}.
+          </me>
+          The solution is <m>x = (0,1,-1).</m>
+        </p>
+      </answer>
+    </example>
+
+    <p>
+      Now we turn to the mechanics of LU decompositions: namely, where do they come from, and how are they computed?
+    </p>
+
+    <paragraphs>
+      <title>Existence of LU Decompositions</title>
+      <p>
+        Suppose that Gaussian elimination on an <m>m\times n</m> matrix <m>A</m> requires no row swaps.  In this case, elimination uses some number of row replacements to clear the entries below a pivot, so the only row operations required are row replacements of the form <m>R_i\pluseq cR_j\;(i>j)</m>.  The corresponding elementary matrices <m>E_1,E_2,\ldots,E_r</m> are all <em>lower-unitriangular</em> by this <xref ref="row-replacement-lower-unitri"/>.  If <m>U</m> is the row echelon form of <m>A</m> obtained by performing these row operations, then
+        <me> U = (E_r\cdots E_2E_1)\,A </me>
+        according to this <xref ref="multiple-row-ops"/>.  The matrix <m>E_r\cdots E_2E_1</m> is lower-unitriangular according to this <xref ref="triangular-matrix-mult"/> above, as is its inverse
+        <me> L = (E_r\cdots E_2E_1)\inv. </me>
+        Multiplying both sides of <m>U = (E_r\cdots E_2E_1)\,A</m> on the left by <m>L</m> yields the LU decomposition <m>A = LU</m>.
+      </p>
+
+      <note>
+        <p>
+          The matrix <m>L</m> is composed of (the inverses of) the elementary matrices for the row operations used in Gaussian elimination.  In this sense, the matrix <m>L</m> <q>keeps track of</q> the elimination steps that were used, whereas <m>U</m> is the result of elimination.
+        </p>
+      </note>
+
+      <p>
+        The above description gives a way of computing the matrix
+        <me> L = (E_r\cdots E_2E_1)\inv = E_1\inv E_2\inv \cdots E_r\inv = E_1\inv E_2\inv \cdots E_r\inv I_m. </me>
+        Namely, the matrix <m>E_r\inv</m> performs the opposite of the last row operation on the identity matrix; left-multiplication by <m>E_{r-1}\inv</m> performs the opposite of the next-last row operation on the result, and so on.  We will give an easier way to do the bookkeeping below, but it is instructive to compute an LU decomposition in this way.
+      </p>
+
+      <example xml:id="lu-example-1">
+        <statement>
+          <p>
+            Find the LU decomposition of the matrix
+            <me> A = \mat{1 2 3; 4 5 6; 7 8 9}. </me>
+          </p>
+        </statement>
+        <answer>
+          <p>
+            We perform Gaussian elimination, keeping track of the elementary matrices for each row operation:
+            <latex-code>
+\begin{alignat*}{2}
+  \mat{1 2 3; 4 5 6; 7 8 9}
+  &amp;\quad\xrightarrow{R_2\minuseq 4R_1}\quad \mat{1 2 3; 0 -3 -6; 7 8 9}
+  &amp; \qquad E_1 &amp;= \mat{1 0 0; -4 1 0; 0 0 1} \\
+  &amp;\quad\xrightarrow{R_3\minuseq 7R_1}\quad \mat{1 2 3; 0 -3 -6; 0 -6 -12}
+  &amp; E_2 &amp;= \mat{1 0 0; 0 1 0; -7 0 1} \\
+  &amp;\quad\xrightarrow{R_3\minuseq 2R_2}\quad \textcolor{seq-green}{\mat{1 2 3; 0 -3 -6; 0 0 0}}
+  &amp; E_3 &amp;= \mat{1 0 0; 0 1 0; 0 -2 1}.
+\end{alignat*}
+            </latex-code>
+            The matrix in row echelon form is <m>\color{seq-green}U</m>.  We compute <m>\textcolor{seq-red}{L} = E_1\inv E_2\inv E_3\inv</m> by performing the opposite row operations on the identity matrix:
+            <me>
+              \begin{split}
+              \mat{1 0 0; 0 1 0; 0 0 1}
+              \quad\xrightarrow[E_3\inv]{R_3\pluseq 2R_2}\quad
+              &amp;\mat{1 0 0; 0 1 0; 0 2 1} \\
+              \quad\xrightarrow[E_2\inv]{R_3\pluseq 7R_1}\quad
+              &amp;\mat{1 0 0; 0 1 0; 7 2 1} \\
+              \quad\xrightarrow[E_1\inv]{R_2\pluseq 4R_1}\quad
+              &amp;\textcolor{seq-red}{\mat{1 0 0; 4 1 0; 7 2 1}}.
+              \end{split}
+            </me>
+            We can verify that <m>A = \textcolor{seq-red}{L}\textcolor{seq-green}{U}</m>:
+            <me>
+              \mat{1 2 3; 4 5 6; 7 8 9}
+              = \textcolor{seq-red}{\mat{1 0 0; 4 1 0; 7 2 1}}
+              \textcolor{seq-green}{\mat{1 2 3; 0 -3 -6; 0 0 0}}.
+              \qquad\bigcheck
+            </me>
+          </p>
+        </answer>
+      </example>
+
+    </paragraphs>
+
+    <paragraphs>
+      <title>Computing LU Decompositions</title>
+
+      <p>
+        Now we translate the above procedure for computing <m>A=LU</m> into an algorithm.
+      </p>
+
+      <algorithm>
+        <title>LU Decomposition; 2-Column Method</title>
+        <idx><h>LU Decomposition</h><h>2-column method</h></idx>
+        <statement>
+          <p>
+            The <alert>input</alert> is an <m>m\times n</m> matrix <m>A</m> for which Gaussian elimination requires no row swaps.  The <alert>output</alert> is the LU decomposition <m>A=LU</m>.
+            <ul label="">
+              <li>
+                <alert>Setup:</alert> Prepare two columns.  Start with a blank <m>m\times m</m> matrix in the left column, and place the matrix <m>A</m> in the right column.
+                <latex-code>
+                  <![CDATA[
+\begin{tikzpicture}
+  \node[math matrix, nodes={minimum width=1em,minimum height=1em}] (L) {
+     \phantom1 \&  \phantom1 \&  \phantom1 \\
+     \phantom1 \&  \phantom1 \&  \phantom1 \\
+     \phantom1 \&  \phantom1 \&  \phantom1 \\
+  };
+  \node[math matrix, nodes={minimum width=1em,minimum height=1em},
+        right=3cm of L.east] (U) {
+     2 \&  1 \&  0  \&  1 \\
+     4 \&  4 \&  4  \&  3 \\
+     6 \&  1 \&  0  \&  1 \\
+  };
+\end{tikzpicture}
+                  ]]>
+                </latex-code>
+              </li>
+              <li>
+                <alert>Eliminate:</alert> Perform elimination on the matrix on the right.  For each row replacement <m>R_i\pluseq \textcolor{seq-red}{c}R_j</m>, place the number <m>\textcolor{seq-red}{-c}</m> in the <m>(i,j)</m> entry of the matrix on the left.
+                <latex-code>
+                  <![CDATA[
+\begin{tikzpicture}
+  \node[math matrix, nodes={minimum width=1em,minimum height=1em}] (L) {
+     \phantom1 \&  \phantom1 \&  \phantom1 \\
+     |[seq-red]|2 \&  \phantom1 \&  \phantom1 \\
+     \phantom1 \&  \phantom1 \&  \phantom1 \\
+  };
+  \node[fit=(L-2-1), inner sep=2pt,
+        draw=blue!50, thick, rounded corners] {};
+
+  \node[math matrix, nodes={minimum width=1em,minimum height=1em},
+        right=3cm of L.east] (U) {
+     2 \&  1 \&  0  \&  1 \\
+     0 \&  2 \&  4  \&  1 \\
+     6 \&  1 \&  0  \&  1 \\
+  };
+
+  \draw[<-, thick, overlay] (L.west) ++(-7mm,0) to["$R_2\pluseq\textcolor{seq-red}{-2}\,R_1$"'] ++(-2.3cm,0);
+\end{tikzpicture}
+                  ]]>
+                </latex-code>
+              </li>
+              <li>
+                <alert>Finish:</alert> Place 1<rsq/>s on the diagonal of the matrix on the left, and fill the rest of the blank entries with 0<rsq/>s.
+                <latex-code>
+                  <![CDATA[
+\begin{tikzpicture}
+  \node[math matrix, nodes={minimum width=1em,minimum height=1em}] (L) {
+     \phantom1 \&  \phantom1 \&  \phantom1 \\
+      2 \&  \phantom1 \&  \phantom1 \\
+      3 \&  -1 \&  \phantom1 \\
+  };
+  \node[math matrix, nodes={minimum width=1em,minimum height=1em},
+        right=3cm of L.east] (U) {
+     2 \&  1 \&  0  \&  8 \\
+     0 \&  2 \&  4  \&  1 \\
+     0 \&  0 \&  4  \& -1 \\
+  };
+
+  \draw[->, thick] (L.south) to ++(0,-1cm);
+
+  \node[math matrix, nodes={minimum width=1em,minimum height=1em},
+        below=1cm of L.south] (L1) {
+      |[seq-blue]|1 \&  |[seq-blue]|0 \&  |[seq-blue]|0 \\
+      2 \&  |[seq-blue]|1 \&  |[seq-blue]|0 \\
+      3 \&  -1 \&  |[seq-blue]|1 \\
+  };
+  \node[math matrix, nodes={minimum width=1em,minimum height=1em},
+        right=3cm of L1.east] (U1) {
+     2 \&  1 \&  0  \&  8 \\
+     0 \&  2 \&  4  \&  1 \\
+     0 \&  0 \&  4  \& -1 \\
+  };
+
+\end{tikzpicture}
+                  ]]>
+                </latex-code>
+              </li>
+            </ul>
+            The matrix on the left is <m>L</m>, and the matrix on the right is <m>U</m>.
+          </p>
+        </statement>
+      </algorithm>
+
+      <p>
+        We leave it to the reader to work out how the above procedure produces the correct <m>L</m> matrix.  (See the following example.)
+      </p>
+
+      <note hide-type="true">
+        <title>Warning</title>
+        <p>
+          The above procedure will only work if you apply the Gaussian elimination algorithm as prescribed in this <xref ref="algo-elimination"/>.  There are other sequences of row operations that will lead to a valid row echelon form of a matrix, but these will not lead to the correct <m>L</m> matrix when using the 2-column method.
+        </p>
+      </note>
+
+      <example>
+        <statement>
+          <p>
+            Use the 2-column method to find the LU decomposition of the matrix
+            <me> A = \mat{1 2 3; 4 5 6; 7 8 9} </me>
+            from the above <xref ref="lu-example-1"/>.
+          </p>
+        </statement>
+        <answer>
+          <p>
+            We put a blank matrix in the left column and the matrix <m>A</m> in the right, then apply the algorithm:
+            <latex-code>
+              <![CDATA[
+\begin{tikzpicture}
+  \tikzset{
+    l matrix/.style={
+        math matrix,
+        nodes={minimum height=1em},
+        column sep={2em,between origins},
+        every node/.append style={anchor=base east}
+    },
+    u matrix/.style={l matrix, column sep={2.5em,between origins}},
+    hilite entry/.style={inner sep=2pt, draw=blue!50,
+                         thick, rounded corners}
+  }
+  \def\p{\phantom1}
+  \node[l matrix] (L1) {
+     \p \&  \p \&  \p \\
+     \p \&  \p \&  \p \\
+     \p \&  \p \&  \p \\
+  };
+  \node[u matrix, right=2cm of L1.east] (U1) {
+     1 \&  2 \&  3 \\
+     4 \&  5 \&  6 \\
+     7 \&  8 \&  9 \\
+  };
+
+  \node[l matrix, below=2mm of L1.south] (L2) {
+     \p \&  \p \&  \p \\
+     |[seq-red]|4 \&  \p \&  \p \\
+     \p \&  \p \&  \p \\
+  };
+  \node[fit=(L2-2-1), hilite entry] {};
+  \node[u matrix, right=2cm of L2.east] (U2) {
+     1 \&  2 \&  3 \\
+     0 \& -3 \& -6 \\
+     7 \&  8 \&  9 \\
+  };
+  \draw[<-, thick] (L2.west) ++(-7mm,0)
+    to["$R_2\pluseq\textcolor{seq-red}{-4}\,R_1$"'] ++(-2.3cm,0);
+
+  \node[l matrix, below=2mm of L2.south] (L3) {
+     \p \&  \p \&  \p \\
+     4 \&  \p \&  \p \\
+     |[seq-red]|7 \&  \p \&  \p \\
+  };
+  \node[fit=(L3-3-1), hilite entry] {};
+  \node[u matrix, right=2cm of L3.east] (U3) {
+     1 \&  2 \&  3 \\
+     0 \& -3 \& -6 \\
+     0 \& -6 \& -12 \\
+  };
+  \draw[<-, thick] (L3.west) ++(-7mm,0)
+    to["$R_3\pluseq\textcolor{seq-red}{-7}\,R_1$"'] ++(-2.3cm,0);
+
+  \node[l matrix, below=2mm of L3.south] (L4) {
+     \p \&  \p \&  \p \\
+     4 \&  \p \&  \p \\
+     7 \&  |[seq-red]|2 \&  \p \\
+  };
+  \node[fit=(L4-3-2), hilite entry] {};
+  \node[u matrix, right=2cm of L4.east] (U4) {
+     1 \&  2 \&  3 \\
+     0 \& -3 \& -6 \\
+     0 \&  0 \&  0 \\
+  };
+  \draw[<-, thick] (L4.west) ++(-7mm,0)
+    to["$R_3\pluseq\textcolor{seq-red}{-2}\,R_2$"'] ++(-2.3cm,0);
+
+  \node[l matrix, below=2mm of L4.south] (L5) {
+     |[seq-blue]|1 \&  |[seq-blue]|0 \&  |[seq-blue]|0 \\
+     4 \&  |[seq-blue]|1 \&  |[seq-blue]|0 \\
+     7 \&  2 \&  |[seq-blue]|1 \\
+  };
+  \node[u matrix, right=2cm of L5.east] (U5) {
+     1 \&  2 \&  3 \\
+     0 \& -3 \& -6 \\
+     0 \&  0 \&  0 \\
+  };
+  \draw[<-, thick] (L5.west) ++(-7mm,0)
+    to["fill"'] ++(-2.3cm,0);
+
+\end{tikzpicture}
+              ]]>
+            </latex-code>
+            This produces
+            <me>
+              L = \mat{1 0 0; 4 1 0; 7 2 0} \qquad
+              U = \mat{1 2 3; 0 -3 -6; 0 0 0}.
+            </me>
+          </p>
+        </answer>
+      </example>
+
+      <note>
+        <p>
+          Finding an LU decomposition is just the Gaussian elimination algorithm plus some extra bookkeeping, so it has the same computational complexity: computing <m>A=LU</m> for an <m>n\times n</m> matrix <m>A</m> requires about <m>\frac 23n^3</m> flops.  Once an LU decomposition has been computed, solving <m>Ax=b</m> now only requires about <m>2n^2</m> flops for each value of <m>b</m>.
+        </p>
+      </note>
+
+      <bluebox>
+        <p>
+          If you want to solve <m>Ax=b</m> for many values of <m>b</m>, you want to ask the computer for an <m>LU</m> decomposition <em>first</em>.
+        </p>
+      </bluebox>
+
+      <remark>
+        <title>Why Not Inverses?</title>
+        <p>
+          Suppose that <m>A</m> is an invertible matrix.  In order to solve <m>Ax=b</m> for many values of <m>b</m>, it seems reasonable to first compute <m>A\inv</m>, then recover <m>x</m> using <m>x = A\inv b</m>.  There are three reasons why an LU decomposition is preferable:
+          <ol>
+            <li>
+              Computing <m>A\inv</m> takes <m>\approx\frac 43n^3</m> flops, which is twice as many as Gaussian elimination.
+            </li>
+            <li>
+              Computing <m>A\inv</m> is not numerically stable: it is less accurate than an LU decomposition due to rounding errors.  (A <m>PA=LU</m> decomposition with maximal partial pivoting is even more accurate; see <xref provisional="maximal-partial-pivoting">below</xref>.)
+            </li>
+            <li>
+              Computing the matrix-vector product <m>A\inv b</m> also requires about <m>2n^2</m> flops for each value of <m>b</m>, so the inverse matrix does not save any time.
+            </li>
+          </ol>
+        </p>
+      </remark>
+
+    </paragraphs>
+
+  </subsection>
 
 </section>

@@ -871,7 +871,7 @@ the license is included in gfdl.xml.
       For Gaussian elimination, we restrict ourselves to square matrices for simplicity.
     </p>
 
-    <fact>
+    <fact xml:id="complexity-of-elimination">
       <idx><h>Gaussian elimination</h><h>computational complexity of</h></idx>
       <statement>
         <p>
@@ -937,7 +937,7 @@ the license is included in gfdl.xml.
       For Jordan substitution, we assume that we are working with an (augmented) matrix of size <m>n\times(n+1)</m>, with <m>n</m> pivots along the main diagonal.
     </p>
 
-    <fact>
+    <fact xml:id="complexity-of-substitution">
       <idx><h>Jordan substitution</h><h>computational complexity of</h></idx>
       <statement>
         <p>

@@ -425,7 +425,7 @@ the license is included in gfdl.xml.
       The notation <m>v^T</m> is provisional; see this <xref ref="row-vector-as-transpose"/> below.
     </p>
 
-    <definition>
+    <definition xml:id="diagonal-matrix">
       <idx><h>Matrix</h><h>diagonal entries of</h></idx>
       <idx><h>Matrix</h><h>diagonal</h></idx>
       <statement>

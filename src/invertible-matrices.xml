@@ -661,7 +661,7 @@ the license is included in gfdl.xml.
         Left-multiplying <m>A</m> by <m>E_1</m> performs <m>R_1\pluseq 2R_2</m>; if we then want to swap the first two rows, we want to multiply the resulting matrix <m>E_1A</m> on the left by <m>E_2</m>, which results in <m>E_2(E_1A)</m>, <em>not</em> <m>E_1E_2A</m>.  In other words, the matrix <m>E_3E_2E_1A</m> is obtained from <m>A</m> by <em>first</em> multiplying on the left by <m>E_1</m>, <em>then</em> multipyling by <m>E_2</m>, and <em>last</em> by <m>E_3</m>.
       </p>
 
-      <bluebox>
+      <bluebox xml:id="multiple-row-ops">
         <p>
           If <m>E_1,E_2,\ldots,E_r</m> are elementary matrices, then
           <me> E_r\cdots E_2E_1\,A</me>
