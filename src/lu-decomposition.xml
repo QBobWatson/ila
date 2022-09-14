@@ -398,7 +398,7 @@ the license is included in gfdl.xml.
     </fact>
 
     <p>
-      Equation <xref ref="lu-decomposition-equation"/> is called the <term>LU decomposition</term> of <m>A</m>.
+      Equation <xref ref="lu-decomposition-equation"/> is called the <term>LU decomposition</term> of <m>A</m>.  The letter <m>L</m> represents the fact that the matrix is <q>Lower-(uni)triangular</q>; likewise, <m>U</m> is <q>Upper-triangular</q>.
     </p>
 
     <example>
@@ -427,7 +427,7 @@ the license is included in gfdl.xml.
       Here is the algorithm for solving <m>Ax=b</m> using an LU decomposition of <m>A</m>.
     </p>
 
-    <algorithm>
+    <algorithm xml:id="solve-Axb-using-LU">
       <title>Solving <m>Ax=b</m> using <m>A=LU</m></title>
       <idx><h>LU Decomposition</h><h>solving <m>Ax=b</m></h></idx>
       <statement>
@@ -542,6 +542,7 @@ the license is included in gfdl.xml.
       </p>
 
       <example xml:id="lu-example-1">
+        <title>LU Decomposition with Elementary Matrices</title>
         <statement>
           <p>
             Find the LU decomposition of the matrix
@@ -594,7 +595,7 @@ the license is included in gfdl.xml.
         Now we translate the above procedure for computing <m>A=LU</m> into an algorithm.
       </p>
 
-      <algorithm>
+      <algorithm xml:id="lu-2-col-method">
         <title>LU Decomposition; 2-Column Method</title>
         <idx><h>LU Decomposition</h><h>2-column method</h></idx>
         <statement>
@@ -606,17 +607,28 @@ the license is included in gfdl.xml.
                 <latex-code>
                   <![CDATA[
 \begin{tikzpicture}
-  \node[math matrix, nodes={minimum width=1em,minimum height=1em}] (L) {
+  \tikzset{
+    l matrix/.style={
+        math matrix,
+        nodes={minimum height=1em},
+        column sep={2em,between origins},
+        every node/.append style={anchor=base east}
+    },
+    hilite entry/.style={inner sep=2pt, draw=blue!50,
+                         thick, rounded corners}
+  }
+
+  \node[l matrix] (L) {
      \phantom1 \&  \phantom1 \&  \phantom1 \\
      \phantom1 \&  \phantom1 \&  \phantom1 \\
      \phantom1 \&  \phantom1 \&  \phantom1 \\
   };
-  \node[math matrix, nodes={minimum width=1em,minimum height=1em},
-        right=3cm of L.east] (U) {
+  \node[l matrix, right=2cm of L.east] (U) {
      2 \&  1 \&  0  \&  1 \\
      4 \&  4 \&  4  \&  3 \\
      6 \&  1 \&  0  \&  1 \\
   };
+  \draw[<-, thick, white] (L.west) ++(-7mm,0) to ++(-2.4cm,0);
 \end{tikzpicture}
                   ]]>
                 </latex-code>
@@ -626,22 +638,31 @@ the license is included in gfdl.xml.
                 <latex-code>
                   <![CDATA[
 \begin{tikzpicture}
-  \node[math matrix, nodes={minimum width=1em,minimum height=1em}] (L) {
+  \tikzset{
+    l matrix/.style={
+        math matrix,
+        nodes={minimum height=1em},
+        column sep={2em,between origins},
+        every node/.append style={anchor=base east}
+    },
+    hilite entry/.style={inner sep=2pt, draw=blue!50,
+                         thick, rounded corners}
+  }
+
+  \node[l matrix] (L) {
      \phantom1 \&  \phantom1 \&  \phantom1 \\
      |[seq-red]|2 \&  \phantom1 \&  \phantom1 \\
      \phantom1 \&  \phantom1 \&  \phantom1 \\
   };
-  \node[fit=(L-2-1), inner sep=2pt,
-        draw=blue!50, thick, rounded corners] {};
+  \node[fit=(L-2-1), hilite entry] {};
 
-  \node[math matrix, nodes={minimum width=1em,minimum height=1em},
-        right=3cm of L.east] (U) {
+  \node[l matrix, right=2cm of L.east] (U) {
      2 \&  1 \&  0  \&  1 \\
      0 \&  2 \&  4  \&  1 \\
      6 \&  1 \&  0  \&  1 \\
   };
 
-  \draw[<-, thick, overlay] (L.west) ++(-7mm,0) to["$R_2\pluseq\textcolor{seq-red}{-2}\,R_1$"'] ++(-2.3cm,0);
+  \draw[<-, thick] (L.west) ++(-7mm,0) to["$R_2\pluseq\textcolor{seq-red}{-2}\,R_1$"'] ++(-2.3cm,0);
 \end{tikzpicture}
                   ]]>
                 </latex-code>
@@ -651,33 +672,39 @@ the license is included in gfdl.xml.
                 <latex-code>
                   <![CDATA[
 \begin{tikzpicture}
-  \node[math matrix, nodes={minimum width=1em,minimum height=1em}] (L) {
+  \tikzset{
+    l matrix/.style={
+        math matrix,
+        nodes={minimum height=1em},
+        column sep={2em,between origins},
+        every node/.append style={anchor=base east}
+    },
+    hilite entry/.style={inner sep=2pt, draw=blue!50,
+                         thick, rounded corners}
+  }
+  \node[l matrix] (L) {
      \phantom1 \&  \phantom1 \&  \phantom1 \\
       2 \&  \phantom1 \&  \phantom1 \\
       3 \&  -1 \&  \phantom1 \\
   };
-  \node[math matrix, nodes={minimum width=1em,minimum height=1em},
-        right=3cm of L.east] (U) {
+  \node[l matrix, right=2cm of L.east] (U) {
      2 \&  1 \&  0  \&  8 \\
      0 \&  2 \&  4  \&  1 \\
      0 \&  0 \&  4  \& -1 \\
   };
 
-  \draw[->, thick] (L.south) to ++(0,-1cm);
-
-  \node[math matrix, nodes={minimum width=1em,minimum height=1em},
-        below=1cm of L.south] (L1) {
+  \node[l matrix, below=2mm of L.south] (L1) {
       |[seq-blue]|1 \&  |[seq-blue]|0 \&  |[seq-blue]|0 \\
       2 \&  |[seq-blue]|1 \&  |[seq-blue]|0 \\
       3 \&  -1 \&  |[seq-blue]|1 \\
   };
-  \node[math matrix, nodes={minimum width=1em,minimum height=1em},
-        right=3cm of L1.east] (U1) {
+  \node[l matrix, right=2cm of L1.east] (U1) {
      2 \&  1 \&  0  \&  8 \\
      0 \&  2 \&  4  \&  1 \\
      0 \&  0 \&  4  \& -1 \\
   };
 
+  \draw[<-, thick] (L1.west) ++(-7mm,0) to["fill"'] ++(-2.3cm,0);
 \end{tikzpicture}
                   ]]>
                 </latex-code>
@@ -695,7 +722,7 @@ the license is included in gfdl.xml.
       <note hide-type="true">
         <title>Warning</title>
         <p>
-          The above procedure will only work if you apply the Gaussian elimination algorithm as prescribed in this <xref ref="algo-elimination"/>.  There are other sequences of row operations that will lead to a valid row echelon form of a matrix, but these will not lead to the correct <m>L</m> matrix when using the 2-column method.
+          The above procedure will only work if you apply the Gaussian elimination algorithm as prescribed in this <xref ref="algo-elimination"/>.  There are other sequences of row operations that will lead to a valid row echelon form of a matrix, but these will not produce the correct <m>L</m> matrix when using the 2-column method.
         </p>
       </note>
 
@@ -872,7 +899,7 @@ the license is included in gfdl.xml.
 
       <bluebox>
         <p>
-          If you want to solve <m>Ax=b</m> for many values of <m>b</m>, you want to ask the computer for an <m>LU</m> decomposition <em>first</em>.
+          If you want to solve <m>Ax=b</m> for many values of <m>b</m>, <em>you want to ask the computer for an <m>LU</m> decomposition</em>.
         </p>
       </bluebox>
 
@@ -885,7 +912,7 @@ the license is included in gfdl.xml.
               Computing <m>A\inv</m> takes <m>\approx\frac 43n^3</m> flops, which is twice as many as Gaussian elimination.
             </li>
             <li>
-              Computing <m>A\inv</m> is not numerically stable: it is less accurate than an LU decomposition due to rounding errors.  (A <m>PA=LU</m> decomposition with maximal partial pivoting is even more accurate; see <xref provisional="maximal-partial-pivoting">below</xref>.)
+              Computing <m>A\inv</m> is not numerically stable: it is less accurate than an LU decomposition due to rounding errors.  (A <m>PA=LU</m> decomposition with maximal partial pivoting is even more accurate; see <xref ref="sec-mpp">below</xref>.)
             </li>
             <li>
               Computing the matrix-vector product <m>A\inv b</m> also requires about <m>2n^2</m> flops for each value of <m>b</m>, so the inverse matrix does not save any time.
@@ -895,6 +922,961 @@ the license is included in gfdl.xml.
       </remark>
 
     </paragraphs>
+
+  </subsection>
+
+  <subsection>
+    <title>LU Decompositions with Row Swaps: <m>PA=LU</m></title>
+
+    <p>
+      A matrix <m>A</m> admits an LU decomposition only if it can be reduced to row echelon form <em>without any row swaps</em>.  However, some matrices require row swaps to find a nonzero pivot.  More importantly, we will see <xref ref="sec-mpp">below</xref> that there are numerical advantages to performing a row swap even when it is not strictly necessarily.  We therefore need to introduce a more sophisticated variant of the LU decomposition, called a <m>PA=LU</m> decomposition.
+    </p>
+
+    <p>
+      The idea behind the <m>PA=LU</m> decomposition is to <q>do all of the row swaps first</q>, then compute an LU decomposition.  (Of course, we cannot tell in advance which row swaps will be necessary, but this problem can be solved with some extra bookkeeping.)  Performing a row swap on a matrix <m>A</m> is the same as left-multiplying <m>A</m> by an elementary matrix <m>P_1</m> for a row swap.  Hence performing a number of row swaps on <m>A</m> is accomplished by multiplying by a number of elementary matrices for row swaps:
+      <me> A \quad\xrightarrow[\text{swaps}]{\text{row}}\quad P_r\cdots P_2P_1\,A. </me>
+      Multiplying the elementary matrices together into <m>P = P_r\cdots P_2P_1</m> yields the following kind of matrix.
+    </p>
+
+    <definition>
+      <idx><h>Permutation matrix</h></idx>
+      <statement>
+        <p>
+          A <term>permutation matrix</term> is a product of elementary matrices for row swaps.
+        </p>
+      </statement>
+    </definition>
+
+    <example xml:id="permutation-matrix-eg-1">
+      <p>
+        The row swaps <m>R_1\ToT R_2</m> and <m>R_1\ToT R_3</m> have the following elementary matrices:
+        <me>
+          \underbrace{\mat{0 1 0; 1 0 0; 0 0 1}}_{R_1\ToT R_2} \qquad
+          \underbrace{\mat{0 0 1; 0 1 0; 1 0 0}}_{R_1\ToT R_3}.
+        </me>
+        Their product is a permutation matrix:
+        <me>
+          P = \mat{0 1 0; 1 0 0; 0 0 1}\mat{0 0 1; 0 1 0; 1 0 0}
+          = \mat{0 1 0; 0 0 1; 1 0 0}.
+        </me>
+        Left-multiplication by <m>P</m> first swaps <m>R_1\ToT R_3</m>, then swaps <m>R_1\ToT R_2</m>.  This rearranges, or <term>permutes,</term> the rows of a matrix as follows:
+        <me>
+          \mat{0 1 0; 0 0 1; 1 0 0}
+          \mat{\matrow{\text{Row 1}}; \matrow{\text{Row 2}}; \matrow{\text{Row 3}}}
+          =
+          \mat{\matrow{\text{Row 2}}; \matrow{\text{Row 3}}; \matrow{\text{Row 1}}}.
+        </me>
+      </p>
+    </example>
+
+    <remark>
+      <p>
+        It is a good exercise to verify that a permutation matrix is the same as a matrix with exactly one 1 in each row and each column, and all other entries equal to 0.
+      </p>
+    </remark>
+
+    <p>
+      Now that we have defined the <m>P</m>, we can say what a <m>PA=LU</m> decomposition is.
+    </p>
+
+    <fact>
+      <title><m>PA=LU</m> Decomposition</title>
+      <idx><h><m>PA=LU</m> Decomposition</h></idx>
+      <p>
+        Any <m>m\times n</m> matrix <m>A</m> has a factorization
+        <latex-code mode="bare">
+          \def\r{\textcolor{seq-red}}
+          \def\g{\textcolor{seq-green}}
+          \def\b{\textcolor{seq-violet}}
+        </latex-code>
+        <me>
+          \b{P}A = \r{L}\g{U}
+        </me>
+        where <m>\b P</m> is an <m>m\times m</m> permutation matrix, <m>\r L</m> is an <m>m\times m</m> lower-unitriangular matrix, and <m>\g U</m> is an <m>m\times n</m> matrix in row echelon form.
+      </p>
+    </fact>
+
+    <p>
+      Again, the idea is that we find an <m>LU</m> decomposition of <m>PA</m>, which is just <m>A</m> with its rows rearranged.  Note that a <m>PA=LU</m> decomposition with <m>P=I_m</m> is just an LU decomposition.
+    </p>
+
+    <example>
+      <p>
+        The matrix
+        <me> A = \mat{1 1 1; -10 -20 -30; 5 15 10} </me>
+        has a <m>PA=LU</m> decomposition
+        <me>
+          \def\r{\textcolor{seq-red}}
+          \def\g{\textcolor{seq-green}}
+          \def\b{\textcolor{seq-violet}}
+          \b{\mat{0 1 0; 0 0 1; 1 0 0}}\,A
+          = \b{P}A = \r{L}\g{U}
+          = \r{\mat{1 0 0; -1/2 1 0; -1/10 -1/5 1}}
+            \g{\mat{-10 -20 -30; 0 5 -5; 0 0 -3}}.
+        </me>
+      </p>
+    </example>
+
+    <p>
+      Solving <m>Ax=b</m> using a <m>PA=LU</m> decomposition is not much different than with an LU decomposition.
+    </p>
+
+    <algorithm>
+      <title>Solving <m>Ax=b</m> using <m>PA=LU</m></title>
+      <idx><h><m>PA=LU</m> Decomposition</h><h>solving <m>Ax=b</m></h></idx>
+      <statement>
+        <p>
+          The <alert>inputs</alert> are an <m>m\times n</m> matrix <m>A</m> along with a <m>PA=LU</m> decomposition, and a vector <m>b\in\R^m</m>.  The <alert>output</alert> is a solution <m>x</m> of <m>Ax=b</m>.
+          <ul label="">
+            <li>
+              <alert>Step 0:</alert> Compute the vector <m>Pb</m>:
+              <me>
+                \mat{0 1 0; 0 0 1; 1 0 0}\vec{b_1 b_2 b_3}
+                = \vec{b_2 b_3 b_1}.
+              </me>
+            </li>
+            <li>
+              <alert>Step 1:</alert> Solve the equation <m>Ly = Pb</m> using forward-substitution.
+            </li>
+            <li>
+              <alert>Step 2:</alert> Solve the equation <m>Ux=y</m> using back-substitution.
+            </li>
+          </ul>
+          Then
+          <me>
+            (PA)x = (LU)x = L(Ux) = Ly = Pb.
+          </me>
+          Multiplying both sides by <m>P\inv</m> implies that <m>Ax=b</m>.
+        </p>
+      </statement>
+    </algorithm>
+
+    <p>
+      Left-multiplication by <m>P</m> simply rearranges the coordinates of <m>b</m>, which can be done in constant time: in practice one computes <m>Pb</m> with a look-up table.  It follows that the above algorithm has the same time complexity as the <xref ref="solve-Axb-using-LU"/> for solving <m>Ax=b</m> using <m>A=LU</m>.
+    </p>
+
+    <example>
+      <statement>
+        <p>
+          <latex-code mode="bare">
+          \def\r{\textcolor{seq-red}}
+          \def\g{\textcolor{seq-green}}
+          \def\b{\textcolor{seq-violet}}
+          </latex-code>
+          Solve <m>Ax=(0,-10,10)</m> given the <m>\b{P}A=\r{L}\g{U}</m> decomposition
+          <me>
+            \begin{split}
+              \b{\mat{0 1 0; 0 0 1; 1 0 0}}&amp;\mat{1 1 1; -10 -20 -30; 5 15 10} \\
+              &amp;= \b{P}A = \r{L}\g{U}
+              = \r{\mat{1 0 0; -1/2 1 0; -1/10 -1/5 1}}
+                \g{\mat{-10 -20 -30; 0 5 -5; 0 0 -3}}.
+            \end{split}
+          </me>
+        </p>
+      </statement>
+      <answer>
+        <p>
+          According to this <xref ref="permutation-matrix-eg-1"/>, left-multiplication by <m>P</m> first swaps rows 1 and 3, then swaps rows 1 and 2, so
+          <me>
+            Pb = \quad\left\{\vec{0 -10 10} \quad\xrightarrow{R_1\ToT R_3}\quad
+            \vec{10 -10 0} \quad\xrightarrow{R_1\ToT R_2}\quad
+            \vec{-10 10 0}\right\}.
+          </me>
+          Note that we did not need to multiply any matrices in this step!  Now we solve <m>Ly=Pb</m> by forward-substitution:
+          <me>
+            \begin{split}
+              Ly=Pb
+              \quad\xrightarrow{\text{becomes}}\quad
+              &amp;\syseq{
+                y_1 \+ \. \+ \. = -10;
+                -\frac12y_1 + y_2 \+ \. = 10;
+                -\frac1{10}y_1 - \frac15y_2 + y_3 = 0} \\
+              \quad\xrightarrow[\text{substitution}]{\text{forward}}\quad
+              &amp;\vec{y_1 y_2 y_3} = \vec{-10 5 0}.
+            \end{split}
+          </me>
+          Next we solve <m>Ux = y</m> by back-substitution:
+          <me>
+            \begin{split}
+              Ux=y
+              \quad\xrightarrow{\text{becomes}}\quad
+              &amp;\syseq{
+                -10x_1 - 20x_2 - 30x_3 = -10;
+                \. \+ 5x_2 - 5x_3 = 5;
+                \. \+ \. - 5x_3 = 0
+              } \\
+              \quad\xrightarrow[\text{substitution}]{\text{back}}\quad
+              &amp;\vec{x_1 x_2 x_3} = \vec{-1 1 0}.
+            \end{split}
+          </me>
+          The solution is <m>x = (-1,1,0)</m>:
+          <me>
+            \mat{1 1 1; -10 -20 -30; 5 15 10}\vec{-1 1 0}
+            = \vec{0 -10 10}. \qquad\bigcheck
+          </me>
+        </p>
+      </answer>
+    </example>
+
+    <p>
+      A <m>PA=LU</m> decomposition is constructed by performing elimination with elementary matrices, as with LU decompositions<mdash/>with one additional trick needed to <q>push all of the permutations to the right.</q>  In lieu of a formal proof that <m>PA=LU</m> decompositions exist, we give an example.
+    </p>
+
+    <example xml:id="plu-example-1">
+      <title><m>PA=LU</m> with Elementary Matrices</title>
+      <statement>
+        <p>
+          Compute a <m>PA=LU</m> decomposition of the matrix
+          <me> A = \mat{1 1 1; -10 -20 -30; 5 15 10}. </me>
+        </p>
+      </statement>
+      <answer>
+        <p>
+          We perform Gaussian elimination, keeping track of the elementary matrices for each row operation, and performing row swaps to always choose the <em>largest</em> pivot in absolute value<mdash/>see <xref ref="sec-mpp">below</xref> for the reason.
+          <latex-code mode="bare">
+            \def\r{\textcolor{seq-red}}
+            \def\g{\textcolor{seq-green}}
+            \def\b{\textcolor{seq-violet}}
+          </latex-code>
+          <latex-code>
+\begin{alignat*}{2}
+  \mat{1 1 1; -10 -20 -30; 5 15 10}
+  &amp;\;\xrightarrow{R_1\ToT R_2}\; \mat{-10 -20 -30; 1 1 1; 5 15 10}
+  &amp; \quad \b{P_1} &amp;= \b{\mat{0 1 0; 1 0 0; 0 0 1}} \\
+  &amp;\;\xrightarrow{R_2\pluseq \frac 1{10}R_1}\; \mat{-10 -20 -30; 0 -1 -2; 5 15 10}
+  &amp; \r{E_1} &amp;= \r{\mat{1 0 0; 1/10 1 0; 0 0 1}} \\
+  &amp;\;\xrightarrow{R_3\pluseq \frac 12R_1}\; \mat{-10 -20 -30; 0 -1 -2; 0 5 -5}
+  &amp; \r{E_2} &amp;= \r{\mat{1 0 0; 0 1 0; 1/2 0 1}} \\
+  &amp;\;\xrightarrow{R_2\ToT R_3}\; \mat{-10 -20 -30; 0 5 -5; 0 -1 -2}
+  &amp; \b{P_2} &amp;= \b{\mat{1 0 0; 0 0 1; 0 1 0}} \\
+  &amp;\;\xrightarrow{R_3\pluseq\frac 15R_2}\; \g{\mat{-10 -20 -30; 0 5 -5; 0 0 -3}}
+  &amp; \r{E_3} &amp;= \r{\mat{1 0 0; 0 1 0; 0 1/5 1}}
+\end{alignat*}
+          </latex-code>
+          The matrix in row echelon form is <m>\g U</m>, and we have
+          <me> \g U = \r{E_3}\b{P_2}\r{E_2}\r{E_1}\b{P_1}\,A. </me>
+          This is not what we want; what we want is
+          <me> \g U = \r{\text{(lower-unitriangular)}}\cdot\b{\text{(permutation)}}\cdot A, </me>
+          since then we can multiply both sides on the left by the inverse of the lower-unitriangular matrix, as with the LU decomposition.  The <alert>trick</alert> is to use <m>\b{P_2P_2} = I_3</m> to replace <m>\b{P_2}\r{E_2E_1}</m> with <m>(\b{P_2}\r{E_2E_1}\b{P_2})\b{P_2}</m>:
+          <men xml:id="plu-with-elem-eq1">
+            \def\r{\textcolor{seq-red}}
+            \def\g{\textcolor{seq-green}}
+            \def\b{\textcolor{seq-violet}}
+            \g U = \r{E_3}\bigl(\b{P_2}\r{E_2}\r{E_1}\b{P_2}\bigr)\b{P_2}\b{P_1}\,A.
+          </men>
+          The matrix <m>\b{P_2}\r{E_2E_1}\b{P_2}</m> is in fact lower-unitriangular:
+          <me>
+            \begin{split}
+              \b{P_2}\r{E_2E_1}\b{P_2}\mat{1 0 0; 0 1 0; 0 0 1}
+              \rowop{R_2\ToT R_3}
+              &amp;\mat{1 0 0; 0 0 1; 0 1 0} \\
+              \rowop{R_2\pluseq\frac1{10}R_1}
+              &amp;\mat{1 0 0; 1/10 0 1; 0 1 0} \\
+              \rowop{R_3\pluseq\frac12R_1}
+              &amp;\mat{1 0 0; 1/10 0 1; 1/2 1 0} \\
+              \rowop{R_2\ToT R_3}
+              &amp;\mat{1 0 0; 1/2 1 0; 1/10 0 1}.
+            \end{split}
+          </me>
+          We are doing row replacements of the form <m>R_i\pluseq cR_1</m>; we begin and end with <m>R_2\ToT R_3</m>, which leaves us with a lower-unitriangular matrix.  Now we set
+          <me>
+            \r L = \bigl[\r{E_3}\bigl(\b{P_2}\r{E_2}\r{E_1}\b{P_2}\bigr)\bigr]\inv
+            = \r{\mat{1 0 0; -1/2 1 0; -1/10 -1/5 1}},
+          </me>
+          which is a lower-unitriangular matrix, and we let
+          <me>
+            \b P = \b{P_2P_1} = \mat{1 0 0; 0 0 1; 0 1 0}\mat{0 1 0; 1 0 0 ; 0 0 1}
+            = \b{\mat{0 1 0; 0 0 1; 1 0 0}}.
+          </me>
+          which is a permutation matrix.  Then <xref ref="plu-with-elem-eq1"/> becomes
+          <me> \b{P} A = \r{L}\g{U}. </me>
+        </p>
+      </answer>
+    </example>
+
+    <p>
+      As with LU decompositions, one can produce a <m>PA=LU</m> decomposition efficiently using some clever bookkeeping.
+    </p>
+
+    <algorithm>
+        <title><m>PA=LU</m> Decomposition; 3-Column Method</title>
+        <idx><h><m>PA=LU</m> Decomposition</h><h>3-column method</h></idx>
+        <statement>
+          <p>
+            The <alert>input</alert> is an <m>m\times n</m> matrix <m>A</m>.  The <alert>output</alert> is a <m>PA=LU</m> decomposition.
+            <ul label="">
+              <li>
+                <alert>Setup:</alert> Prepare three matrices.  Start with the <m>m\times m</m> identity matrix in the left column, a blank <m>m\times m</m> matrix in the middle column, and place the matrix <m>A</m> in the right column.
+                <latex-code>
+                  <![CDATA[
+\begin{tikzpicture}
+  \tikzset{
+    l matrix/.style={
+        math matrix,
+        nodes={minimum height=1em},
+        column sep={2em,between origins},
+        every node/.append style={anchor=base east}
+    }
+  }
+  \node[l matrix] (P) {
+     1 \&  0 \&  0 \\
+     0 \&  1 \&  0 \\
+     0 \&  0 \&  1 \\
+  };
+  \node[l matrix, right=1.3cm of P.east] (L) {
+     \phantom1 \&  \phantom1 \&  \phantom1 \\
+     \phantom1 \&  \phantom1 \&  \phantom1 \\
+     \phantom1 \&  \phantom1 \&  \phantom1 \\
+  };
+  \node[l matrix, right=1.3cm of L.east] (U) {
+     2 \&  1 \&  0  \&  1 \\
+     4 \&  4 \&  4  \&  3 \\
+     6 \&  1 \&  0  \&  1 \\
+  };
+\draw[<-, thick, white] (P.west) ++(-7mm,0) to ++(-2.4cm,0);
+
+\end{tikzpicture}
+                  ]]>
+                </latex-code>
+              </li>
+              <li>
+                <alert>Eliminate:</alert> Perform elimination on the matrix on the right.  For each row replacement <m>R_i\pluseq \textcolor{seq-red}{c}R_j</m>, place the number <m>\textcolor{seq-red}{-c}</m> in the <m>(i,j)</m> entry of the matrix in the middle.
+                <latex-code>
+                  <![CDATA[
+\begin{tikzpicture}
+  \tikzset{
+    l matrix/.style={
+        math matrix,
+        nodes={minimum height=1em},
+        column sep={2em,between origins},
+        every node/.append style={anchor=base east}
+    },
+    hilite entry/.style={inner sep=2pt, draw=blue!50,
+                         thick, rounded corners}
+  }
+  \node[l matrix] (P) {
+     1 \&  0 \&  0 \\
+     0 \&  1 \&  0 \\
+     0 \&  0 \&  1 \\
+  };
+
+  \node[l matrix, right=1.3cm of P.east] (L) {
+     \phantom1 \&  \phantom1 \&  \phantom1 \\
+     |[seq-red]|2 \&  \phantom1 \&  \phantom1 \\
+     \phantom1 \&  \phantom1 \&  \phantom1 \\
+  };
+  \node[fit=(L-2-1), hilite entry] {};
+
+  \node[l matrix, right=1.3cm of L.east] (U) {
+     2 \&  1 \&  0  \&  1 \\
+     0 \&  2 \&  4  \&  1 \\
+     6 \&  1 \&  0  \&  1 \\
+  };
+
+  \draw[<-, thick] (P.west) ++(-7mm,0) to["$R_2\pluseq\textcolor{seq-red}{-2}\,R_1$"'] ++(-2.4cm,0);
+\end{tikzpicture}
+                  ]]>
+                </latex-code>
+                For each row swap <m>R_i\ToT R_j</m>, swap rows <m>i</m> and <m>j</m> of <alert>all three matrices</alert>:
+                <latex-code>
+                  <![CDATA[
+\begin{tikzpicture}
+  \tikzset{
+    l matrix/.style={
+        math matrix,
+        nodes={minimum height=1em},
+        column sep={2em,between origins},
+        every node/.append style={anchor=base east}
+    },
+    hilite entry/.style={inner sep=2pt, draw=blue!50,
+                         thick, rounded corners}
+  }
+
+  \node[l matrix] (P0) {
+     1 \&  0 \&  0 \\
+     0 \&  1 \&  0 \\
+     0 \&  0 \&  1 \\
+  };
+
+  \node[l matrix, right=1.3cm of P0.east] (L0) {
+     \phantom1 \&  \phantom1 \&  \phantom1 \\
+     2 \&  \phantom1 \&  \phantom1 \\
+     3 \&  \phantom1 \&  \phantom1 \\
+  };
+
+  \node[l matrix, right=1.3cm of L0.east] {
+     2 \&  1 \&  0  \&  1 \\
+     0 \&  2 \&  4  \&  1 \\
+     0 \& -2 \&  0  \& -2 \\
+  };
+
+  \node[l matrix, below=2mm of P0.south] (P) {
+     1 \&  0 \&  0 \\
+     0 \&  0 \&  1 \\
+     0 \&  1 \&  0 \\
+  };
+
+  \node[l matrix, right=1.3cm of P.east] (L) {
+     \phantom1 \&  \phantom1 \&  \phantom1 \\
+     3 \&  \phantom1 \&  \phantom1 \\
+     2 \&  \phantom1 \&  \phantom1 \\
+  };
+
+  \node[l matrix, right=1.3cm of L.east] (U) {
+     2 \&  1 \&  0  \&  1 \\
+     0 \& -2 \&  0  \& -2 \\
+     0 \&  2 \&  4  \&  1 \\
+  };
+
+  \node[fit=(P-3-1) (P-3-3), hilite entry] (PR1) {};
+  \node[fit=(P-2-1) (P-2-3), hilite entry] (PR2) {};
+  \draw[<->, thick, blue!50, rounded corners]
+    (PR1.west) -- ++(-4mm,0) |- (PR2.west);
+
+  \node[fit=(L-3-1) (L-3-3), hilite entry] (LR1) {};
+  \node[fit=(L-2-1) (L-2-3), hilite entry] (LR2) {};
+  \draw[<->, thick, blue!50, rounded corners]
+    (LR1.west) -- ++(-4mm,0) |- (LR2.west);
+
+  \node[fit=(U-3-1) (U-3-4), hilite entry] (UR1) {};
+  \node[fit=(U-2-1) (U-2-4), hilite entry] (UR2) {};
+  \draw[<->, thick, blue!50, rounded corners]
+    (UR1.west) -- ++(-4mm,0) |- (UR2.west);
+
+  \draw[<-, thick] (P.west) ++(-7mm,0) to["$R_2\ToT R_3$"'] ++(-2.4cm,0);
+\end{tikzpicture}
+                  ]]>
+                </latex-code>
+              </li>
+              <li>
+                <alert>Finish:</alert> Place 1<rsq/>s on the diagonal of the middle matrix, and fill the rest of the blank entries with 0<rsq/>s.
+                <latex-code>
+                  <![CDATA[
+\begin{tikzpicture}
+  \tikzset{
+    l matrix/.style={
+        math matrix,
+        nodes={minimum height=1em},
+        column sep={2em,between origins},
+        every node/.append style={anchor=base east}
+    },
+    hilite entry/.style={inner sep=2pt, draw=blue!50,
+                         thick, rounded corners}
+  }
+
+  \node[l matrix] (P0) {
+     1 \&  0 \&  0 \\
+     0 \&  0 \&  1 \\
+     0 \&  1 \&  0 \\
+  };
+
+  \node[l matrix, right=1.3cm of P0.east] (L0) {
+     \phantom1 \&  \phantom1 \&  \phantom1 \\
+     3 \&  \phantom1 \&  \phantom1 \\
+     2 \&  -1 \&  \phantom1 \\
+  };
+
+  \node[l matrix, right=1.3cm of L0.east] {
+     2 \&  1 \&  0  \&  1 \\
+     0 \&  2 \&  4  \&  1 \\
+     0 \&  0 \&  4  \& -1 \\
+  };
+
+  \node[l matrix, below=2mm of P0.south] (P) {
+     1 \&  0 \&  0 \\
+     0 \&  0 \&  1 \\
+     0 \&  1 \&  0 \\
+  };
+
+  \node[l matrix, right=1.3cm of P.east] (L) {
+     |[seq-blue]|1 \&  |[seq-blue]|0 \&  |[seq-blue]|0 \\
+     3 \&  |[seq-blue]|1 \&  |[seq-blue]|0 \\
+     2 \&  -1 \&  |[seq-blue]|1 \\
+  };
+
+  \node[l matrix, right=1.3cm of L.east] (U) {
+     2 \&  1 \&  0  \&  1 \\
+     0 \& -2 \&  0  \& -2 \\
+     0 \&  0 \&  4  \& -1 \\
+  };
+
+  \draw[<-, thick] (P.west) ++(-7mm,0) to["fill"'] ++(-2.4cm,0);
+\end{tikzpicture}
+                  ]]>
+                </latex-code>
+              </li>
+            </ul>
+            The matrix on the left is <m>P</m>, the middle matrix is <m>L</m>, and the matrix on the right is <m>U</m>.
+          </p>
+        </statement>
+      </algorithm>
+
+      <note hide-type="true">
+        <title>Warning</title>
+        <p>
+          As with LU decompositions, the above procedure will only work if you apply the Gaussian elimination algorithm as prescribed in this <xref ref="algo-elimination"/>: the order of operations matters.  In particular, as should be evident from the <xref ref="plu-example-1"/> above, it is important to choose the pivot <em>before</em> performing any row replacements.
+        </p>
+      </note>
+
+      <example xml:id="three-col-method-eg1">
+        <statement>
+          <p>
+            Use the 3-column method to find a <m>PA=LU</m> decomposition of the matrix
+            <me> A = \mat{1 1 1; -10 -20 -30; 5 15 10} </me>
+            from the above <xref ref="plu-example-1"/>.
+          </p>
+        </statement>
+        <answer>
+          <p>
+            We prepare our three columns, then apply the algorithm.  We always choose the largest pivot in absolute value, as in the previous <xref ref="plu-example-1"/>.
+            <latex-code>
+              <![CDATA[
+\begin{tikzpicture}
+  \tikzset{
+    l matrix/.style={
+        math matrix,
+        nodes={minimum height=1em},
+        column sep={2em,between origins},
+        every node/.append style={anchor=base east}
+    },
+    u matrix/.style={
+        l matrix,
+        column sep={2.5em,between origins},
+    },
+    hilite entry/.style={inner sep=2pt, draw=blue!50,
+                         thick, rounded corners}
+  }
+
+  \node[l matrix] (P1) {
+     1 \&  0 \&  0 \\
+     0 \&  1 \&  0 \\
+     0 \&  0 \&  1 \\
+  };
+  \node[u matrix, right=1.3cm of P1.east] (L1) {
+     \phantom{-10} \&  \phantom1 \&  \phantom1 \\
+     \phantom1 \&  \phantom1 \&  \phantom1 \\
+     \phantom1 \&  \phantom1 \&  \phantom1 \\
+  };
+  \node[u matrix, right=1.3cm of L1.east] (U1) {
+       1 \&   1 \&   1 \\
+     -10 \& -20 \& -30 \\
+       5 \&  15 \&  10 \\
+  };
+
+  \node[l matrix, below=2mm of P1.south] (P2) {
+     0 \&  1 \&  0 \\
+     1 \&  0 \&  0 \\
+     0 \&  0 \&  1 \\
+  };
+  \node[u matrix, right=1.3cm of P2.east] (L2) {
+     \phantom{-10} \&  \phantom1 \&  \phantom1 \\
+     \phantom{-10} \&  \phantom1 \&  \phantom1 \\
+     \phantom1 \&  \phantom1 \&  \phantom1 \\
+  };
+  \node[u matrix, right=1.3cm of L2.east] (U2) {
+     -10 \& -20 \& -30 \\
+      \phantom{-1}1 \&   1 \&   1 \\
+     5 \&  15 \&  10 \\
+  };
+  \node[fit=(P2-1-1) (P2-1-3), hilite entry] (P2R1) {};
+  \node[fit=(P2-2-1) (P2-2-3), hilite entry] (P2R2) {};
+  \draw[<->, thick, blue!50, rounded corners]
+    (P2R1.west) -- ++(-4mm,0) |- (P2R2.west);
+  \node[fit=(L2-1-1) (L2-1-3), hilite entry] (L2R1) {};
+  \node[fit=(L2-2-1) (L2-2-3), hilite entry] (L2R2) {};
+  \draw[<->, thick, blue!50, rounded corners]
+    (L2R1.west) -- ++(-4mm,0) |- (L2R2.west);
+  \node[fit=(U2-1-1) (U2-1-3), hilite entry] (U2R1) {};
+  \node[fit=(U2-2-1) (U2-2-3), hilite entry] (U2R2) {};
+  \draw[<->, thick, blue!50, rounded corners]
+    (U2R1.west) -- ++(-4mm,0) |- (U2R2.west);
+  \draw[<-, thick] (P2.west) ++(-7mm,0) to["$R_1\ToT R_2$"'] ++(-2.4cm,0);
+
+  \node[l matrix, below=2mm of P2.south] (P3) {
+     0 \&  1 \&  0 \\
+     1 \&  0 \&  0 \\
+     0 \&  0 \&  1 \\
+  };
+  \node[u matrix, right=1.3cm of P3.east] (L3) {
+     \phantom{-10} \&  \phantom1 \&  \phantom1 \\
+     |[seq-red]|-\frac1{10} \&  \phantom1 \&  \phantom1 \\
+     \phantom1 \&  \phantom1 \&  \phantom1 \\
+  };
+  \node[u matrix, right=1.3cm of L3.east] (U3) {
+    -10 \& -20 \& -30 \\
+      0 \&   -1 \&  -2 \\
+      5 \&  15 \&  10 \\
+  };
+  \node[fit=(L3-2-1), hilite entry] {};
+  \draw[<-, thick] (P3.west) ++(-7mm,0) to["$R_2\pluseq\textcolor{seq-red}{\frac 1{10}}R_1$"'] ++(-2.4cm,0);
+
+  \node[l matrix, below=3mm of P3.south] (P4) {
+     0 \&  1 \&  0 \\
+     1 \&  0 \&  0 \\
+     0 \&  0 \&  1 \\
+  };
+  \node[u matrix, right=1.3cm of P4.east] (L4) {
+     \phantom{-10} \&  \phantom1 \&  \phantom1 \\
+     -\frac1{10} \&  \phantom1 \&  \phantom1 \\
+     |[seq-red]|-\frac12 \&  \phantom1 \&  \phantom1 \\
+  };
+  \node[u matrix, right=1.3cm of L4.east] (U4) {
+    -10 \& -20 \& -30 \\
+      0 \&  -1 \&  -2 \\
+      0 \&   5 \&  -5 \\
+  };
+  \node[fit=(L4-3-1), hilite entry] {};
+  \draw[<-, thick] (P4.west) ++(-7mm,0) to["$R_3\pluseq\textcolor{seq-red}{\frac 12}R_1$"'] ++(-2.4cm,0);
+
+  \node[l matrix, below=4mm of P4.south] (P5) {
+     0 \&  1 \&  0 \\
+     0 \&  0 \&  1 \\
+     1 \&  0 \&  0 \\
+  };
+  \node[u matrix, right=1.3cm of P5.east] (L5) {
+     \phantom{-10} \&  \phantom1 \&  \phantom1 \\
+     \phantom{-\frac1{10}}\llap{$-\frac12$} \&  \phantom1 \&  \phantom1 \\
+     -\frac1{10} \&  \phantom1 \&  \phantom1 \\
+  };
+  \node[u matrix, right=1.3cm of L5.east] (U5) {
+    -10 \& -20 \& -30 \\
+      0 \&   5 \&  -5 \\
+      0 \&  -1 \&  -2 \\
+  };
+  \node[fit=(P5-3-1) (P5-3-3), hilite entry] (P5R1) {};
+  \node[fit=(P5-2-1) (P5-2-3), hilite entry] (P5R2) {};
+  \draw[<->, thick, blue!50, rounded corners]
+    (P5R1.west) -- ++(-4mm,0) |- (P5R2.west);
+  \node[fit=(L5-3-1) (L5-3-3), hilite entry] (L5R1) {};
+  \node[fit=(L5-2-1) (L5-2-3), hilite entry] (L5R2) {};
+  \draw[<->, thick, blue!50, rounded corners]
+    (L5R1.west) -- ++(-4mm,0) |- (L5R2.west);
+  \node[fit=(U5-3-1) (U5-3-3), hilite entry] (U5R1) {};
+  \node[fit=(U5-2-1) (U5-2-3), hilite entry] (U5R2) {};
+  \draw[<->, thick, blue!50, rounded corners]
+    (U5R1.west) -- ++(-4mm,0) |- (U5R2.west);
+  \draw[<-, thick] (P5.west) ++(-7mm,0) to["$R_2\ToT R_3$"'] ++(-2.4cm,0);
+
+  \node[l matrix, below=4mm of P5.south] (P6) {
+     0 \&  1 \&  0 \\
+     0 \&  0 \&  1 \\
+     1 \&  0 \&  0 \\
+  };
+  \node[u matrix, right=1.3cm of P6.east] (L6) {
+     \phantom{-10} \&  \phantom1 \&  \phantom1 \\
+     -\frac12 \&  \phantom1 \&  \phantom1 \\
+     -\frac1{10} \&  |[seq-red]|-\frac15 \&  \phantom1 \\
+  };
+  \node[u matrix, right=1.3cm of L6.east] (U6) {
+    -10 \& -20 \& -30 \\
+      0 \&   5 \&  -5 \\
+      0 \&   0 \&  -3 \\
+  };
+  \node[fit=(L6-3-2), hilite entry] {};
+  \draw[<-, thick] (P6.west) ++(-7mm,0) to["$R_3\pluseq\textcolor{seq-red}{\frac 15}R_2$"'] ++(-2.4cm,0);
+
+  \node[l matrix, below=4mm of P6.south] (P7) {
+     0 \&  1 \&  0 \\
+     0 \&  0 \&  1 \\
+     1 \&  0 \&  0 \\
+  };
+  \node[u matrix, right=1.3cm of P7.east] (L7) {
+     |[seq-blue]|\phantom{-1}1 \&  |[seq-blue]|0 \&  |[seq-blue]|0 \\
+     -\frac12 \&  |[seq-blue]|1 \&  |[seq-blue]|0 \\
+     -\frac1{10} \&  -\frac15 \&  |[seq-blue]|1 \\
+  };
+  \node[u matrix, right=1.3cm of L7.east] (U7) {
+    -10 \& -20 \& -30 \\
+      0 \&   5 \&  -5 \\
+      0 \&   0 \&  -3 \\
+  };
+  \draw[<-, thick] (P7.west) ++(-7mm,0) to["fill"'] ++(-2.4cm,0);
+
+\end{tikzpicture}
+              ]]>
+            </latex-code>
+            This produces
+            <me>
+              P = \mat{0 1 0; 0 0 1; 1 0 0} \qquad
+              L = \mat{1 0 0; -1/2 1 0; -1/10 -1/5 1} \qquad
+              U = \mat{-10 -20 -30; 0 5 -5; 0 0 -3}.
+            </me>
+          </p>
+        </answer>
+      </example>
+
+      <p>
+        The 3-column method for finding the <m>PA=LU</m> decomposition again requires more bookkeeping than the <xref ref="lu-2-col-method">2-column method</xref>, but does not involve any additional floating point operations.
+      </p>
+
+      <bluebox>
+        <p>
+          Computing a <m>PA=LU</m> decomposition takes the same amount of time as an LU decomposition, and solving <m>Ax=b</m> using a <m>PA=LU</m> decomposition takes the same amount of time as solving <m>Ax=b</m> with an LU decomposition.
+        </p>
+      </bluebox>
+
+  </subsection>
+
+  <subsection xml:id="sec-mpp">
+    <title>Maximal Partial Pivoting</title>
+
+    <p>
+      Finally, we turn to a different kind of computational consideration, namely: how do we perform Gaussian elimination <em>accurately</em> on a computer, reducing the effect of rounding errors?
+    </p>
+
+    <specialcase>
+      <p>
+        Consider the system of equations
+        <me>
+          \syseq{\. \+ x_2 = 1; x_1 + x_2 = 2\rlap.}
+        </me>
+        This system is easily seen to have the solution <m>(x_1,x_2)=(1,1)</m>.  Now we tweak the system by changing one of the coefficients a little bit:
+        <me>
+          \syseq{10^{-17}x_1 + x_2 = 1; x_1 + x_2 = 2\rlap.}
+        </me>
+        Presumably the solution of this new system of equations is very close to the old solution <m>(1,1)</m>.  We compute it using Gaussian elimination:
+        <me>
+          \begin{split}
+            \amat{10^{-17} 1 1; 1 1 2}
+            \rowop{R_2\minuseq 10^{17}R_1}
+            &amp;\amat{10^{-17} 1 1; 0 1-10^{17} 2-10^{17}} \\
+            \rowop{\text{becomes}}
+            &amp;\syseq{10^{-17}x_1 + x_2 = 1; \. \+ (1-10^{17})x_2 = 2-10^{17}} \\
+            \quad\xrightarrow[\text{substitution}]{\text{back}}\quad
+            &amp;\syseq{x_1 = \frac1{1-10^{-17}}; x_2 = 1+\frac1{1-10^{17}}\rlap{,}}
+          \end{split}
+        </me>
+        which is indeed close to <m>(1,1)</m>.
+      </p>
+      <p>
+        Now we try to solve the system by computer.
+      </p>
+      <sage language="python">
+        <input>
+          from sympy import *
+           # 1e-17 is 10^(-17)
+          A = Matrix([[1e-17, 1.0, 1.0], [1.0, 1.0, 2.0]])
+           # This does R2 -= 10^(17) R1
+           # (force sympy to use the smaller pivot)
+          A.row_op(1, lambda v, j: v - 1e17*A[0,j])
+          pprint(A)
+           # Now do Jordan substitution
+          pprint(A.rref(pivots=False))
+        </input>
+        <output>
+          [1.0e-17    1.0       1.0   ]
+          [                           ]
+          [   0     -1.0e+17  -1.0e+17]
+          [1  0   0 ]
+          [         ]
+          [0  1  1.0]
+        </output>
+      </sage>
+      <p>
+        What happened?  The computer thinks <m>(x_1,x_2)=(0,1)</m>, which is far from correct.
+      </p>
+    </specialcase>
+
+    <p>
+      Most computers implement decimal numbers using the <url href="https://en.wikipedia.org/wiki/Double-precision_floating-point_format">IEEE 754</url> 64-bit floating point format.  This amounts to about 17 decimal digits of precision.  Any digits after the 16th-most significant digit are simply forgotten: the computer thinks that
+      <me>
+        \begin{split}
+          1 - 10^{17}
+          &amp;= -\textcolor{seq-red}{9999999999999999}9 \\
+          &amp;= -\textcolor{seq-red}{9999999999999999}8
+          = 2 - 10^{17}.
+        \end{split}
+      </me>
+      You can test this:
+    </p>
+    <sage language="python">
+      <input>
+        print(1-1e17 == 2-1e17)
+      </input>
+      <output>
+        True
+      </output>
+    </sage>
+    <p>
+      Hence when it solves for <m>x_2</m> it finds
+      <me>
+        x_2 = \frac{2-10^{17}}{1-10^{17}} = \frac{1-10^{17}}{1-10^{17}} = 1.
+      </me>
+      Back-substituting in <m>10^{-17}x_1 + x_2 = 1</m> gives <m>10^{-17}x_1 = 0</m>, whence <m>x_1=0</m>.
+    </p>
+
+    <p>
+      The problem is that when we did <m>R_2\minuseq 10^{17}R_1</m>, we subtracted <m>10^{17}</m> from 1 and from 2: we added a number of a <em>much larger</em> order of magnitude.  This happened because we had to divide by the pivot <m>10^{-17}</m>, which is a <em>tiny</em> number.
+    </p>
+
+    <bluebox>
+      <p>
+        Rounding errors happen when you divide by tiny numbers.
+      </p>
+    </bluebox>
+
+    <p>
+      One simple solution is to always choose the <em>largest number</em> in absolute value to be the pivot when doing Gaussian elimination.  This at least allows one to divide by the largest number possible when performing row replacements.
+    </p>
+
+    <algorithm xml:id="algo-mpp">
+      <title>Gaussian Elimination with Maximal Partial Pivoting</title>
+      <idx><h>Gaussian elimination</h><h>maximal partial pivoting</h></idx>
+      <statement>
+        <p>
+          Perform Gaussian elimination with the following modification: in step 1a (resp. 2a, 3a, etc.), perform a row swap so that the first nonzero entry of the first (resp. second, third, etc.) row is larger (in absolute value) than all entries below it.
+        </p>
+      </statement>
+    </algorithm>
+
+    <p>
+      In order to take advantage of the speed of an LU decomposition and the numerical accuracy of maximal partial pivoting at the same time, it is necessary to compute a <m>PA=LU</m> decomposition.
+    </p>
+
+      <example>
+        <p>
+          We repeat the <xref ref="three-col-method-eg1"/> above, this time with an emphasis on the choice of pivot.
+          <latex-code>
+              <![CDATA[
+\begin{tikzpicture}
+  \tikzset{
+    l matrix/.style={
+        math matrix,
+        nodes={minimum height=1em},
+        column sep={2em,between origins},
+        every node/.append style={anchor=base east}
+    },
+    u matrix/.style={
+        l matrix,
+        column sep={2.5em,between origins},
+    },
+    hilite entry/.style={inner sep=2pt, draw=blue!50,
+                         thick, rounded corners}
+  }
+
+  \node[l matrix] (P1) {
+     1 \&  0 \&  0 \\
+     0 \&  1 \&  0 \\
+     0 \&  0 \&  1 \\
+  };
+  \node[u matrix, right=1.3cm of P1.east] (L1) {
+     \phantom{-10} \&  \phantom1 \&  \phantom1 \\
+     \phantom1 \&  \phantom1 \&  \phantom1 \\
+     \phantom1 \&  \phantom1 \&  \phantom1 \\
+  };
+  \node[u matrix, right=1.3cm of L1.east] (U1) {
+       1 \&   1 \&   1 \\
+     |[seq-red]|-10 \& -20 \& -30 \\
+       5 \&  15 \&  10 \\
+  };
+  \node[fit=(U1-2-1), hilite entry] {};
+
+  \node[l matrix, below=2mm of P1.south] (P2) {
+     0 \&  1 \&  0 \\
+     1 \&  0 \&  0 \\
+     0 \&  0 \&  1 \\
+  };
+  \node[u matrix, right=1.3cm of P2.east] (L2) {
+     \phantom{-10} \&  \phantom1 \&  \phantom1 \\
+     \phantom{-10} \&  \phantom1 \&  \phantom1 \\
+     \phantom1 \&  \phantom1 \&  \phantom1 \\
+  };
+  \node[u matrix, right=1.3cm of L2.east] (U2) {
+     |[seq-red]|-10 \& -20 \& -30 \\
+      \phantom{-1}1 \&   1 \&   1 \\
+     5 \&  15 \&  10 \\
+  };
+  \node[fit=(U2-1-1), hilite entry] (U2R2) {};
+  \draw[<-, thick] (P2.west) ++(-7mm,0) to["$R_1\ToT R_2$"'] ++(-2.4cm,0);
+
+  \node[l matrix, below=2mm of P2.south] (P3) {
+     0 \&  1 \&  0 \\
+     1 \&  0 \&  0 \\
+     0 \&  0 \&  1 \\
+  };
+  \node[u matrix, right=1.3cm of P3.east] (L3) {
+     \phantom{-10} \&  \phantom1 \&  \phantom1 \\
+     -\frac1{10} \&  \phantom1 \&  \phantom1 \\
+     -\frac12 \&  \phantom1 \&  \phantom1 \\
+  };
+  \node[u matrix, right=1.3cm of L3.east] (U3) {
+    -10 \& -20 \& -30 \\
+      0 \&  -1 \&  -2 \\
+      0 \&   |[seq-red]|5 \&  -5 \\
+  };
+  \node[fit=(U3-3-2), hilite entry] {};
+  \draw[<-, thick] (P3.west) ++(-7mm,0)
+    to["$R_2\pluseq\frac 1{10}R_1$"', "$R_3\pluseq\frac 12R_1$"] ++(-2.4cm,0);
+
+  \node[l matrix, below=4mm of P3.south] (P5) {
+     0 \&  1 \&  0 \\
+     0 \&  0 \&  1 \\
+     1 \&  0 \&  0 \\
+  };
+  \node[u matrix, right=1.3cm of P5.east] (L5) {
+     \phantom{-10} \&  \phantom1 \&  \phantom1 \\
+     \phantom{-\frac1{10}}\llap{$-\frac12$} \&  \phantom1 \&  \phantom1 \\
+     -\frac1{10} \&  \phantom1 \&  \phantom1 \\
+  };
+  \node[u matrix, right=1.3cm of L5.east] (U5) {
+    -10 \& -20 \& -30 \\
+      0 \&   |[seq-red]|5 \&  -5 \\
+      0 \&  -1 \&  -2 \\
+  };
+  \node[fit=(U5-2-2), hilite entry] {};
+  \draw[<-, thick] (P5.west) ++(-7mm,0) to["$R_2\ToT R_3$"'] ++(-2.4cm,0);
+
+  \node[l matrix, below=4mm of P5.south] (P6) {
+     0 \&  1 \&  0 \\
+     0 \&  0 \&  1 \\
+     1 \&  0 \&  0 \\
+  };
+  \node[u matrix, right=1.3cm of P6.east] (L6) {
+     \phantom{-10} \&  \phantom1 \&  \phantom1 \\
+     -\frac12 \&  \phantom1 \&  \phantom1 \\
+     -\frac1{10} \&  -\frac15 \&  \phantom1 \\
+  };
+  \node[u matrix, right=1.3cm of L6.east] (U6) {
+    -10 \& -20 \& -30 \\
+      0 \&   5 \&  -5 \\
+      0 \&   0 \&  -3 \\
+  };
+  \draw[<-, thick] (P6.west) ++(-7mm,0) to["$R_3\pluseq\frac 15R_2$"'] ++(-2.4cm,0);
+
+  \node[l matrix, below=4mm of P6.south] (P7) {
+     0 \&  1 \&  0 \\
+     0 \&  0 \&  1 \\
+     1 \&  0 \&  0 \\
+  };
+  \node[u matrix, right=1.3cm of P7.east] (L7) {
+     |[seq-blue]|\phantom{-1}1 \&  |[seq-blue]|0 \&  |[seq-blue]|0 \\
+     -\frac12 \&  |[seq-blue]|1 \&  |[seq-blue]|0 \\
+     -\frac1{10} \&  -\frac15 \&  |[seq-blue]|1 \\
+  };
+  \node[u matrix, right=1.3cm of L7.east] (U7) {
+    -10 \& -20 \& -30 \\
+      0 \&   5 \&  -5 \\
+      0 \&   0 \&  -3 \\
+  };
+  \draw[<-, thick] (P7.west) ++(-7mm,0) to["fill"'] ++(-2.4cm,0);
+
+\end{tikzpicture}
+              ]]>
+          </latex-code>
+          As before, this produces
+          <me>
+            P = \mat{0 1 0; 0 0 1; 1 0 0} \qquad
+            L = \mat{1 0 0; -1/2 1 0; -1/10 -1/5 1} \qquad
+            U = \mat{-10 -20 -30; 0 5 -5; 0 0 -3}.
+          </me>
+        </p>
+      </example>
+
+    <remark>
+      <p>
+        Maximal partial pivoting is a simple example of a <term>pivoting strategy</term>: a method of choosing pivots with the best numerical properties.  Other such strategies exist; these would be covered in a course in numerical linear algebra.
+      </p>
+    </remark>
 
   </subsection>
 
