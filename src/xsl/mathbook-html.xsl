@@ -33,8 +33,34 @@
     </xsl:element>
 </xsl:template>
 
+<!-- This is imported with the bundle -->
 <xsl:template name="mathbook-js"/>
-<xsl:template name="jquery-sagecell"/>
+
+<!-- Custom Sage cell -->
+<xsl:template name="makesagecell">
+    <xsl:param name="language-attribute" />
+    <xsl:param name="language-text" />
+    <xsl:element name="script">
+        <xsl:text>$(function () {&#xa;</xsl:text>
+        <xsl:text>    // Make *any* div with class 'sagecell-</xsl:text>
+            <xsl:value-of select="$language-attribute" />
+        <xsl:text>' an executable Sage cell&#xa;</xsl:text>
+        <xsl:text>    sagecell.makeSagecell({inputLocation: 'div.sagecell-</xsl:text>
+            <xsl:value-of select="$language-attribute" />
+        <xsl:text>',&#xa;</xsl:text>
+        <xsl:text>                           linked: false,&#xa;</xsl:text>
+        <xsl:text>                           hide: ['fullScreen', 'permalink'],&#xa;</xsl:text>
+        <xsl:text>                           languages: ['</xsl:text>
+            <xsl:value-of select="$language-attribute" />
+        <xsl:text>'],&#xa;</xsl:text>
+        <xsl:text>                           evalButtonText: '</xsl:text>
+            <xsl:call-template name="type-name">
+                <xsl:with-param name="string-id" select="'evaluate'" />
+            </xsl:call-template>
+        <xsl:text>'});&#xa;</xsl:text>
+        <xsl:text>});&#xa;</xsl:text>
+    </xsl:element>
+</xsl:template>
 
 <!-- JDR: one css file to rule them all -->
 <xsl:template name="css">

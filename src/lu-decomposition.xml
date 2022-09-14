@@ -809,6 +809,67 @@ the license is included in gfdl.xml.
         </p>
       </note>
 
+      <example hide-type="true">
+        <title>Computational Example</title>
+        <p>
+          Let us solve the matrix equation
+          <me>
+            \underbrace{\mat{
+              2 1 1 \cdots, 1;
+              1 2 1 \cdots, 1;
+              1 1 2 \cdots, 1;
+              \vdots, \vdots, \vdots, \ddots, \vdots;
+              1 1 1 \cdots, 2}}_{15\times15} x
+            = \vec{1 1 1 \vdots, 1}
+          </me>
+          with a computer 1000 times using an LU decomposition.  Evaluating this Sage cell will print the time required to do so:
+        </p>
+        <sage language="python">
+          <input>
+            from sympy import *
+            from time import time
+              # This is the 15x15 matrix with 2's on the diagonal
+              # and 1's elsewhere:
+              #    eye(n) = nxn identity matrix
+              #    ones(n) = nxn matrix of 1's
+              # (multiply by 1.0 to force sympy to use floating point
+              # arithmetic)
+            A = (eye(15) + ones(15)) * 1.0
+              # This is the vector [1,1,1,...,1]
+            b = ones(15, 1) * 1.0
+            start = time()
+              # Compute LU decomposition
+            L, U, _ = A.LUdecomposition()
+              # Solve 1000x using forward- and back-substitution
+            for _ in range(1000):
+                U.upper_triangular_solve(
+                    L.lower_triangular_solve(b))
+            end = time()
+            print(end - start)
+          </input>
+        </sage>
+        <p>
+          Now let us do the same thing, but without an LU decomposition, forcing the computer to perform elimination 1000 times.
+        </p>
+        <sage language="python">
+          <input>
+            from sympy import *
+            from time import time
+            A = (eye(15) + ones(15)) * 1.0
+            b = ones(15, 1) * 1.0
+            start = time()
+              # Solve 1000x using elimination
+            for _ in range(1000):
+                A.solve(b)
+            end = time()
+            print(end - start)
+          </input>
+        </sage>
+        <p>
+          What was the difference in evaluation time?
+        </p>
+      </example>
+
       <bluebox>
         <p>
           If you want to solve <m>Ax=b</m> for many values of <m>b</m>, you want to ask the computer for an <m>LU</m> decomposition <em>first</em>.
