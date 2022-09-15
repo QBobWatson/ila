@@ -19,8 +19,9 @@ the license is included in gfdl.xml.
       <li>Learn to do basic algebraic manipulations with invertible matrices.</li>
       <li>Understand the relationship between elementary matrices and row operations.</li>
       <li>Understand the relationship between elementary matrices and matrix inverses.</li>
+      <li>Understand the basic properties of triangular matrices.</li>
       <li><em>Recipes:</em> compute the inverse of a matrix, solve a linear system by taking inverses.</li>
-      <li><em>Vocabulary words:</em> <term>invertible,</term> <term>singular,</term> <term>elementary matrix.</term></li>
+      <li><em>Vocabulary words:</em> <term>invertible,</term> <term>singular,</term> <term>elementary matrix,</term> <term>upper/lower (uni)triangular matrix.</term></li>
     </ol>
   </objectives>
 
@@ -53,6 +54,10 @@ the license is included in gfdl.xml.
 
     <p>
       The point of this discussion is that there are nontrivial conditions on <m>A</m> in order for the expresion <m>x=\text{\raisebox{1mm}{``}}\frac bA\text{\raisebox{1mm}{''}}</m> to make sense.  This condition is called <term>invertibility</term>.
+    </p>
+
+    <p>
+      We will also discuss elementary matrices and triangular matrices, which along with invertible matrices form the main ingredients needed to present LU decompositions in <xref ref="lu-decomposition"/>.
     </p>
 
   </introduction>
@@ -692,6 +697,351 @@ the license is included in gfdl.xml.
       </p>
 
     </paragraphs>
+
+  </subsection>
+
+  <subsection>
+    <title>Triangular Matrices</title>
+
+    <p>
+      In order to understand LU decompositions, we need one more ingredient in addition to inverse matrices and elementary matrices: namely, <em>triangular</em> matrices.
+    </p>
+
+    <definition>
+      <idx><h>Matrix</h><h>triangular</h></idx>
+      <idx><h>Matrix</h><h>upper-triangular</h></idx>
+      <idx><h>Matrix</h><h>upper-unitriangular</h></idx>
+      <idx><h>Matrix</h><h>lower-triangular</h></idx>
+      <idx><h>Matrix</h><h>lower-unitriangular</h></idx>
+      <idx><h>Upper-triangular</h><h>see Matrix</h></idx>
+      <idx><h>Upper-unitriangular</h><h>see Matrix</h></idx>
+      <idx><h>Lower-triangular</h><h>see Matrix</h></idx>
+      <idx><h>Lower-unitriangular</h><h>see Matrix</h></idx>
+      <statement>
+        <p>
+          <ul>
+            <li>
+              A matrix is called <term>upper-triangular</term> if all of the entries below the main diagonal are equal to zero, and it is called <term>lower-triangular</term> if all of the entries above the main diagonal are equal to zero.
+              <latex-code>
+                <![CDATA[
+\pgfdeclarelayer{background}
+\pgfsetlayers{background,main}
+\begin{tikzpicture}
+
+  \node[math matrix, nodes={minimum width=1em,minimum height=1em}] (ut) {
+    \star \& \star \& \star \& \star \& \star \\
+        0 \& \star \& \star \& \star \& \star \\
+        0 \&     0 \& \star \& \star \& \star \\
+        0 \&     0 \&     0 \& \star \& \star \\
+  };
+
+  \node[above] at (ut.north) {upper-triangular};
+
+  \begin{pgfonlayer}{background}
+  \fill[fill=seq-green!20!white, rounded corners=1.4mm]
+    ($(ut-1-1.west)+(-1mm,0)$)
+    -- (ut-1-1.north west)
+    -- (ut-1-5.north east)
+    -- (ut-4-5.south east)
+    -- ($(ut-4-4.south west)+(1pt,0)$)
+    -- cycle;
+  \end{pgfonlayer}
+
+\end{tikzpicture}
+\qquad\qquad
+\begin{tikzpicture}
+
+  \node[math matrix, nodes={minimum width=1em,minimum height=1em}] (lt) {
+    \star \&     0 \&     0 \&     0 \& 0 \\
+    \star \& \star \&     0 \&     0 \& 0 \\
+    \star \& \star \& \star \&     0 \& 0 \\
+    \star \& \star \& \star \& \star \& 0 \\
+  };
+
+  \node[above] at (lt.north) {lower-triangular};
+
+  \begin{pgfonlayer}{background}
+  \fill[fill=seq-green!20!white, rounded corners=1.4mm]
+    ($(lt-1-1.north)+(0,1mm)$)
+    -- (lt-1-1.north west)
+    -- (lt-4-1.south west)
+    -- (lt-4-4.south east)
+    -- ($(lt-4-4.east)+(1mm,0)$)
+    -- cycle;
+  \end{pgfonlayer}
+
+\end{tikzpicture}
+                ]]>
+              </latex-code>
+            </li>
+            <li>
+              A matrix is called <term>upper-unitriangular</term> (resp. <term>lower-unitriangular</term>) if it is upper-triangular (resp. lower-triangular) and all of the diagonal entries are equal to 1.
+              <latex-code>
+                <![CDATA[
+\pgfdeclarelayer{background}
+\pgfsetlayers{background,main}
+\begin{tikzpicture}
+
+  \node[math matrix, nodes={minimum width=1em,minimum height=1em}] (ut) {
+ |[seq-red]|1 \& \star \& \star \& \star \& \star \\
+        0 \&|[seq-red]|1 \& \star \& \star \& \star \\
+        0 \&     0 \&|[seq-red]|1 \& \star \& \star \\
+        0 \&     0 \&     0 \&|[seq-red]|1 \& \star \\
+  };
+
+  \node[above] at (ut.north) {upper-\textcolor{seq-red}{uni}triangular};
+
+  \begin{pgfonlayer}{background}
+  \fill[fill=seq-green!20!white, rounded corners=1.4mm]
+    ($(ut-1-1.west)+(-1mm,0)$)
+    -- (ut-1-1.north west)
+    -- (ut-1-5.north east)
+    -- (ut-4-5.south east)
+    -- ($(ut-4-4.south west)+(1pt,0)$)
+    -- cycle;
+  \end{pgfonlayer}
+
+\end{tikzpicture}
+\qquad\qquad
+\begin{tikzpicture}
+
+  \node[math matrix, nodes={minimum width=1em,minimum height=1em}] (lt) {
+    |[seq-red]|1\&     0 \&     0 \&     0 \& 0 \\
+    \star \& |[seq-red]|1\&     0 \&     0 \& 0 \\
+    \star \& \star \& |[seq-red]|1\&     0 \& 0 \\
+    \star \& \star \& \star \& |[seq-red]|1\& 0 \\
+  };
+
+  \node[above] at (lt.north) {lower-\textcolor{seq-red}{uni}triangular};
+
+  \begin{pgfonlayer}{background}
+  \fill[fill=seq-green!20!white, rounded corners=1.4mm]
+    ($(lt-1-1.north)+(0,1mm)$)
+    -- (lt-1-1.north west)
+    -- (lt-4-1.south west)
+    -- (lt-4-4.south east)
+    -- ($(lt-4-4.east)+(1mm,0)$)
+    -- cycle;
+  \end{pgfonlayer}
+
+\end{tikzpicture}
+                ]]>
+              </latex-code>
+            </li>
+          </ul>
+        </p>
+      </statement>
+    </definition>
+
+    <p>
+      In the pictures above, an entry marked <m>\star</m> could also be equal to zero: for instance, the zero matrix is both upper- and lower-triangular.  Note that a matrix is <xref ref="diagonal-matrix" text="title">diagonal</xref> if and only if it is both upper- and lower-triangular.
+    </p>
+
+    <specialcase>
+      <p>
+        Any matrix in row echelon form is upper-triangular:
+        <latex-code>
+          <![CDATA[
+\pgfdeclarelayer{background}
+\pgfsetlayers{background,main}
+\begin{tikzpicture}
+
+  \node[math matrix, nodes={minimum width=1em,minimum height=1em}] (ut) {
+        3 \& 2 \& 5 \& 8 \& 9 \\
+        0 \& 2 \& 0 \& 3 \& 7 \\
+        0 \& 0 \& 0 \& 5 \& 1 \\
+        0 \& 0 \& 0 \& 0 \& 0 \\
+  };
+
+  \node[above] at (ut.north) {REF};
+
+  \begin{pgfonlayer}{background}
+  \fill[fill=seq-green!20!white, rounded corners=1.4mm]
+    ($(ut-1-1.west)+(-1mm,0)$)
+    -- (ut-1-1.north west)
+    -- (ut-1-5.north east)
+    -- (ut-4-5.south east)
+    -- ($(ut-4-4.south west)+(1pt,0)$)
+    -- cycle;
+  \end{pgfonlayer}
+
+\end{tikzpicture}
+          ]]>
+        </latex-code>
+      </p>
+    </specialcase>
+
+    <specialcase xml:id="row-replacement-lower-unitri">
+      <p>
+        If <m>i&gt;j</m> then the matrix for the row operation <m>R_i\pluseq cR_j</m> (add a multiple of a higher row to a lower row) is lower-unitriangular:
+        <latex-code>
+          <![CDATA[
+\pgfdeclarelayer{background}
+\pgfsetlayers{background,main}
+\begin{tikzpicture}
+
+  \node[math matrix, nodes={minimum width=1em,minimum height=1em}] (id) {
+    1 \& 0 \& 0 \\
+    0 \& 1 \& 0 \\
+    0 \& 0 \& 1 \\
+    };
+
+  \node[math matrix, nodes={minimum width=1em,minimum height=1em},
+        right=3cm of id.east] (lt) {
+    |[seq-red]|1 \& 0 \& 0 \\
+    0 \& |[seq-red]|1 \& 0 \\
+    2 \& 0 \& |[seq-red]|1 \\
+  };
+
+  \draw[thick, ->]
+    (id.east) ++(5mm,0)
+    to["$R_3\pluseq 3R_1$"]
+    ($(lt.west) - (5mm,0)$);
+
+  \begin{pgfonlayer}{background}
+  \fill[fill=seq-green!20!white, rounded corners=1.4mm]
+    ($(lt-1-1.north)+(0,1mm)$)
+    -- (lt-1-1.north west)
+    -- (lt-3-1.south west)
+    -- (lt-3-3.south east)
+    -- ($(lt-3-3.east)+(1mm,0)$)
+    -- cycle;
+  \end{pgfonlayer}
+
+\end{tikzpicture}
+          ]]>
+        </latex-code>
+      </p>
+    </specialcase>
+
+    <p>
+      The main fact we will use about triangular matrices is that triangularity is preserved under multiplication and inversion.
+    </p>
+
+    <fact xml:id="triangular-matrix-mult">
+      <idx><h>Matrix</h><h>triangular</h><h>product of</h></idx>
+      <idx><h>Matrix</h><h>triangular</h><h>inverse of</h></idx>
+      <statement>
+        <p>
+          If <m>A</m> and <m>B</m> are <m>n\times n</m> upper-triangular (resp. upper-unitriangular, lower-triangular, or lower-unitriangular) matrices, then so is <m>AB</m>.  If <m>A</m> is invertible, then <m>A\inv</m> is also upper-triangular (resp. upper-unitriangular, lower-triangular, or lower-unitriangular).
+        </p>
+        <p>
+          Moreover, an upper- or lower-<alert>uni</alert>triangular matrix is always invertible.
+        </p>
+      </statement>
+      <proof>
+        <p>
+          We will prove that a product of upper-triangular square matrices <m>A</m> and <m>B</m> is again upper-triangular, and leave the other cases to the reader.  The <m>(i,j)</m>-entry of <m>AB</m> is the dot product of the <m>i</m>th row of <m>A</m> and the <m>j</m>th column of <m>B</m>.  Since <m>A</m> and <m>B</m> are upper-triangular, the coordinates <m>1,2,\ldots,i-1</m> of the <m>i</m>th row of <m>A</m> are equal to zero, and the last <m>n-j</m> coordinates of the <m>j</m>th column of <m>B</m> are equal to zero, so that the nonzero coordinates of the <m>j</m>th column of <m>B</m> are among the first <m>j</m>.  If <m>i&gt;j</m> then the <m>(i,j)</m> entry is below the main diagonal; in this case, <m>i-1\geq j</m>, so that the nonzero coordinates of the <m>j</m>th column of <m>B</m> are all multiplied by zero coordinates of the <m>i</m>th column of <m>A</m>.  This shows that the <m>(i,j)</m>-entry of <m>AB</m> is equal to zero.
+          <latex-code>
+            <![CDATA[
+\begin{tikzpicture}
+
+  \node[math matrix, nodes={minimum width=1em,minimum height=1em}] (A) {
+    \star \& \star \& \star \& \star \\
+        0 \& \star \& \star \& \star \\
+        0 \&     0 \& \star \& \star \\
+        |[seq-red]|0 \& |[seq-red]|0 \& |[seq-red]|0 \& \star \\
+  };
+
+  \node[above] at (A.north) {$A$};
+
+  \node[fit=(A-4-1) (A-4-4), inner sep=2pt,
+        draw=blue!50, thick, rounded corners,
+        label={[text=blue!50]below:\small$i=4$}] {};
+
+  \node[math matrix, nodes={minimum width=1em,minimum height=1em},
+        right=7mm of A.east] (B) {
+    \star \& \star \& \star \& \star \\
+        0 \& \star \& \star \& \star \\
+        0 \&     0 \& \star \& \star \\
+        0 \&     0 \& |[seq-red]|0 \& \star \\
+  };
+
+  \node[above] at (B.north) {$B$};
+
+  \node[fit=(B-1-3) (B-4-3), inner sep=2pt,
+        draw=blue!50, thick, rounded corners,
+        label={[text=blue!50]below:\small$j=3$}] {};
+
+  \node[right=5mm of B.east, font=\large] (equal) {$=$};
+
+  \node[math matrix, nodes={minimum width=1em,minimum height=1em},
+        right=5mm of equal.east] (AB) {
+    \star \& \star \& \star \& \star \\
+        0 \& \star \& \star \& \star \\
+        0 \&     0 \& \star \& \star \\
+        0 \&     0 \& |[seq-red]|0 \& \star \\
+  };
+
+  \node[above] at (AB.north) {$AB$};
+
+  \node[fit=(AB-4-3), inner sep=2pt,
+        draw=blue!50, thick, rounded corners,
+        label={[text=blue!50]below:\small$(4,3)$-entry}] {};
+
+\end{tikzpicture}
+            ]]>
+          </latex-code>
+        </p>
+        <p>
+          Next we will prove that a lower-unitriangular matrix is always invertible and that its inverse is again lower-unitriangular; we leave the other cases to the reader.  When <m>A</m> is lower-unitriangular, Gaussian elimination produces a matrix in reduced row echelon form; Jordan substitution is not needed.  Hence <m>A</m> is invertible by the <xref ref="invertibility-criterion">invertibility criterion</xref>.  Moreover, only row replacements of the form <m>R_i\pluseq cR_j\;(i&gt;j)</m> are needed to perform elimination.  Applying such a row operation to a lower-unitriangular matrix only affects the entries below the main diagonal, and therefore produces another lower-unitriangular matrix:
+          <latex-code>
+            <![CDATA[
+\begin{tikzpicture}
+
+  \node[math matrix, nodes={minimum width=1em,minimum height=1em}] (A) {
+        1 \&     0 \&     0 \&     0 \& 0 \\
+    \star \&     1 \&     0 \&     0 \& 0 \\
+    \star \& \star \&     1 \&     0 \& 0 \\
+    \star \& \star \& \star \&     1 \& 0 \\
+  };
+
+  \node[fit=(A-2-1) (A-2-2), inner sep=2pt,
+        draw=blue!50, thick, rounded corners] (from) {};
+  \node[fit=(A-4-1) (A-4-2), inner sep=2pt,
+        draw=seq-red!50, thick, rounded corners] (to) {};
+  \draw[thick, blue!50, ->] (from.south) -- (to.north);
+
+  \node[math matrix, nodes={minimum width=1em,minimum height=1em},
+        right=3cm of A.east] (B) {
+        1 \&     0 \&     0 \&     0 \& 0 \\
+    \star \&     1 \&     0 \&     0 \& 0 \\
+    \star \& \star \&     1 \&     0 \& 0 \\
+    |[seq-red]|\star \& |[seq-red]|\star \& \star \&     1 \& 0 \\
+  };
+
+  \node[fit=(B-4-1) (B-4-2), inner sep=2pt,
+        draw=seq-red!50, thick, rounded corners] {};
+
+  \draw[thick, ->]
+    (A.east) ++(5mm,0)
+    to["$R_4\pluseq cR_2$"]
+    ($(B.west) - (5mm,0)$);
+
+\end{tikzpicture}
+            ]]>
+          </latex-code>
+          The identity matrix is lower-unitriangular, so applying Gaussian elimination to the augmented matrix <m>\amat{A I_n}</m> produces a lower-unitriangular matrix on the right side of the augmentation line.  This matrix is the inverse of <m>A</m>.
+        </p>
+      </proof>
+    </fact>
+
+    <example>
+      <p>
+        A product of two upper-triangular matrices is upper-triangular:
+        <me>
+          \mat{1 2 3; 0 4 5; 0 0 6}
+          \mat{7 8 9; 0 1 2; 0 0 3}
+          = \mat{7 10 22; 0 4 23; 0 0 18}.
+        </me>
+      </p>
+      <p>
+        The inverse of a lower-unitriangular matrix is lower-unitriangular:
+        <me>
+          \mat{1 2 3; 0 1 4; 0 0 1}\inv = \mat{1 -2 5; 0 1 -4; 0 0 1}.
+        </me>
+      </p>
+    </example>
 
   </subsection>
 
