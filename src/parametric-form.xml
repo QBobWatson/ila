@@ -14,12 +14,518 @@ the license is included in gfdl.xml.
 
   <objectives>
     <ol>
-      <li>Write the objectives.</li>
+      <li>Learn to express the solution set of a system of linear equations in parametric form and in parametric vector form.</li>
+      <li>Understand the distinction between an implicit form of a solution set and a parameterized form.</li>
+      <li><em>Recipes:</em> parametric form, parametric vector form.</li>
+      <li><em>Vocabulary words:</em> <term>implicit equations,</term> <term>parameterized equations,</term> <term>free variable,</term> <term>parametric form,</term> <term>dimension</term> of a solution set, <term>parametric vector form.</term></li>
     </ol>
   </objectives>
 
-  <p>
-    Write the content.
-  </p>
+  <introduction>
+    <p>
+      In this section, we turn to the systematic study of the solution set of a system of equations that has <em>infinitely many</em> solutions.  In this case, <q>solving</q> the system means giving a precise way to produce, or <term>parameterize,</term> all of the solutions.
+    </p>
+
+    <specialcase xml:id="parametric-form-eg1">
+      <p>
+        Consider the system of equations
+        <me>
+          \syseq{2x + y + 12z = 1; x + 2y + 9z = -1\rlap.}
+        </me>
+        We put it into an augmented matrix and find its reduced row echelon form:
+        <me>
+          \amat{2 1 12 1; 1 2 9 -1} \rref \amat{1 0 5 1; 0 1 2 -1}.
+        </me>
+        This corresponds to the system of equations
+        <me>
+          \syseq{x \+ \. + 5z = 1; \. \+ y + 2z = -1\rlap.}
+        </me>
+        In what sense is this system <q>solved?</q>  We were unable to isolate the variable <m>z</m> as in this <xref ref="elimination-infty-solns"/>, but if we choose <em>any value</em> for <m>z</m> then we can solve for <m>x</m> and <m>y</m>:
+        <me>
+          \syseq{x = 1 - 5z; y = -1 - 2z\rlap.}
+        </me>
+        In this way we have produced all solutions of our original system in terms of one <em>parameter</em> <m>z</m>.  Substituting all real numbers for <m>z</m> sweeps out the entire solution set, which is a line.
+      </p>
+
+      <figure>
+        <caption>A picture of the solution set (the yellow line) of the linear system in this <xref ref="parametric-form-eg1"/>.  There is a unique solution for every value of <m>z</m>; move the slider to change <m>z</m>.</caption>
+        <mathbox source="demos/parametric1.html" height="400px"/>
+      </figure>
+    </specialcase>
+
+    <p>
+      A recurring theme throughout this text will be the translation between <term>implicit</term> and <term>parameterized</term> descriptions of the same set.  This is a convenient time to fix our ideas in that regard.
+    </p>
+
+    <note hide-type="true">
+      <title>Implicit Versus Parameterized Equations</title>
+      <idx><h>Implicit equation</h></idx>
+      <idx><h>Parameterized equation</h></idx>
+      <p>
+        The solution set of the system of linear equations
+        <me>
+          \syseq{2x + y + 12z = 1; x + 2y + 9z = -1}
+        </me>
+        is a line in <m>\R^3</m>, as we saw in this <xref ref="parametric-form-eg1"/>.  These equations are called <term>implicit equations</term> for the line: the line is defined <em>implicitly</em> as the simultaneous solutions to those two equations.  These equations define the line without giving you any method to actually <em>produce</em> points on it.
+      </p>
+      <p>
+        The parametric form
+        <me>
+          \syseq{x = 1 - 5z; y = -1 - 2z\rlap.}
+        </me>
+        can be written as follows:
+        <me>
+          \def\r{\textcolor{seq-red}}
+          (x,\,y,\,z) = (1-5\r z,\,-1-2\r z,\,\r z) \qquad \text{$\r z$ any real number.}
+        </me>
+        This called a <term>parameterized equation</term> for the same line.  It is an expression that <em>produces</em> all points of the line in terms of the parameter <m>z</m>.
+      </p>
+      <p>
+        Both forms describe the same line, but in very different ways.
+      </p>
+    </note>
+
+    <note hide-type="true">
+      <title>Implicit Versus Parameterized Equations: Non-Linear Example</title>
+      <p>
+        It is illuminating to see an example of implicit and parameterized descriptions of a non-linear geometric object, namely, the unit circle.  An <term>implicit equation</term> for the unit circle is <m>x^2+y^2=1</m>: it is the set of all points in <m>\R^2</m> whose coordinates squared sum to 1.
+      </p>
+      <p>
+        One can <term>parameterize</term> all points on the unit circle using trigonometry: if <m>\theta</m> is any real number, then <m>(\cos\theta,\sin\theta)</m> is the point on the unit circle that lies <m>\theta</m> radians counterclockwise from the positive <m>x</m>-axis.  Here <m>\theta</m> is the parameter.  (Unlike the linear situations we will encounter, different values of <m>\theta</m> can produce the same point: indeed, <m>\theta</m> is only defined up to translation by <m>2\pi</m>.)
+        <latex-code>
+\begin{tikzpicture}
+  \node[seq-green] (A) {$x^2 + y^2 = 1$};
+  \node[below=2mm of A.south, align=center] (B)
+  {$\vec{x y} = \vec{\cos\textcolor{seq-red}\theta, \sin\textcolor{seq-red}\theta}$\\[1mm]
+    $\textcolor{seq-red}\theta = $ parameter};
+  \coordinate (C) at ($(A.north)!.5!(B.south) + (6cm,0)$);
+  \draw (C) ++(-2.5cm,0) -- ++(5cm,0);
+  \draw (C) ++(0,-2.3cm) -- ++(0,4.6cm);
+  \draw[thick, seq-green] (C) circle[radius=2cm];
+  \point at (C);
+  \point (P) at ($(C) + 2*({cos(32)},{sin(32)})$);
+  \coordinate (Q) at ($(C) + 2*({cos(32)},0)$);
+  \draw (C) -- (P);
+  \draw (P) -- (Q);
+  \node[anchor=north, inner sep=1pt, font=\small]
+     at ($(C)!.6!(Q)$)
+     {$\cos\textcolor{seq-red}\theta$};
+  \node[anchor=west, inner sep=1pt, fill=white, font=\small]
+     at ($(P)!.5!(Q)$)
+     {$\sin\textcolor{seq-red}\theta$};
+  \pic[draw, angle radius=7mm, angle eccentricity=.8, "$\textcolor{seq-red}\theta$" font=\small] {angle = Q--C--P};
+
+\end{tikzpicture}
+        </latex-code>
+      </p>
+    </note>
+
+  </introduction>
+
+  <subsection>
+    <title>Parametric Form</title>
+
+    <p>
+      Now we give a systematic method for parameterizing all solutions of a system of linear equations.  To begin, we describe what the parameters will be by formalizing the concept of a <q>variable that cannot be isolated in back-substitution.</q>  Recall that a <xref ref="defn-pivot" text="title">pivot position</xref> of a matrix is the position of the first nonzero of a row of a <em>row echelon form</em> of that matrix, and that a <xref ref="defn-pivot-column" text="title">pivot column</xref> is a column containing a pivot position.
+    </p>
+
+    <definition>
+      <idx><h>Free variable</h></idx>
+      <statement>
+        <p>
+          A <term>free variable</term> of a system of equations <m>Ax=b</m> is a variable corresponding to a column of the coefficient matrix <m>A</m> that is <em>not</em> a pivot column.
+        </p>
+      </statement>
+    </definition>
+
+    <p>
+      Note that the notion of a free variable depends only on the coefficient matrix and not on the constant vector <m>b</m>.  For instance, consider the matrix from the previous <xref ref="parametric-form-eg1"/> and its row echelon form:
+      <latex-code>
+        <![CDATA[
+\begin{tikzpicture}
+  \tikzset{
+    hilite entry/.style={inner sep=2pt, draw=blue!50,
+                         thick, rounded corners}
+  }
+
+  \node[math matrix] (A) {
+    2 \& 1 \& 12 \\ 1 \& 2 \& 9 \\
+  };
+  \node[math matrix, right=2cm of A.east] (B) {
+    |[seq-red]|2 \& 1 \& |[seq-green]|12 \\
+    0 \& |[seq-red]|3/2 \& |[seq-green]|3 \\
+  };
+  \draw[->, shorten=5mm] (A.east) to["REF"] (B.west);
+
+  \node[fit=(B-1-3) (B-2-3), hilite entry] (box) {};
+  \coordinate (P) at ($(B-2-1.south east)!.5!(B-2-2.south west) + (0,-1cm)$);
+  \draw[hilite entry, ->] (P) -- ++(0,5mm) -| (B-2-1.south |- B-2-2.south);
+  \draw[hilite entry, ->] (P) -- ++(0,5mm) -| (B-2-2.south);
+  \node[anchor=north, color=seq-red, inner sep=1pt, align=center] at (P) {pivot\\columns};
+  \draw[hilite entry, ->] ($(P) + (1.7cm,0)$) node[seq-green, inner sep=1pt, anchor=north] {free}
+ |- ($(box.south) + (0,-5mm)$) -- (box.south);
+
+\end{tikzpicture}
+        ]]>
+      </latex-code>
+      The pivot positions are <m>(1,1)</m> and <m>(2,2)</m>, so the only free variable is <m>z</m>, which corresponds to the third column of the coefficient matrix.
+    </p>
+
+    <p>
+      Here is another example:
+      <latex-code>
+        <![CDATA[
+\begin{tikzpicture}
+  \tikzset{
+    hilite entry/.style={inner sep=2pt, draw=blue!50,
+                         thick, rounded corners}
+  }
+
+  \node[math matrix] (A) {
+    1 \& 2 \& 2 \& 1 \\
+    2 \& 4 \& 1 \& -1 \\
+  };
+  \node[math matrix, right=2cm of A.east] (B) {
+    |[seq-red]|1 \& |[seq-green]|2 \& 2 \& |[seq-green]|1 \\
+    0 \& |[seq-green]|0 \& |[seq-red]|-3 \& |[seq-green]|-3 \\
+  };
+  \draw[->, shorten=5mm] (A.east) to["REF"] (B.west);
+
+  \node[fit=(B-1-2) (B-2-2), hilite entry] (box1) {};
+  \node[fit=(B-1-4) (B-2-4), hilite entry] (box2) {};
+  \coordinate (P) at ($(B-2-1.south east)!.5!(B-2-3.south west) + (0,-1cm)$);
+  \draw[hilite entry, ->] (P) -- ++(0,5mm) -| (B-2-1.south |- B-2-3.south);
+  \draw[hilite entry, ->] (P) -- ++(0,5mm) -| (B-2-3.south);
+  \node[anchor=north, color=seq-red, inner sep=1pt, align=center] at (P) {pivot\\columns};
+  \coordinate (Q) at ($(B-1-2.north east)!.5!(B-1-4.north west) + (0,1cm)$);
+  \draw[hilite entry, ->] (Q) node[seq-green, inner sep=1pt, anchor=south] {free}
+ |- ($(box1.north) + (0,5mm)$) -- (box1.north);
+  \draw[hilite entry, ->] (Q) |- ($(box2.north) + (0,5mm)$) -- (box2.north);
+
+\end{tikzpicture}
+        ]]>
+      </latex-code>
+      The variables corresponding to the second and fourth columns are free.
+    </p>
+
+    <algorithm xml:id="parametric-form-algo">
+      <title>Parametric Form</title>
+      <idx><h>Parametric form</h></idx>
+      <idx><h>System of linear equations</h><h>parametric form of</h><see>Parametric form</see></idx>
+      <p>
+        The <term>parametric form</term> of the solution set of a consistent system of linear equations is obtained as follows.
+        <ol>
+          <li>
+            Write the system as an augmented matrix.
+            <me>
+              \syseq{x_1 + 2x_2 + 2x_3 + x_4 = 2; 2x_1 + 4x_2 + x_3 - x_4 = -2}
+              \quad\xrightarrow[\text{matrix}]{\text{augmented}}\quad
+              \amat{1 2 2 1 2; 2 4 1 -1 -2}
+            </me>
+          </li>
+          <li>
+            Perform Gauss<ndash/>Jordan elimination to put the matrix in reduced row echelon form.
+            <me>
+              \amat{1 2 2 1 2; 2 4 1 -1 -2}
+              \rref
+              \amat{1 2 0 -1 -2; 0 0 1 1 2}
+            </me>
+          </li>
+          <li>
+            Write the corresponding system of linear equations, and
+            <alert>move all free variables to the right side of the equals signs.</alert>
+            <me>
+              \def\r{\color{seq-red}}
+              \syseq{x_1 + 2\r x_2 \+ \. - \r x_4 = -2; \. \+ \. \+ x_3 + \r x_4 = 2}
+              \quad\xrightarrow[\text{form}]{\text{parametric}}\quad
+              \syseq{x_1 = -2 - 2\r x_2 + \r x_4; x_3 = 2 \+ \. - \r x_4}
+            </me>
+          </li>
+        </ol>
+        All solutions of the system are obtained by substituting <alert>any values</alert> for the free variables.
+      </p>
+    </algorithm>
+
+    <p>
+      The output of this algorithm parameterizes all solutions of a system of equations using the <em>free variables</em> as the parameters.  The second step is the only one that takes any work (the other steps being simple bookkeeping), so one can regard Gaussian elimination as a method of passing from an <em>implicit</em> system of linear equations to a <em>parametric</em> system of equations.  In diagram form:
+      <latex-code>
+\begin{tikzpicture}
+  \node[align=center, draw=blue!50, thick, rounded corners, inner sep=2mm]
+    (A) {implicit\\equations};
+  \node[align=center, draw=blue!50, thick, rounded corners, inner sep=2mm,
+        right=3cm of A.east]
+   (B) {parametric\\equations};
+   \draw[->, very thick, shorten=2mm] (A.north east)
+     to[bend left, "Gaussian" font=\small, "Elimination"' {font=\small, yshift=-1mm}] (B.north west);
+   \draw[->, very thick, shorten=2mm, black!30!white] (B.south west)
+     to[bend left, "Orthogonal"' font=\small, "Complements" font=\small] (A.south east);
+\end{tikzpicture}
+      </latex-code>
+      We will learn how to pass from parameterized form back to implicit form in <xref provisional="parametric-to-implicit"/>.
+    </p>
+
+    <example xml:id="parametric-form-eg-line">
+      <title>A Parameterized Line</title>
+      <statement>
+        <p>
+          Find the parametric form of the solutions of this system of equations
+          <me>
+            \syseq{2x + y + 12z = 1; x + 2y + 9z = -1}
+          </me>
+          from this <xref ref="parametric-form-eg1"/>.
+        </p>
+      </statement>
+      <answer>
+        <p>
+          We reinterpret the calculation we did before in the context of the <xref ref="parametric-form-algo"/>.  We put the system into an augmented matrix and find its reduced row echelon form:
+          <me>
+            \amat{2 1 12 1; 1 2 9 -1} \rref \amat{1 0 5 1; 0 1 2 -1}.
+          </me>
+          There is no pivot in the third column, so <m>z</m> is free.  (The augmented column also lacks a pivot, but this just means that the system is consistent<mdash/>the augmented column does not correspond to a variable.)  We write out the corresponding system of equations and move the terms involving <m>z</m> to the other side:
+          <me>
+            \syseq{x \+ \. + 5z = 1; \. \+ y + 2z = -1}
+            \quad\xrightarrow[\text{form}]{\text{parametric}}\quad
+            \syseq{x = 1 - 5z; y = -1 - 2z\rlap.}
+          </me>
+        </p>
+      </answer>
+    </example>
+
+    <example xml:id="parametric-form-eg-plane">
+      <title>A Parameterized Plane</title>
+      <statement>
+        <p>
+          Find the parametric form of the solutions of the linear equation
+          <me>x + y + z = 1.</me>
+        </p>
+      </statement>
+      <answer>
+        <p>
+          This system can be written as the augmented matrix
+          <me>\amat{1 1 1 1},</me>
+          which is already in reduced row echelon form.  The free variables are <m>y</m> and <m>z</m>.  Moving them to the right side of the equals sign gives the parametric form for the general solution:
+          <me>
+            x = 1 - y - z
+          </me>
+          for any values of <m>y</m> and <m>z</m>.  This is a parametric equation for a plane in <m>\R^3</m>.
+        </p>
+        <figure>
+          <caption>A plane described by two parameters <m>y</m> and <m>z</m>.  Any point on the plane is obtained by substituting suitable values for <m>y</m> and <m>z</m>.</caption>
+          <mathbox source="demos/plane.html" height="400px"/>
+        </figure>
+      </answer>
+    </example>
+
+    <example>
+      <title>A Variable That Does Not Appear in the Equations</title>
+      <p>
+        Suppose that the reduced row echelon form of the matrix for a linear system in four variables <m>x_1,x_2,x_3,x_4</m> is
+        <me>\amat{
+        1 \color{seq-green}0 0 \color{seq-green}3 2 ;
+        0 \color{seq-green}0 1 \color{seq-green}4 -1
+        }.</me>
+        The free variables are <m>\color{seq-green}x_2</m> and <m>\textcolor{seq-green}{x_4}</m>: they are the ones whose columns are <em>not</em> pivot columns.
+      </p>
+
+      <p>This translates into the system of equations
+      <me>
+        \syseq{x_1 \+ \. \+ \. + 3x_4 = 2;
+        \.  \+ \. \+ x_3 + 4x_4 = -1}
+        \quad\xrightarrow[\text{form}]{\text{parametric}}\quad
+        \syseq{x_1 = 2 - 3x_4; x_3 = -1 - 4x_4\rlap.}
+      </me>
+      What happened to <m>x_2</m>?  It is a free variable, but no other variable depends on it: we can choose any value for <m>x_2</m> without affecting the values of any of the other variables.  The general solution to the system is
+      <me>
+        \begin{split}
+        x_1 &amp;= 2-3x_4 \\ x_2 &amp;= x_2 \\ x_3 &amp;= -1-4x_4 \\ x_4 &amp;= x_4
+        \end{split}
+      </me>
+      for any values of <m>x_2</m> and <m>x_4</m>.  For instance, <m>(2,0,-1,0)</m> is a solution (with <m>x_2=x_4=0</m>), and <m>(5,1,3,-1)</m> is a solution (with <m>x_2=1, x_4=-1</m>).
+      </p>
+    </example>
+
+    <example xml:id="parametric-form-eg-point">
+      <title>No Free Variables</title>
+      <statement>
+        <p>
+          Find the parametric form of the solutions of the system of equations
+          <me>
+            \syseq{x + y = 2; x - y = 0\rlap.}
+          </me>
+        </p>
+      </statement>
+      <answer>
+        <p>
+          We form the corresponding augmented matrix and perform Gauss<ndash/>Jordan elimination:
+          <me>
+            \amat{1 1 2; 1 -1 0}
+            \rref
+            \amat{1 0 1; 0 1 1}.
+          </me>
+          Translating back into a system of equations gives
+          <me>
+            \syseq{x = 1; y = 1\rlap.}
+          </me>
+          This system has no free variables, so this is already the <q>parametric</q> form of the (unique) solution.
+        </p>
+      </answer>
+    </example>
+
+    <p>
+      We saw in the above example that the <q>parametric</q> form of the solutions of a system with a unique solution simply specifies the values of all of the variables.  In this case there are no parameters, so we will not use the term <q>parametric form</q>.
+    </p>
+
+    <note hide-type="true">
+      <title>Observation</title>
+      <p>
+        We saw in the above examples that the number of free variables in a system of equations is closely tied to the <em>geometry</em> of the solution set.
+        <ul>
+          <li>
+            When there are <alert>two</alert> free variables, the solution set is a <alert>plane</alert>, as in this <xref ref="parametric-form-eg-plane"/>.
+          </li>
+          <li>
+            When there is <alert>one</alert> free variable, the solution set is a <alert>line</alert>, as in this <xref ref="parametric-form-eg-line"/>.
+          </li>
+          <li>
+            When there are <alert>zero</alert> free variables, the solution set is a <alert>point</alert>, as in this <xref ref="parametric-form-eg-point"/>.
+          </li>
+        </ul>
+      </p>
+    </note>
+
+    <p>
+      The above observation motivates the following definition.
+    </p>
+
+    <definition hide-type="true">
+      <title>Provisional Definition</title>
+      <idx><h>Dimension</h><h>provisional definition of</h></idx>
+      <idx><h>Solution set</h><h>dimension of</h></idx>
+      <statement>
+        <p>
+          The <term>dimension</term> of the solution set of a <em>consistent</em> system of equations <m>Ax=b</m> is the number of <em>free variables</em> in that system.
+        </p>
+      </statement>
+    </definition>
+
+    <p>
+      We will formulate a more robust notion of dimension in <xref ref="linear-independence"/>, but this definition is useful for discussing the geometry of solution sets.
+    </p>
+
+  </subsection>
+
+
+  <subsection>
+    <title>Parametric Vector Form</title>
+
+    <p>
+      In this subsection, we give an alternate, more concise way of writing the solutions of a system of equations.  We use the same parameters, but we describe the solutions using equations involving <em>vectors</em>.  This will be very useful in <xref ref="spans"/> when we start drawing pictures of solution sets.
+    </p>
+
+    <algorithm xml:id="parametric-vector-form-algo">
+      <title>Parametric Vector Form</title>
+      <idx><h>Parametric vector form</h></idx>
+      <idx><h>System of linear equations</h><h>parametric vector form of</h><see>Parametric vector form</see></idx>
+      <p>
+        The <term>parametric vector form</term> of the solution set of a consistent system of linear equations is obtained as follows.
+      </p>
+      <p>
+        First find the parametric form of the system, as in this <xref ref="parametric-form-algo"/>.
+        <me>
+          \syseq{x_1 = -2 - 2x_2 + x_4; x_3 = 2 \+ \. - x_4}
+        </me>
+        <ol start="4">
+          <li>
+            Add trivial equations for the free variables, in order.  Organize the right side of the equations into columns.
+            <me>
+              \def\r{\color{seq-red}}
+              \syseq{
+                x_1 = -2 - 2x_2 + x_4;
+                \r x_2 \mathbin{\r=} \. \+ \r x_2;
+                x_3 = 2 \+ \. - x_4;
+                \r x_4 \mathbin{\r=} \. \+ \. \+ \r x_4
+              }
+            </me>
+          </li>
+          <li>
+            Gather the columns into vectors.  Pull out the free variables as scalar multiples.
+            <me>
+              \vec{x_1 x_2 x_3 x_4} = \vec{-2 0 2 0} + x_2\vec{-2 1 0 0} + x_4\vec{1 0 -1 1}.
+            </me>
+          </li>
+        </ol>
+        The result is
+        <me>
+          x = \vec[c]{\text{a constant} \text{vector}}
+          + \vec[c]{\text{a \textcolor{seq-red}{linear combination} of some vectors}
+                    \text{with the free variables as weights}}.
+        </me>
+      </p>
+    </algorithm>
+
+    <p>
+      <idx><h>Particular solution</h></idx>
+      The constant vector is the solution of <m>Ax=b</m> that is obtained by setting all of the free variables equal to zero.  It is called a <term>particular solution</term>.
+    </p>
+
+    <example xml:id="parametric-vector-form-eg-line">
+      <statement>
+        <p>
+          Find the parametric vector form of the solutions of this system of equations
+          <me>
+            \syseq{2x + y + 12z = 1; x + 2y + 9z = -1}
+          </me>
+          from this <xref ref="parametric-form-eg-line"/>.
+        </p>
+      </statement>
+      <answer>
+        <p>
+          We computed the parametric form to be
+          <me>
+            \syseq{x = 1 - 5z; y = -1 - 2z\rlap.}
+          </me>
+          We add the trivial equation <m>z=z</m> and organize into columns:
+          <me>
+            \syseq{
+              x = 1 - 5z;
+              y = -1 - 2z;
+              z = \. \+ z
+            }
+            \quad\xrightarrow[\text{vector form}]{\text{parametric}}\quad
+            \vec{x y z} = \vec{1 -1 0} + z\vec{-5 -2 1}.
+          </me>
+          This is the line through <m>(1,-1,0)</m> (the particular solution) in the direction of <m>(-5,-2,1)</m>.
+        </p>
+      </answer>
+    </example>
+
+    <example xml:id="parametric-vector-form-eg-plane">
+      <statement>
+        <p>
+          Find the parametric vector form of the solutions of the linear equation
+          <me>x + y + z = 1</me>
+          from this <xref ref="parametric-form-eg-plane"/>.
+        </p>
+      </statement>
+      <answer>
+        <p>
+          We computed the parametric form to be
+          <me>
+            x = 1 - y - z.
+          </me>
+          We add the trivial equations <m>y=y</m> and <m>z=z</m> and organize into columns:
+          <me>
+            \syseq{x = 1 - y - z; y = \. \+ y; z = \. \+ \. \+ z}
+            \quad\xrightarrow[\text{vector form}]{\text{parametric}}\quad
+            \vec{x y z} = \vec{1 0 0} + y\vec{-1 1 0} + z\vec{-1 0 1}.
+          </me>
+          This is the plane through <m>(1,0,0)</m> (the particular solution) and the two solutions <m>(1,0,0)+(-1,1,0)</m> and <m>(1,0,0)+(-1,0,1)</m>.
+        </p>
+      </answer>
+    </example>
+
+
+  </subsection>
+
 
 </section>

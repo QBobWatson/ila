@@ -16,7 +16,7 @@ the license is included in gfdl.xml.
     <ol>
       <li>Understand how to solve a system of equations using elimination and back-substitution.</li>
       <li>Learn how the elimination method corresponds to performing row operations on an augmented matrix.</li>
-      <li><em>Vocabulary words:</em> <term>row operation,</term> <term>matrix equation,</term> <term>augmented matrix,</term> <term>row equivalence.</term></li>
+      <li><em>Vocabulary words:</em> <term>row operation,</term> <term>matrix equation,</term> <term>vector equation,</term> <term>augmented matrix,</term> <term>row equivalence.</term></li>
     </ol>
   </objectives>
 
@@ -496,12 +496,13 @@ the license is included in gfdl.xml.
           2 -3 2 14
         }.
       </me>
-      Moreover, it is easy for a computer to understand a box full of numbers (a two-dimensional array of floating point values), whereas the concept of an <q>unknown</q> or a <q>solution</q> is much more abstract.  For these reasons, we will rewrite our equations using matrices.
+      Moreover, it is easy for a computer to understand a box full of numbers (a two-dimensional array of floating point values), whereas the concept of an <q>unknown</q> or a <q>solution</q> is much more abstract.  For these reasons, we will rewrite our equations using matrices.  We will also write them using vectors; this viewpoint will be important starting in <xref ref="spans"/>.
     </p>
 
-    <definition hide-type="true" xml:id="defn-three-ways">
-      <title>Three Ways to Write a System of Equations</title>
+    <definition hide-type="true" xml:id="defn-four-ways">
+      <title>Four Ways to Write a System of Equations</title>
       <idx><h>Matrix equation</h></idx>
+      <idx><h>Vector equation</h></idx>
       <idx><h>Coefficient matrix</h></idx>
       <idx><h>Augmented matrix</h></idx>
       <statement>
@@ -512,9 +513,12 @@ the license is included in gfdl.xml.
               As a <term>system of equations</term>:
               <me>
                 \def\r{\textcolor{seq-red}}
+                \def\g{\textcolor{seq-green}}
+                \def\b{\textcolor{seq-blue}}
+                \def\p{\textcolor{seq-violet}}
                 \syseq{
-                  \r1x_1 + \r2x_2 + \r3x_3 = \r6;
-                  \r3x_1 + \r1x_2 \mathbin{\r-} \r1x_3 = \r{-2}{\rlap.}
+                  \r1x_1 + \g2x_2 + \b3x_3 = \p6;
+                  \r3x_1 + \g1x_2 \mathbin{\b-} \b1x_3 = \p{-2}{\rlap.}
                 }
               </me>
             </li>
@@ -522,22 +526,39 @@ the license is included in gfdl.xml.
               As a <term>matrix equation</term> <m>Ax=b</m>:
               <me>
                 \def\r{\textcolor{seq-red}}
+                \def\g{\textcolor{seq-green}}
+                \def\b{\textcolor{seq-blue}}
+                \def\p{\textcolor{seq-violet}}
                 \mat{
-                  \r1 \r2 \r3;
-                  \r3 \r1 \r{-1}
-                }\vec{x_1 x_2 x_3} = \vec{\r6 \r{-2}}.
+                  \r1 \g2 \b3;
+                  \r3 \g1 \b{-1}
+                }\vec{x_1 x_2 x_3} = \vec{\p6 \p{-2}}.
               </me>
               The matrix
               <me> A = \mat{1 2 3; 3 1 -1} </me>
               is called the <term>coefficient matrix</term>: it holds the <em>coefficients</em> of the unknowns in the system of equations.  The vector <m>x=(x_1,x_2,x_3)</m> contains the unknowns, and the vector <m>b=(6,-2)</m> contains the constants on the right side of the equation.
             </li>
             <li>
+              As a <term>vector equation</term>:
+              <me>
+                \def\r{\textcolor{seq-red}}
+                \def\g{\textcolor{seq-green}}
+                \def\b{\textcolor{seq-blue}}
+                \def\p{\textcolor{seq-violet}}
+                x_1\vec{\r1 \r3} + x_2\vec{\g2 \g1} + x_3\vec{\b3 \b{-1}} = \vec{\p6 \p{-2}}.
+              </me>
+              Note that the vectors on the right side of the equation are the columns of the coefficient matrix.
+            </li>
+            <li>
               As an <term>augmented matrix</term> <m>\amat{A b}</m>:
               <me>
                 \def\r{\textcolor{seq-red}}
+                \def\g{\textcolor{seq-green}}
+                \def\b{\textcolor{seq-blue}}
+                \def\p{\textcolor{seq-violet}}
                 \amat{
-                  \r1 \r2 \r3 \r6;
-                  \r3 \r1 \r{-1} \r{-2}
+                  \r1 \g2 \b3 \p6;
+                  \r3 \g1 \b{-1} \p{-2}
                 }.
               </me>
               This is a notational convenience: it is a matrix formed by joining the coefficient matrix <m>A</m> and the constant vector <m>b</m> together with a line between them.
@@ -566,6 +587,14 @@ the license is included in gfdl.xml.
           x_1 + 2x_2 + 3x_3 = 6;
           3x_1 + x_2 - x_3 = -2\rlap.
         }
+      </me>
+      Using the <q>by columns</q> approach to <xref ref="matrix-vector-product" text="title">matrix-vector multiplication</xref>, we see that a matrix equation is equivalent to a vector equation:
+      <me>
+        \mat{
+          1 2 3;
+          3 1 {-1}
+        }\vec{x_1 x_2 x_3} = \vec{6 {-2}} \quad\iff\quad
+        x_1\vec{1 3} + x_2\vec{2 1} + x_3\vec{3 -1} = \vec{6 -2}.
       </me>
     </p>
 

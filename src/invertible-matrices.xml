@@ -27,7 +27,7 @@ the license is included in gfdl.xml.
 
   <introduction>
     <p>
-      In this <xref ref="defn-three-ways"/>, we learned to write a system of linear equations as a matrix equation <m>Ax=b</m>.  This notation is suggestive: can we solve the system by dividing by <m>A</m>?  In other words, does the expression
+      In this <xref ref="defn-four-ways"/>, we learned to write a system of linear equations as a matrix equation <m>Ax=b</m>.  This notation is suggestive: can we solve the system by dividing by <m>A</m>?  In other words, does the expression
       <me> \text{\raisebox{1em}{``}}x = \frac bA\text{\raisebox{1em}{''}} </me>
       make sense?  If so, then <m>Ax=b</m> would have exactly one solution for every value of <m>b</m>, namely, <m>x=\text{\raisebox{1mm}{``}}\frac bA\text{\raisebox{1mm}{''}}</m>.  According to this <xref ref="number-of-solutions">fact</xref>, this is the case if and only if the augmented matrix <m>\mat{A b}</m> has a pivot in every non-augmented column and no pivot in the augmented column, for every value of <m>b</m>.  That is, the row echelon form would have to look like this:
       <me>

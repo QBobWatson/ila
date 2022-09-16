@@ -26,7 +26,7 @@ the license is included in gfdl.xml.
       The pivots in the (reduced) row echelon form of a matrix will tell us many important properties of the matrix.
     </p>
 
-    <definition>
+    <definition xml:id="defn-pivot">
       <idx><h>Pivot</h></idx>
       <idx><h>Pivot position</h></idx>
       <idx><h>Rank</h></idx>
@@ -187,7 +187,7 @@ the license is included in gfdl.xml.
       In the above discussion, what was important was whether there was a pivot attached to a variable or a constant.  This is a question about which <em>columns</em> contain pivots.
     </p>
 
-    <definition>
+    <definition xml:id="defn-pivot-column">
       <idx><h>Pivot column</h></idx>
       <statement>
         <p>
