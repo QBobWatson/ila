@@ -8,6 +8,7 @@ import argparse
 import glob
 import os
 
+from math import ceil
 from multiprocessing import Pool, cpu_count
 from random import shuffle
 from subprocess import Popen
@@ -74,9 +75,12 @@ def main():
     # files.
     shuffle(htmls)
 
-    with Pool(processes=max(cpu_count()-1, 3)) as pool:
+    processes = max(cpu_count()-1, 3)
+    chunk_size = min(args.chunk_size, ceil(len(htmls)/processes))
+
+    with Pool(processes=processes) as pool:
         job_args = []
-        for chunk in chunks(htmls, args.chunk_size):
+        for chunk in chunks(htmls, chunk_size):
             job_args.append((args, chunk))
         result = pool.map_async(
             job, job_args, error_callback=lambda x: pool.close())

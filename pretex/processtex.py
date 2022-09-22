@@ -1059,7 +1059,7 @@ def main():
                 htmlf.read_extents()
         html_files = [h for h in html_files if h not in done]
         if not html_files:
-            log("Done!")
+            log("Task finished")
             return
         html_byhash = {h.basename: h for h in html_files}
 
@@ -1116,7 +1116,7 @@ def main():
         log("Writing html files...")
         for htmlf in html_files:
             htmlf.write_html()
-        log("Done!")
+        log("Task finished")
 
 
 if __name__ == "__main__":
