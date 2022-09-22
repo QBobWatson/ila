@@ -34,7 +34,7 @@ the license is included in gfdl.xml.
         </me>
         We put it into an augmented matrix and find its reduced row echelon form:
         <me>
-          \amat{2 1 12 1; 1 2 9 -1} \rref \amat{1 0 5 1; 0 1 2 -1}.
+          \amat{2 1 12 1; 1 2 9 -1} \RREF \amat{1 0 5 1; 0 1 2 -1}.
         </me>
         This corresponds to the system of equations
         <me>
@@ -227,7 +227,7 @@ the license is included in gfdl.xml.
             Perform Gauss<ndash/>Jordan elimination to put the matrix in reduced row echelon form.
             <me>
               \amat{1 2 2 1 2; 2 4 1 -1 -2}
-              \rref
+              \RREF
               \amat{1 2 0 -1 -2; 0 0 1 1 2}
             </me>
           </li>
@@ -283,7 +283,7 @@ the license is included in gfdl.xml.
         <p>
           We reinterpret the calculation we did before in the context of the <xref ref="parametric-form-algo"/>.  We put the system into an augmented matrix and find its reduced row echelon form:
           <me>
-            \amat{2 1 12 1; 1 2 9 -1} \rref \amat{1 0 5 1; 0 1 2 -1}.
+            \amat{2 1 12 1; 1 2 9 -1} \RREF \amat{1 0 5 1; 0 1 2 -1}.
           </me>
           There is no pivot in the third column, so <m>z</m> is free.  (The augmented column also lacks a pivot, but this just means that the system is consistent<mdash/>the augmented column does not correspond to a variable.)  We write out the corresponding system of equations and move the terms involving <m>z</m> to the other side:
           <me>
@@ -375,7 +375,7 @@ the license is included in gfdl.xml.
           We form the corresponding augmented matrix and perform Gauss<ndash/>Jordan elimination:
           <me>
             \amat{1 1 2; 1 -1 0}
-            \rref
+            \RREF
             \amat{1 0 1; 0 1 1}.
           </me>
           Translating back into a system of equations gives
