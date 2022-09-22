@@ -29,6 +29,7 @@
   <uri uri="../mathbook/build/pretext.rnc" resource="pivots-solutions.xml"/>
   <uri uri="../mathbook/build/pretext.rnc" resource="pca.xml"/>
   <uri uri="../mathbook/build/pretext.rnc" resource="quadratic-optimization.xml"/>
+  <uri uri="../mathbook/build/pretext.rnc" resource="row-col-picture.xml"/>
   <uri uri="../mathbook/build/pretext.rnc" resource="spans.xml"/>
   <uri uri="../mathbook/build/pretext.rnc" resource="spectral-theorem.xml"/>
   <uri uri="../mathbook/build/pretext.rnc" resource="subspaces.xml"/>

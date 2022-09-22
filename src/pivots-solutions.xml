@@ -196,8 +196,7 @@ the license is included in gfdl.xml.
       </statement>
     </definition>
 
-    <note hide-type="true" xml:id="number-of-solutions">
-      <title>Fact</title>
+    <fact xml:id="number-of-solutions">
       <idx><h>System of linear equations</h><h>number of solutions of</h></idx>
       <p>
         Consider the augmented matrix for a system of linear equations.
@@ -326,7 +325,7 @@ the license is included in gfdl.xml.
           </li>
         </ul>
       </p>
-    </note>
+    </fact>
 
     <p>
       Note that it is necessary to perform elimination to find the pivot columns of a matrix, so determining the number of solutions of a system still takes work.

@@ -547,7 +547,7 @@ the license is included in gfdl.xml.
                 \def\p{\textcolor{seq-violet}}
                 x_1\vec{\r1 \r3} + x_2\vec{\g2 \g1} + x_3\vec{\b3 \b{-1}} = \vec{\p6 \p{-2}}.
               </me>
-              Note that the vectors on the right side of the equation are the columns of the coefficient matrix.
+              Note that the vectors on the left side of the equation are the columns of the coefficient matrix.
             </li>
             <li>
               As an <term>augmented matrix</term> <m>\amat{A b}</m>:
@@ -596,6 +596,7 @@ the license is included in gfdl.xml.
         }\vec{x_1 x_2 x_3} = \vec{6 {-2}} \quad\iff\quad
         x_1\vec{1 3} + x_2\vec{2 1} + x_3\vec{3 -1} = \vec{6 -2}.
       </me>
+      We will discuss vector equations in more detail in <xref ref="row-col-picture"/>.
     </p>
 
     <p>

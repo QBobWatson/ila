@@ -324,7 +324,7 @@ the license is included in gfdl.xml.
           is invertible, and if so, find its inverse.
         </p>
       </statement>
-      <solution>
+      <answer>
         <p>
           We augment by the identity and perform Gaussian elimination, which only requires one row operation in this case:
           <me>
@@ -349,7 +349,7 @@ the license is included in gfdl.xml.
           <me>\mat{1 0 4; 0 1 2; 0 -3 -4}\mat{1 -6 -2; 0 -2 -1; 0 3/2 1/2}
 = \ mat{1 0 0; 0 1 0; 0 0 1}. \qquad\bigcheck</me>
         </p>
-      </solution>
+      </answer>
     </example>
 
     <example>
@@ -361,7 +361,7 @@ the license is included in gfdl.xml.
           is invertible, and if so, find its inverse.
         </p>
       </statement>
-      <solution>
+      <answer>
         <p>
           We augment by the identity and perform Gaussian elimination:
           <me>
@@ -372,7 +372,7 @@ the license is included in gfdl.xml.
           </me>
           At this point we can stop, because one of the pivots is to the right of the augmentation line: the matrix <m>A</m> is not invertible.
         </p>
-      </solution>
+      </answer>
     </example>
 
     <p>

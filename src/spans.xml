@@ -14,12 +14,814 @@ the license is included in gfdl.xml.
 
   <objectives>
     <ol>
-      <li>Write the objectives.</li>
+      <li>Learn the geometric meaning of addition and scalar multiplication of vectors.</li>
+      <li>Understand linear combinations geometrically.</li>
+      <li>Learn the definition of <m>\Span\{v_1,v_2,\ldots,v_n\}</m> and how to draw pictures of spans.</li>
+      <li><em>Recipe:</em> decide if a vector is in a span.</li>
+      <li><em>Pictures:</em> parallelogram law for vector addition, vector subtraction, scalar multiplication, linear combinations, spans in <m>\R^2</m> and <m>\R^3</m>.</li>
+      <li><em>Vocabulary word:</em> <term>set builder notation.</term></li>
+      <li><em>Essential vocabulary word:</em> <term>span.</term></li>
     </ol>
   </objectives>
 
-  <p>
-    Write the content.
-  </p>
+  <introduction>
+    <p>
+      In this section we introduce the notion of a <term>span</term> of a set of vectors.  This is a geometric concept that will formalize our notion of a <q>linear space containing 0.</q>  We will use this in <xref ref="row-col-picture"/> to draw pictures of the solution set of a system of equations, as well as the set of all <m>b</m> making <m>Ax=b</m> consistent.
+    </p>
+    <p>
+      We begin with a discussion of how to draw vectors, and give a geometric interpration of linear combinations.
+    </p>
+  </introduction>
+
+  <subsection>
+    <title>Vector Geometry</title>
+
+    <p>
+      First we recall the <xref ref="definition-vectors" text="title">definition</xref> of a vector in <m>\R^n</m>: it is simply an ordered list of <m>n</m> numbers
+      <me> x = (x_1,\,x_2,\,\ldots,\,x_n). </me>
+      We will draw a vector two ways: as a <em>point</em> and as a <em>displacement</em>.
+      <ul>
+        <li>
+          We can draw a vector as a point, or dot, in Euclidean space, by interpreting the coordinates of the vector as the coordinates of the point:
+          <latex-code>
+              <![CDATA[
+    \begin{tikzpicture}[scale=1, every pin/.style={whitebg, thin border}]
+    \draw[grid lines] (-1,-1) grid (4, 4);
+    \draw[->, thick] (-1,0) -- (4,0) node[right] {$x$};
+    \draw[->, thick] (0,-1) -- (0,4) node[above] {$y$};
+    \point at (0,0);
+    \node[right] at (-6.5,1.5) {$\vec{x_1 x_2} = \vec{\text{$x$-coordinate} \text{$y$-coordinate}}$};
+    \node[below, font=\small] at (1,0) {1};
+    \node[below, font=\small] at (2,0) {2};
+    \node[below, font=\small] at (3,0) {3};
+    \node[left, font=\small] at (0,1) {1};
+    \node[left, font=\small] at (0,2) {2};
+    \node[left, font=\small] at (0,3) {3};
+    \point[seq-blue, "$\vec{1 3}$" {seq-blue, right}] (x) at (1,3);
+    \end{tikzpicture}
+              ]]>
+          </latex-code>
+        </li>
+        <li>
+          We can draw a vector as a displacement, or an arrow, between two points in Euclidean space:
+          <latex-code>
+              <![CDATA[
+    \begin{tikzpicture}[scale=1, every pin/.style={whitebg, thin border}]
+    \draw[grid lines] (-1,-1) grid (4, 4);
+    \node[right, white] at (4,0) {$x$};
+    \node[right] at (-6.5,1.5) {$\vec{x_1 x_2} = \vec{\text{$x$-displacement} \text{$y$-displacement}}$};
+    \draw[vector, seq-blue] (0,0) to["$\vec{1 3}$" {seq-blue, right}] (1,3);
+    \draw[vector, seq-blue] (2,-.5) to["$\vec{1 3}$" {seq-blue, right}] (3,2.5);
+    \end{tikzpicture}
+              ]]>
+          </latex-code>
+          In this case, the tail of the vector can be located anywhere; only the displacements matter.  By default we will draw vectors with the tail located at 0.
+        </li>
+      </ul>
+    </p>
+
+    <example hide-type="true">
+      <title>Interactive: A Vector in <m>\R^3</m>, by Coordinates</title>
+      <figure>
+        <caption>A vector in <m>\R^3</m>, and its coordinates.  Drag the arrow head and tail.</caption>
+        <mathbox source="demos/vector.html" height="400px"/>
+      </figure>
+    </example>
+
+    <p>
+      There are two fundamental algebraic operations on vectors, namely, addition and scalar multiplication.  These also have a geometric interpretation.
+    </p>
+
+    <paragraphs>
+      <title>The Parallelogram Law for Vector Addition</title>
+      <idx><h>Vector</h><h>addition</h><h>parallelogram law</h></idx>
+
+      <p>
+        Geometrically, the sum of two vectors <m>v,w</m> is obtained as follows: place the tail of <m>w</m> at the head of <m>v</m>. Then <m>v+w</m> is the vector whose tail is the tail of <m>v</m> and whose head is the head of <m>w</m>. Doing this both ways creates a parallelogram; the rule is therefore known as the <term>parallelogram law</term>.
+      </p>
+      <p>
+        Why does this work?  The displacement of <m>v+w</m> in the <m>x</m>-direction is the sum of the displacements of <m>v</m> and <m>w</m> in the <m>x</m>-direction, and likewise with the <m>y</m>-direction; this is exactly what happens when you place <m>v</m> and <m>w</m> head to tail.
+      </p>
+
+      <p>
+        For example,
+        <me>
+          \textcolor{seq-blue}{\vec{1 3}}
+          + \textcolor{seq-green}{\vec{4 2}}
+          = \vec{5 5}.
+        </me>
+        The parallelogram law says:
+        <latex-code>
+            <![CDATA[
+\begin{tikzpicture}
+  \draw[grid lines] (0,0) grid (5,5);
+  \fill[red!30, nearly transparent] (0,0) -- (1,3) -- (5,5) -- (4,2) -- cycle;
+  \begin{scope}[thin border nodes]
+  \draw[vector, seq-blue] (0,0) to["$v$"] (1,3);
+  \draw[vector, seq-green] (1,3) to["$w$"] (5,5);
+  \draw[vector, seq-green] (0,0) to["$w$"'] (4,2);
+  \draw[vector, seq-blue] (4,2) to["$v$"'] (5,5);
+  \draw[vector] (0,0) to["$v+w$"' sloped] (5,5);
+  \end{scope}
+  \draw[|<->|] (0,5.5) -- (1,5.5);
+  \draw[|<->|] (1,5.5) -- (5,5.5);
+  \draw[|<->|] (0,-.5) -- (4,-.5);
+  \draw[|<->|] (4,-.5) -- (5,-.5);
+  \path (0,-.5) -- (5,-.5)
+     node[pos=.5, font=\small, below=1mm] {$5 = 1 + 4 = 4+1$};
+  \draw[|<->|] (5.5,0) -- (5.5,2);
+  \draw[|<->|] (5.5,2) -- (5.5,5);
+  \draw[|<->|] (-.5,0) -- (-.5,3);
+  \draw[|<->|] (-.5,3) -- (-.5,5);
+  \path (-.5, 0) -- (-.5, 5)
+     node[pos=.5, font=\small, above, rotate=90] {$5 = 2 + 3 = 3 + 2$};
+\end{tikzpicture}
+            ]]>
+        </latex-code>
+      </p>
+
+      <example hide-type="true">
+        <title>Interactive: The Parallelogram Law for Vector Addition</title>
+        <figure>
+          <caption>The parallelogram law for vector addition.  Click and drag the heads of <m></m> and <m>w</m>.</caption>
+          <mathbox source="demos/vector-add.html" height="400px"/>
+        </figure>
+      </example>
+    </paragraphs>
+
+    <paragraphs>
+      <title>Vector Subtraction</title>
+      <idx><h>Vector</h><h>subtraction</h><h>picture of</h></idx>
+
+      <p>
+        Geometrically, the difference of two vectors <m>v,w</m> is obtained as follows: place the tail of <m>v</m> and <m>w</m> at the same point.  Then <m>v-w</m> is the vector from the head of <m>w</m> to the head of <m>v</m>.  Why does this work?  If you add <m>v-w</m> to <m>w</m>, you get <m>v</m>, so this is a special case of the parallelogram law.
+      </p>
+
+      <p>
+        For example,
+        <me>
+          \textcolor{seq-blue}{\vec{1 4}}
+       - \textcolor{seq-green}{\vec{4 2}}
+       = \vec{-3 2}.
+       </me>
+       The vector subraction rule says:
+       <latex-code>
+         <![CDATA[
+\begin{tikzpicture}
+  \draw[grid lines] (0,0) grid (5,5);
+  \begin{scope}[thin border nodes]
+  \draw[vector, seq-blue] (0,0) to["$v$"] (1,4);
+  \draw[vector, seq-green] (0,0) to["$w$"] (4,2);
+  \draw[vector] (4,2) to["$v-w$"' sloped] (1,4);
+  \end{scope}
+\end{tikzpicture}
+         ]]>
+       </latex-code>
+      </p>
+
+      <example hide-type="true">
+        <title>Interactive: Vector Subtraction</title>
+        <figure>
+          <caption>Vector subtraction.  Click and drag the heads of <m>v</m> and <m>w</m>.</caption>
+          <mathbox source="demos/vector-sub.html" height="400px"/>
+        </figure>
+      </example>
+    </paragraphs>
+
+    <paragraphs>
+      <title>Scalar Multiplication</title>
+      <idx><h>Vector</h><h>scalar multiplication</h><h>picture of</h></idx>
+
+      <p>
+        A scalar multiple of a vector <m>v</m> has the same (or opposite) direction, but a different length.  More specifically, the vector <m>cv\;(c\in\R)</m> has the same direction as <m>v</m> if <m>c&gt;0</m> and the opposite direction if <m>c&lt;0</m>, and has length <m>|c|</m> times the length of <m>v</m>.
+      </p>
+      <p>
+        For instance, <m>2v</m> is the vector in the direction of <m>v</m> but twice as long, and <m>-\frac 12v</m> is the vector in the opposite direction of <m>v</m>, but half as long.  Note that the set of all scalar multiples of a (nonzero) vector <m>v</m> is a <em>line</em>.
+        <latex-code>
+        <![CDATA[
+  \begin{tikzpicture}
+    \draw[grid lines] (-2,-2) grid (3,5);
+    \node[anchor=south] at (.5,5) {Some multiples of $v$.};
+    \draw[vector] (0,0) -- (1,2) node[below right, whitebg] {$v$};
+    \draw[vector] (0,0) -- (2,4) node[below right, whitebg] {$2v$};
+    \draw[vector] (0,0) -- (-.5,-1) node[left, whitebg] {$-\frac 12v$};
+    \point["$0v$" below right] at (0,0);
+    \begin{scope}[xshift=6cm]
+    \node[anchor=south] at (.5,5) {All multiples of $v$.};
+    \draw[help lines] (-2,-2) grid (3,5);
+    \draw[thick, seq-blue, <->] (-1,-2) -- (2.5, 5);
+    \point at (0,0);
+    \end{scope}
+  \end{tikzpicture}
+        ]]>
+        </latex-code>
+      </p>
+
+      <example hide-type="true">
+        <title>Interactive: Scalar Multiplication</title>
+        <figure>
+          <caption>Scalar multiplication.  Drag the slider to change the scalar.</caption>
+          <mathbox source="demos/vector-mul.html" height="400px"/>
+        </figure>
+      </example>
+
+    </paragraphs>
+
+    <paragraphs>
+      <title>Linear Combinations</title>
+
+      <p>
+        Recall from this <xref ref="defn-linear-combo"/> that a <term>linear combination</term> of vectors <m>v_1,v_2,\ldots,v_n\in\R^m</m> with <term>weights</term> <m>x_1,x_2,\ldots,x_n</m> is the vector
+        <me> x_1v_1 + x_2v_2 + \cdots + x_nv_n \in\R^m. </me>
+        This combines the operations of scalar multiplication and addition.
+        Geometrically, a linear combination is obtained by stretching / shrinking the vectors <m>v_1,v_2,\ldots,v_k</m> according to the weights, then adding them together using the parallelogram law.  To visualize this, it is helpful to draw grid lines parallel to the vectors involved.
+      </p>
+
+      <figure>
+        <caption>Linear combinations of two vectors in <m>\R^2</m>: move the sliders to change the weights of <m>v_1</m> and <m>v_2</m>, and move the arrow heads to change <m>v_1</m> and <m>v_2</m>.  Note that any vector on the plane can be obtained as a linear combination of <m>v_1,v_2</m> with suitable weights.</caption>
+        <mathbox source="demos/spans.html?v1=1,2&amp;v2=1,0&amp;range=5&amp;captions=combo" height="400px"/>
+      </figure>
+
+      <example xml:id="vectors-eg-lincombo-plane">
+        <p>Let <m>v_1 = {1\choose 2}</m> and <m>v_2 = {1\choose 0}</m>.  Here are some linear combinations of <m>v_1</m> and <m>v_2</m>, drawn as points.
+        <latex-code>
+              <![CDATA[
+    \begin{tikzpicture}[thin border nodes]
+      \begin{scope}
+        \clip (-2.8, -3) rectangle (3.7,4.5);
+        \draw[help lines, cm={1,2,1,0,(0,0)}] (-4,-5) grid (4, 5);
+      \end{scope}
+      \draw (-2.8, -3) rectangle (3.7, 4.5);
+      \draw[vector, seq1] (0,0) to["$v_1$"] (1,2);
+      \draw[vector, seq2] (0,0) to["\strut$v_2$"'] (1,0);
+      \point at (0,0);
+      \point[seq3] at (2,2);
+      \point[seq4] at (0,2);
+      \point[seq5] at (2,4);
+      \point[seq8] at (1.5,-1);
+      \point[seq7] at (-1,-2);
+
+      \node[anchor=west, overlay] at (5, .75)
+        {
+          \begin{minipage}{0.6\linewidth}
+             \begin{itemize}
+             \color{seq3}
+             \item $v_1+v_2$
+             \color{seq4}
+             \item $v_1-v_2$
+             \color{seq5}
+             \item $2v_1\color{gray}+0v_2$
+             \color{seq8}
+             \item $-\frac12v_1 + 2v_2$
+             \color{seq7}
+             \item $-v_1$
+             \end{itemize}
+          \end{minipage}
+        };
+    \end{tikzpicture}
+              ]]>
+        </latex-code>
+        <idx><h>Linear combination</h><h>two vectors, picture of</h></idx>
+        The locations of these points are found using the parallelogram law for vector addition.  Any vector on the plane is a linear combination of <m>v_1</m> and <m>v_2</m>, with suitable weights.</p>
+      </example>
+
+      <p>
+        One can think of a linear combination as a way of giving <q>directions</q> from one point in Euclidean space to another.  In the above <xref ref="vectors-eg-lincombo-plane"/>, the linear combination <m>-\frac12v_1 + 2v_2</m> means <q>first go backwards in the <m>v_1</m>-direction for half the length of <m>v_1</m>, then go in the <m>v_2</m>-direction for twice the length of <m>v_2</m>.</q>
+      </p>
+
+      <example>
+        <title>A Nonstandard Coordinate System on <m>\R^2</m></title>
+        <p>
+          Define
+          <me> v_1 = \vec{1 1} \sptxt{and} v_2 = \vec{-1 1}. </me>
+          Here are some linear combinations of <m>v_1</m> and <m>v_2</m>:
+          <latex-code>
+\begin{tikzpicture}[scale=.7, thin border nodes]
+
+  \draw (-6, -6) rectangle (6, 6);
+  \begin{scope}
+    \clip (-6, -6) rectangle (6, 6);
+    \draw[scale={sqrt(2)}, rotate=45, help lines] (-7, -7) grid (7, 7);
+  \end{scope}
+
+  \draw[vector, seq-blue] (0, 0) to["$v_1$" above left] (1, 1);
+  \draw[vector, seq-green] (0, 0) to["$v_2$" below left] (-1, 1);
+
+  \point[seq-red, "$v_1+2v_2$" {above,text=seq-red}] at (3, -1);
+  \point[seq-orange, "$4v_1+v_2$" {above,text=seq-orange}] at (3, 5);
+  \point[seq-pink, "$-\frac32v_1-\frac52v_2$" {above,text=seq-pink}] at (1,-4);
+
+  \point at (0, 0);
+
+\end{tikzpicture}
+          </latex-code>
+          This picture could be the grid of streets in <url href="https://www.google.com/maps/place/Palo+Alto,+CA/@37.4387098,-122.1548738,15.75z/data=!4m5!3m4!1s0x808fb07b9dba1c39:0xe1ff55235f576cf!8m2!3d37.4418834!4d-122.1430195?hl=en">Palo Alto, California</url>.  Residents of Palo Alto refer to northwest as <q>north</q> (towards San Francisco) and to northeast as <q>east</q> (towards the bay).  So when a Palo Alto resident says <q>go south two blocks and east one block</q>, they are giving directions from the origin to the Whole Foods at <m>v_1+2v_2</m>.
+        </p>
+        <figure>
+          <caption>A picture of the Palo Alto coordinate system on <m>\R^2</m>.</caption>
+          <mathbox source="demos/spans.html?v1=1,1&amp;v2=-1,1&amp;range=5&amp;captions=combo" height="400px"/>
+        </figure>
+      </example>
+
+      <specialcase xml:id="linear-combos-one-vector">
+        <title>Linear Combinations of a Single Vector</title>
+        <idx><h>Linear combination</h><h>single vector, picture of</h></idx>
+        <p>
+          A linear combination of a single vector <m>v = {1\choose 2}</m> is just a scalar multiple of <m>v</m>.  So some examples include
+          <me>
+            v=\vec{1 2},\quad \frac 32v=\vec[c]{3/2 3},\quad -\frac12v = \vec[c]{-1/2 -1},\quad\ldots
+          </me>
+          The set of all linear combinations is the <em>line through <m>v</m></em>.  (Unless <m>v=0</m>, in which case any scalar multiple of <m>v</m> is again <m>0</m>.)
+          <latex-code>
+            <![CDATA[
+  \begin{tikzpicture}
+    \draw[grid lines] (-3,-3) grid (4, 4);
+    \clip (-3,-3) rectangle (4, 4);
+    \draw[thin, seq4] ($-2*(2,1)$) -- ($2*(2,1)$);
+    \draw[vector, seq1] (0,0) to["$v$" thin border] (2,1);
+    \point at (0,0);
+  \end{tikzpicture}
+            ]]>
+          </latex-code>
+        </p>
+      </specialcase>
+
+      <specialcase xml:id="linear-combos-two-collinear">
+        <title>Linear Combinations of Collinear Vectors</title>
+        <idx><h>Linear combination</h><h>collinear vectors, picture of</h></idx>
+        <p>
+          The set of all linear combinations of the vectors
+          <me>v_1 = \vec{2 2} \sptxt{and} v_2 = \vec{-1 -1}</me>
+          is the <em>line</em> containing both vectors.
+          <latex-code>
+            <![CDATA[
+    \begin{tikzpicture}
+      \draw[grid lines] (-3,-3) grid (4, 4);
+      \path[clip] (-3,-3) rectangle (4, 4);
+      \draw[thin, seq4] ($-2*(2,2)$) -- ($2*(2,2)$);
+      \draw[vector, seq1] (0,0) to["$v_1$" thin border] (2,2);
+      \draw[vector, seq2] (0,0) to["$v_2$"' thin border] (-1,-1);
+      \point at (0,0);
+    \end{tikzpicture}
+            ]]>
+          </latex-code>
+          The difference between this and a previous <xref ref="vectors-eg-lincombo-plane">example</xref> is that both vectors lie on the same line.  Hence any scalar multiples of <m>v_1,v_2</m> lie on that line, as does their sum.
+        </p>
+      </specialcase>
+
+      <example hide-type="true">
+        <title>Interactive: Linear Combinations of Two Collinear Vectors</title>
+        <figure>
+          <caption>Linear combinations of two collinear vectors in <m>\R^2</m>.  Move the sliders to change the weights of <m>v_1,v_2</m>.  Note that there is no way to <q>escape</q> the line.</caption>
+          <mathbox source="demos/spans.html?v1=2,2&amp;v2=-1,-1&amp;range=5&amp;captions=combo&amp;grid=disabled" height="400px"/>
+        </figure>
+      </example>
+
+      <example hide-type="true">
+        <title>Interactive: Linear Combinations of Two Vectors in <m>\R^3</m></title>
+        <figure>
+          <caption>Linear combinations of two vectors in <m>\R^3</m>: move the sliders to change the weights of <m>v_1</m>, and <m>v_2</m>.  Note that there is no way to <q>escape</q> the purple plane through the origin and <m>v_1,v_2</m>.</caption>
+          <mathbox source="demos/spans.html?v1=1,2,1&amp;v2=1,0,-1&amp;range=8&amp;captions=combo" height="500px"/>
+        </figure>
+      </example>
+
+      <example hide-type="true">
+        <title>Interactive: Linear Combinations of Three Vectors in <m>\R^3</m></title>
+        <figure>
+          <caption>Linear combinations of three vectors: move the sliders to change the weights of <m>v_1,v_2,v_3</m>.  Note how the parallelogram law for addition of three vectors is more of a <q>parallepiped law</q>.</caption>
+          <mathbox source="demos/spans.html?v1=2,-1,1&amp;v2=1,1,-1&amp;v3=-1,1,4&amp;range=5&amp;captions=combo" height="500px"/>
+        </figure>
+      </example>
+
+    </paragraphs>
+
+  </subsection>
+
+  <subsection xml:id="subsec-spans">
+    <title>Spans</title>
+
+    <p>
+      A span is simply the set of all linear combinations of some number of vectors.
+    </p>
+
+    <essential xml:id="span-defn">
+      <idx><h>Span</h><h>definition of</h></idx>
+      <statement>
+        <p>Let <m>v_1,v_2,\ldots,v_n</m> be vectors in <m>\R^m</m>.  The <term>span</term> of <m>v_1,v_2,\ldots,v_n</m> is the collection of all linear combinations of <m>v_1,v_2,\ldots,v_n</m>, and is denoted <m>\Span\{v_1,v_2,\ldots,v_n\}</m>.  In symbols:
+        <notation><usage>\Span\{v_1,v_2,\ldots,v_n\}</usage><description>Span of vectors</description></notation>
+        <me>
+          \Span\{v_1,v_2,\ldots,v_n\} =
+          \bigl\{x_1v_1 + x_2v_2 + \cdots + x_nv_n ~:~ x_1,x_2,\ldots,x_n\in\R\bigr\}.
+        </me>
+        We also say that <m>\Span\{v_1,v_2,\ldots,v_n\}</m> is the subset <term>spanned by</term> the vectors <m>v_1,v_2,\ldots,v_n</m>.
+        </p>
+      </statement>
+    </essential>
+
+    <p>
+      The above definition is the first of several <em>essential definitions</em> that we will see in this textbook.  They are essential in that they form the essence of the subject of linear algebra: learning linear algebra means (in part) learning these definitions.  All of the definitions are important, but it is essential that you learn and understand the definitions marked as such.
+    </p>
+
+    <note hide-type="true" xml:id="set-builder-notation">
+      <title>Set Builder Notation</title>
+      <idx><h>Set builder notation</h></idx>
+      <idx><h>Subset</h><h>set builder notation</h></idx>
+      <p>
+        The notation
+        <notation><usage>\{x\mid\text{condition}\}</usage><description>Set builder notation</description></notation>
+        <me>
+          \bigl\{x_1v_1 + x_2v_2 + \cdots + x_nv_n ~:~ x_1,x_2,\ldots,x_n\in\R\bigr\}
+        </me>
+        reads as: <q>the set of all things of the form <m>x_1v_1 + x_2v_2 + \cdots + x_nv_n</m> such that <m>x_1,x_2,\ldots,x_n</m> are in <m>\R</m>.</q>  The colon translates into <q>such that</q>; everything to the left of it is <q>all things of this form</q>, and everything to the right is the <term>defining condition</term> that those things must satisfy to be in the set.  Specifying a set in this way is called <term>set builder notation</term>.
+      </p>
+
+      <p>All mathematical notation is only shorthand: any sequence of symbols must translate into a usual sentence.</p>
+    </note>
+
+    <p>
+      Spans are <em>geometric</em> notion: it is very important to understand what they look like.  Drawing a picture of <m>\Span\{v_1,v_2,\ldots,v_n\}</m> is the same as drawing a picture of all linear combinations of <m>v_1,v_2,\ldots,v_n</m>.  This is the <q>smallest linear space containing 0 and <m>v_1,v_2,\ldots,v_n</m>.</q>
+    </p>
+
+    <paragraphs xml:id="span-of-one-vector">
+      <title>Span of One Vector</title>
+
+      <p>
+        A linear combination of one vector is simply a scalar multiple of that vector:
+        <me> \Span\{v\} = \bigl\{cv~:~c\in\R\bigr\}.  </me>
+        If <m>v\neq 0</m> then this is the <em>line</em> through 0 and <m>v</m>; if <m>v=0</m> then this is just the <em>point</em> <m>\{0\}</m>.  See this <xref ref="linear-combos-one-vector"/>.
+        <latex-code>
+          <![CDATA[
+\begin{tikzpicture}[thin border nodes, scale=.9]
+
+  \begin{scope}
+    \draw[grid lines] (-3,-2) grid (4, 3);
+    \path[clip] (-3,-2) rectangle (4, 3);
+    \draw[thin, seq4] ($-2*(2,1)$) -- ($2*(2,1)$);
+    \node[seq4,whitebg] at (0,2) {$\Span\{v\}$};
+    \draw[vector, seq1] (0,0) to["$v$"] (2,1);
+    \point at (0,0);
+  \end{scope}
+
+  \begin{scope}[xshift=9cm, myxyz, scale=.8]
+    \path[clip, resetxy] (-4,-3) rectangle (4,3);
+
+    \draw[seq4] ($-3*(-1,2,1)$) -- (0,0,0);
+
+    \begin{scope}[transformxy]
+      \fill[white, nearly opaque] (-2, -2) rectangle (3, 3);
+      \draw[grid lines] (-2, -2) grid (3, 3);
+    \end{scope}
+
+    \draw[seq4] (0,0,0) -- ($3*(-1,2,1)$);
+    \node[seq4] at (-1cm, 2cm) {$\Span\{v\}$};
+
+    \draw[vector, seq1] (0,0,0) to["$v$"] (-1,2,1);
+    \draw[thin, densely dotted] (-1,2,1) -- (-1,2,0);
+
+    \point at (0,0,0);
+  \end{scope}
+\end{tikzpicture}
+            ]]>
+        </latex-code>
+      </p>
+
+      <example hide-type="true">
+        <title>Interactive: Span of One Vector in <m>\R^2</m></title>
+        <figure>
+          <caption>Interactive picture of a span of one vector in <m>\R^2</m>.  This is a line unless <m>v=0</m>.</caption>
+          <mathbox source="demos/spans.html?v1=2,1&amp;range=5&amp;labels=v" height="500px"/>
+        </figure>
+      </example>
+
+      <example hide-type="true">
+        <title>Interactive: Span of One Vector in <m>\R^3</m></title>
+        <figure>
+          <caption>Interactive picture of a span of one vector in <m>\R^3</m>.  This is a line unless <m>v=0</m>.</caption>
+          <mathbox source="demos/spans.html?v1=-2,1,-1&amp;range=5&amp;labels=v" height="500px"/>
+        </figure>
+      </example>
+
+    </paragraphs>
+
+    <paragraphs>
+      <title>Span of Two Vectors</title>
+
+      <p>
+        A linear combination of two vectors <m>v</m> and <m>w</m> has the form <m>cv+dw</m> for scalars <m>c,d\in\R</m>:
+        <me>
+          \Span\{v,w\} = \bigl\{cv+dw~:~c,d\in\R\bigr\}.
+        </me>
+        <ul>
+          <li>
+            If <m>v</m> and <m>w</m> are not <em>collinear</em>, i.e., if one is not a scalar multiple of the other, then <m>\Span\{v,w\}</m> is the <em>plane</em> containing 0 and <m>v,w</m>.  See this <xref ref="vectors-eg-lincombo-plane"/>.
+            <latex-code>
+              <![CDATA[
+\begin{tikzpicture}[thin border nodes, scale=.9]
+  \begin{scope}
+    \clip (-2.8, -2) rectangle (3.7,3.2);
+    \draw[grid lines, cm={1,2,1,0,(0,-1)}] (-4,-5) grid (4, 5);
+  \end{scope}
+  \fill[seq4!30, nearly transparent] (-2.8,-2) rectangle (3.7,3.2);
+  \node[seq4] at (.5,2.5) {$\Span\{v,w\}$};
+  \draw[vector, seq1] (0,-1) to["$v$"] (1,1);
+  \draw[vector, seq2] (0,-1) to["\strut$w$"'] (1,-1);
+  \point at (0,-1);
+
+\begin{scope}[xshift=9cm, myxyz, scale=.8]
+  \path[clip, resetxy] (-4,-3) rectangle (4,3);
+
+  \def\v{(-1,2,1)}
+  \def\w{(1,2,.3)}
+
+  \node[coordinate] (X) at \v {};
+  \node[coordinate] (Y) at \w {};
+
+  \begin{scope}[x=(X), y=(Y), transformxy]
+    \path[clip] (-1.5, 5) -- (1.5, -5) -- (1.5, -7) -- (-1.5, -7) -- cycle;
+    \fill[seq4!30, nearly opaque] (-1.5,-1) rectangle (1.5,2);
+    \draw[step=.5cm, seq4, very thin] (-1.5,-1) grid (1.5,2);
+  \end{scope}
+
+  \begin{scope}[transformxy]
+    \fill[white, nearly opaque] (-2, -2) rectangle (3, 3);
+    \draw[grid lines] (-2, -2) grid (3, 3);
+  \end{scope}
+
+  \begin{scope}[x=(X), y=(Y), transformxy]
+    \path[clip] (-1.5, 5) -- (1.5, -5) -- (1.5, 7) -- (-1.5, 7) -- cycle;
+    \fill[seq4!30, nearly opaque] (-1.5,-1) rectangle (1.5,2);
+    \draw[step=.5cm, seq4, very thin] (-1.5,-1) grid (1.5,2);
+  \end{scope}
+
+  \node[seq4] at (-1cm, 2cm) {$\Span\{v,w\}$};
+
+  \draw[vector, seq1] (0,0,0) --
+    node [midway, above] {$v$} \v;
+  \draw[thin, densely dotted] \v -- \projxy\v;
+  \draw[vector, seq2] (0,0,0) --
+    node [midway, below] {\strut$w$} \w;
+  \draw[thin, densely dotted] \w -- \projxy\w;
+
+  \point at (0,0,0);
+\end{scope}
+\end{tikzpicture}
+              ]]>
+            </latex-code>
+          </li>
+          <li>
+            If <m>v</m> and <m>w</m> are collinear but they are not both equal to zero, then <m>\Span\{v,w\}</m> is the <em>line</em> passing through 0 and <m>v,w</m>.  See this <xref ref="linear-combos-two-collinear"/>.
+            <latex-code>
+              <![CDATA[
+\begin{tikzpicture}[thin border nodes, scale=.9]
+  \draw[grid lines] (-3,-3) grid (4, 4);
+  \path[clip] (-3,-3) rectangle (4, 4);
+  \node[seq4] at (.5,2.5) {$\Span\{v,w\}$};
+  \draw[thin, seq4] ($-2*(2,2)$) -- ($2*(2,2)$);
+  \draw[vector, seq1] (0,0) to["$v$"] (2,2);
+  \draw[vector, seq2] (0,0) to["$w$"' pos=.4] (-1,-1);
+  \point at (0,0);
+\end{tikzpicture}
+              ]]>
+            </latex-code>
+          </li>
+          <li>
+            If <m>v=w=0</m> then <m>\Span\{v,w\}</m> is just the <em>point</em> <m>\{0\}</m>.
+          </li>
+        </ul>
+      </p>
+
+      <example hide-type="true">
+        <title>Interactive: Span of Two Vectors in <m>\R^2</m></title>
+        <figure>
+          <caption>Interactive picture of a span of two vectors in <m>\R^2</m>.  Check <q>Show x.v + y.w</q> and move the sliders to see how every point in the violet region is in fact a linear combination of the two vectors.</caption>
+          <mathbox source="demos/spans.html?v1=1,2&amp;v2=1,0&amp;showPlane=true&amp;range=5&amp;labels=v,w" height="500px"/>
+        </figure>
+      </example>
+
+      <example hide-type="true">
+        <title>Interactive: Span of Two Vectors in <m>\R^3</m></title>
+        <figure>
+          <caption>Interactive picture of a span of two vectors in <m>\R^3</m>.  Check <q>Show x.v + y.w</q> and move the sliders to see how every point in the violet region is in fact a linear combination of the two vectors.</caption>
+          <mathbox source="demos/spans.html?v1=3,2,4&amp;v2=-4,2,1&amp;labels=v,w" height="500px"/>
+        </figure>
+      </example>
+
+    </paragraphs>
+
+    <paragraphs>
+      <title>Span of Three Vectors</title>
+      <p>
+        A linear combination of three vectors <m>u,v,</m> and <m>w</m> is a vector of the form <m>bu+cv+dw</m> for <m>b,c,d\in\R</m>:
+        <me>
+          \Span\{u,v,w\} = \bigr\{bu+cv+dw~:~b,c,d\in\R\bigr\}.
+        </me>
+        <ul>
+          <li>
+            If <m>u,v,w</m> are not <em>coplanar</em>, i.e., if they are not all contained in the same plane through 0, then <m>\Span\{u,v,w\}</m> forms a (3-dimensional) <em>space</em>.
+            <latex-code>
+              <![CDATA[
+\begin{tikzpicture}[thin border nodes, scale=.9, myxyz]
+  \path[clip, resetxy] (-4,-3) rectangle (4,3);
+
+  \begin{scope}[transformxy]
+    \fill[white, nearly opaque] (-2, -2) rectangle (3, 3);
+    \draw[grid lines] (-2, -2) grid (3, 3);
+  \end{scope}
+
+  \draw[vector, seq1] (0,0,0) to["$v$"] (-1,2,1);
+  \draw[thin, densely dotted] (-1,2,1) -- (-1,2,0);
+  \draw[vector, seq2] (0,0,0) to["\strut$w$"'] (1,2,.3);
+  \draw[thin, densely dotted] (1,2,.3) -- (1,2,0);
+  \draw[vector, seq3] (0,0,0) to["$u$"] (.5,-.5,1);
+  \draw[thin, densely dotted] (.5,-.5,1) -- (.5,-.5,0);
+
+  \point at (0,0,0);
+
+  \fill[seq4!30, nearly transparent, resetxy] (-4,-3) rectangle (4,3);
+  \node[seq4] at (-1cm, 2cm) {$\Span\{u,v,w\}$};
+
+\end{tikzpicture}
+              ]]>
+            </latex-code>
+          </li>
+          <li>
+            If <m>u,v,w</m> are coplanar but are not collinear, then they span the <em>plane</em> through 0 and <m>u,v,w</m>.
+            <latex-code>
+              <![CDATA[
+\begin{tikzpicture}[thin border nodes, scale=.9, myxyz]
+  \path[clip, resetxy] (-4,-3) rectangle (4,3);
+
+  \def\v{(-1,2,1)}
+  \def\w{(1,2,.3)}
+  \def\u{(0,2,.65)}
+
+  \node[coordinate] (X) at \v {};
+  \node[coordinate] (Y) at \w {};
+
+  \begin{scope}[x=(X), y=(Y), transformxy]
+    \path[clip] (-1.5, 5) -- (1.5, -5) -- (1.5, -7) -- (-1.5, -7) -- cycle;
+    \fill[seq4!30, nearly opaque] (-1.5,-1) rectangle (1.5,2);
+    \draw[step=.5cm, seq4, very thin] (-1.5,-1) grid (1.5,2);
+  \end{scope}
+
+  \begin{scope}[transformxy]
+    \fill[white, nearly opaque] (-2, -2) rectangle (3, 3);
+    \draw[grid lines] (-2, -2) grid (3, 3);
+  \end{scope}
+
+  \begin{scope}[x=(X), y=(Y), transformxy]
+    \path[clip] (-1.5, 5) -- (1.5, -5) -- (1.5, 7) -- (-1.5, 7) -- cycle;
+    \fill[seq4!30, nearly opaque] (-1.5,-1) rectangle (1.5,2);
+    \draw[step=.5cm, seq4, very thin] (-1.5,-1) grid (1.5,2);
+  \end{scope}
+
+  \node[seq4] at (-1cm, 2cm) {$\Span\{u,v,w\}$};
+
+  \draw[vector, seq1] (0,0,0) --
+    node [midway, above] {$v$} \v;
+  \draw[thin, densely dotted] \v -- \projxy\v;
+  \draw[vector, seq2] (0,0,0) --
+    node [midway, below] {\strut$w$} \w;
+  \draw[thin, densely dotted] \w -- \projxy\w;
+  \draw[vector, seq3] (0,0,0) --
+    \u node [right] {$u$};
+  \draw[thin, densely dotted] \u -- \projxy\u;
+
+  \draw[thin, densely dotted] \v -- \w;
+
+  \point at (0,0,0);
+\end{tikzpicture}
+              ]]>
+            </latex-code>
+          </li>
+          <li>
+            If <m>u,v,w</m> are collinear but not all equal to zero, then <m>\Span\{u,v,w\}</m> is the <em>line</em> containing 0 and <m>u,v,w</m>.
+            <latex-code>
+              <![CDATA[
+\begin{tikzpicture}[thin border nodes, scale=.9]
+  \draw[grid lines] (-3,-3) grid (4, 4);
+  \path[clip] (-3,-3) rectangle (4, 4);
+  \node[seq4] at (.5,2.5) {$\Span\{u,v,w\}$};
+  \draw[thin, seq4] ($-2*(2,2)$) -- ($2*(2,2)$);
+  \draw[vector, seq1] (0,0) to["$v$"] (2,2);
+  \draw[vector, seq2] (0,0) to["$w$"' pos=.4] (-1,-1);
+  \draw[vector, seq3] (0,0) to["$u$" pos=.6] (-2,-2);
+  \point at (0,0);
+\end{tikzpicture}
+              ]]>
+            </latex-code>
+          </li>
+          <li>
+            If <m>u=v=w=0</m> then <m>\Span\{u,v,w\}</m> is the <em>point</em> <m>\{0\}</m>.
+          </li>
+        </ul>
+      </p>
+
+      <example hide-type="true">
+        <title>Interactive: Span of Three Vectors in <m>\R^3</m></title>
+        <figure>
+          <caption>Interactive picture of a span of three vectors in <m>\R^3</m>.  Check <q>Show x.v + y.w + z.u</q> and move the sliders to see how every point in the violet region is in fact a linear combination of the three vectors.</caption>
+          <mathbox source="demos/spans.html?labels=v,w,u" height="500px"/>
+        </figure>
+      </example>
+
+    </paragraphs>
+
+    <p>
+      What is the span of zero vectors?  The following definition is conventional.
+    </p>
+
+    <definition xml:id="span-empty-set">
+      <title>Span of Zero Vectors</title>
+      <idx><h>Span</h><h>of the empty set</h></idx>
+      <statement>
+        <p>
+          The span of the empty set is defined to be the point <m>\{0\}</m>:
+          <me> \Span\{\} = \{0\}. </me>
+        </p>
+      </statement>
+    </definition>
+
+    <note hide-type="true">
+      <title>Warning</title>
+      <p>
+        The following is a common source of confusion.
+        <ul>
+          <li>
+            The <term>empty set</term> is the set <m>\{\}</m> that contains <em>no vectors at all.</em>
+          </li>
+          <li>
+            The <term>point</term> <m>\{0\}</m> is the set that <em>only contains the zero vector</em>.
+          </li>
+        </ul>
+            The only difference between <m>\{\}</m>  and <m>\{0\}</m> is that the latter contains 0 and the former does not.  So when we write <m>\Span\{\} = \{0\}</m>, this means that the <em>span</em> of the set that doesn't contain any vectors, is the set that only contains the vector 0.
+      </p>
+      <p>
+        It is also true that <m>\Span\{0\} = \{0\}</m>, as we noted <xref ref="span-of-one-vector">above</xref>.
+      </p>
+    </note>
+
+    <p>
+      The zero vector is contained in <m>\Span\{v_1,v_2,\ldots,v_n\}</m> since we can take all weights equal to zero in a linear combination:
+      <me> 0 = 0v_1 + 0v_2 + \cdots + 0v_n \in \Span\{v_1,v_2,\ldots,v_n\}. </me>
+      Since <m>0\in\Span\{\}</m> by definition, the zero vector is contained in any span.
+    </p>
+
+    <bluebox>
+      <p>
+        Every span contains the zero vector.
+      </p>
+    </bluebox>
+
+    <p>
+      This means that the notion of <q>span</q> only captures linear spaces <em>through the origin</em>.  In particular, this line is <em>not</em> a span:
+      <latex-code>
+        <![CDATA[
+\begin{tikzpicture}[thin border nodes, scale=.9]
+    \draw[grid lines] (-3,-2) grid (4, 3);
+    \path[clip] (-3,-2) rectangle (4, 3);
+    \draw[thin, seq4] (-3, -.5) -- (4, 2.5);
+    \node[seq4,whitebg] at (0,2) {not a span};
+    \point at (0,0);
+\end{tikzpicture}
+        ]]>
+      </latex-code>
+    </p>
+
+    <p>
+      Checking if a given vector <m>b</m> is contained in <m>\Span\{v_1,v_2,\ldots,v_n\}</m> means finding weights <m>x_1,x_2,\ldots,x_n</m> making the following equation true:
+      <me> x_1v_1 + x_2v_2 + \cdots + x_nv_n = b. </me>
+      This is exactly a <term>vector equation</term> in the sense of this <xref ref="defn-four-ways"/>.  Solving this equation amounts to forming the augmented matrix
+      <me>
+        \amat[c]{| | {} | |; v_1 v_2 \cdots, v_n b; | | {} | |}
+      </me>
+      and performing Gaussian elimination.
+    </p>
+
+    <specialcase>
+      <p>
+        Let us check whether
+        <me>
+          b = \vec{8 16 3} \sptxt{is in} \Span\left\{\vec{1 2 6},\;\vec{-1 -2 -1}\right\}.
+        </me>
+        We form a vector equation and its augmented matrix:
+        <me>
+          x_1\vec{1 2 6} + x_2\vec{-1 -2 -1} = \vec{8 16 3}
+          \rowop{\text{becomes}}
+          \amat{1 -1 8; 2 -2 16; 6 -1 3}.
+        </me>
+        We perform Gaussian Elimination and find that the row echelon form of the augmented matrix is
+        <me>
+          \amat{1 -1 8; 0 5 -45; 0 0 0}.
+        </me>
+        Back-substitution gives the solution <m>x_1=-1,\,x_2=-9</m>, so
+        <me>
+          (-1)\vec{1 2 6} + (-9)\vec{-1 -2 -1} = \vec{8 16 3}.
+        </me>
+        Since <m>b</m> is a linear combination of <m>(1,2,6)</m> and <m>(-1,-2,-1)</m>, it is contained in the span.
+      </p>
+    </specialcase>
+
+  </subsection>
 
 </section>

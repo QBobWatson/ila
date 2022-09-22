@@ -14,10 +14,10 @@ the license is included in gfdl.xml.
 
   <objectives>
     <ol>
-      <li>Learn to express the solution set of a system of linear equations in parametric form and in parametric vector form.</li>
+      <li>Learn to express the solution set of a system of linear equations in parametric form.</li>
       <li>Understand the distinction between an implicit form of a solution set and a parameterized form.</li>
-      <li><em>Recipes:</em> parametric form, parametric vector form.</li>
-      <li><em>Vocabulary words:</em> <term>implicit equations,</term> <term>parameterized equations,</term> <term>free variable,</term> <term>parametric form,</term> <term>dimension</term> of a solution set, <term>parametric vector form.</term></li>
+      <li><em>Recipe:</em> parametric form.</li>
+      <li><em>Vocabulary words:</em> <term>implicit equations,</term> <term>parameterized equations,</term> <term>free variable,</term> <term>parametric form,</term> <term>dimension</term> of a solution set.</li>
     </ol>
   </objectives>
 
@@ -126,10 +126,10 @@ the license is included in gfdl.xml.
     <title>Parametric Form</title>
 
     <p>
-      Now we give a systematic method for parameterizing all solutions of a system of linear equations.  To begin, we describe what the parameters will be by formalizing the concept of a <q>variable that cannot be isolated in back-substitution.</q>  Recall that a <xref ref="defn-pivot" text="title">pivot position</xref> of a matrix is the position of the first nonzero of a row of a <em>row echelon form</em> of that matrix, and that a <xref ref="defn-pivot-column" text="title">pivot column</xref> is a column containing a pivot position.
+      Now we give a systematic method for parameterizing all solutions of a system of linear equations.  To begin, we describe what the parameters will be by formalizing the concept of a <q>variable that cannot be isolated in back-substitution.</q>  Recall that a <xref ref="defn-pivot" text="title">pivot position</xref> of a matrix is the position of the first nonzero entry of a row of a <em>row echelon form</em> of that matrix, and that a <xref ref="defn-pivot-column" text="title">pivot column</xref> is a column containing a pivot position.
     </p>
 
-    <definition>
+    <definition xml:id="free-variable-defn">
       <idx><h>Free variable</h></idx>
       <statement>
         <p>
@@ -264,6 +264,10 @@ the license is included in gfdl.xml.
       We will learn how to pass from parameterized form back to implicit form in <xref provisional="parametric-to-implicit"/>.
     </p>
 
+    <p>
+      For a variant of the above algorithm that expresses the solution set in terms of vectors, see this <xref ref="parametric-vector-form-algo"/>.
+    </p>
+
     <example xml:id="parametric-form-eg-line">
       <title>A Parameterized Line</title>
       <statement>
@@ -272,7 +276,7 @@ the license is included in gfdl.xml.
           <me>
             \syseq{2x + y + 12z = 1; x + 2y + 9z = -1}
           </me>
-          from this <xref ref="parametric-form-eg1"/>.
+          from this <xref ref="parametric-form-eg1"/>, and write down one actual solution.
         </p>
       </statement>
       <answer>
@@ -287,9 +291,21 @@ the license is included in gfdl.xml.
             \quad\xrightarrow[\text{form}]{\text{parametric}}\quad
             \syseq{x = 1 - 5z; y = -1 - 2z\rlap.}
           </me>
+          An example of a solution is <m>(-4, -3, 1)</m>, when <m>z=1</m>.
         </p>
       </answer>
     </example>
+
+    <p>
+      In the previous example, we were asked to produce an actual solution of the system of equations.  Since this is sometimes a point of confusion, we emphasize that:
+    </p>
+
+    <bluebox>
+      <idx><h>System of linear equations</h><h>nontrivial solution</h><h>finding</h></idx>
+      <p>
+        In order to produce an actual solution of a system of equations, substitute any numbers for the free variables in the parametric form.
+      </p>
+    </bluebox>
 
     <example xml:id="parametric-form-eg-plane">
       <title>A Parameterized Plane</title>
@@ -375,8 +391,10 @@ the license is included in gfdl.xml.
       We saw in the above example that the <q>parametric</q> form of the solutions of a system with a unique solution simply specifies the values of all of the variables.  In this case there are no parameters, so we will not use the term <q>parametric form</q>.
     </p>
 
-    <note hide-type="true">
-      <title>Observation</title>
+    <observation>
+      <idx><h>Line</h><h>dimension-1 solution set</h></idx>
+      <idx><h>Plane</h><h>dimension-2 solution set</h></idx>
+      <idx><h>Space</h><h>dimension-3 solution set</h></idx>
       <p>
         We saw in the above examples that the number of free variables in a system of equations is closely tied to the <em>geometry</em> of the solution set.
         <ul>
@@ -391,7 +409,7 @@ the license is included in gfdl.xml.
           </li>
         </ul>
       </p>
-    </note>
+    </observation>
 
     <p>
       The above observation motivates the following definition.
@@ -399,7 +417,7 @@ the license is included in gfdl.xml.
 
     <definition hide-type="true">
       <title>Provisional Definition</title>
-      <idx><h>Dimension</h><h>provisional definition of</h></idx>
+      <idx><h>Dimension</h><h>of a solution set</h></idx>
       <idx><h>Solution set</h><h>dimension of</h></idx>
       <statement>
         <p>
@@ -409,123 +427,9 @@ the license is included in gfdl.xml.
     </definition>
 
     <p>
-      We will formulate a more robust notion of dimension in <xref ref="linear-independence"/>, but this definition is useful for discussing the geometry of solution sets.
+      We will formulate a more robust notion of dimension in <xref ref="linear-independence"/>, but this definition is already useful for discussing the geometry of solution sets.
     </p>
 
   </subsection>
-
-
-  <subsection>
-    <title>Parametric Vector Form</title>
-
-    <p>
-      In this subsection, we give an alternate, more concise way of writing the solutions of a system of equations.  We use the same parameters, but we describe the solutions using equations involving <em>vectors</em>.  This will be very useful in <xref ref="spans"/> when we start drawing pictures of solution sets.
-    </p>
-
-    <algorithm xml:id="parametric-vector-form-algo">
-      <title>Parametric Vector Form</title>
-      <idx><h>Parametric vector form</h></idx>
-      <idx><h>System of linear equations</h><h>parametric vector form of</h><see>Parametric vector form</see></idx>
-      <p>
-        The <term>parametric vector form</term> of the solution set of a consistent system of linear equations is obtained as follows.
-      </p>
-      <p>
-        First find the parametric form of the system, as in this <xref ref="parametric-form-algo"/>.
-        <me>
-          \syseq{x_1 = -2 - 2x_2 + x_4; x_3 = 2 \+ \. - x_4}
-        </me>
-        <ol start="4">
-          <li>
-            Add trivial equations for the free variables, in order.  Organize the right side of the equations into columns.
-            <me>
-              \def\r{\color{seq-red}}
-              \syseq{
-                x_1 = -2 - 2x_2 + x_4;
-                \r x_2 \mathbin{\r=} \. \+ \r x_2;
-                x_3 = 2 \+ \. - x_4;
-                \r x_4 \mathbin{\r=} \. \+ \. \+ \r x_4
-              }
-            </me>
-          </li>
-          <li>
-            Gather the columns into vectors.  Pull out the free variables as scalar multiples.
-            <me>
-              \vec{x_1 x_2 x_3 x_4} = \vec{-2 0 2 0} + x_2\vec{-2 1 0 0} + x_4\vec{1 0 -1 1}.
-            </me>
-          </li>
-        </ol>
-        The result is
-        <me>
-          x = \vec[c]{\text{a constant} \text{vector}}
-          + \vec[c]{\text{a \textcolor{seq-red}{linear combination} of some vectors}
-                    \text{with the free variables as weights}}.
-        </me>
-      </p>
-    </algorithm>
-
-    <p>
-      <idx><h>Particular solution</h></idx>
-      The constant vector is the solution of <m>Ax=b</m> that is obtained by setting all of the free variables equal to zero.  It is called a <term>particular solution</term>.
-    </p>
-
-    <example xml:id="parametric-vector-form-eg-line">
-      <statement>
-        <p>
-          Find the parametric vector form of the solutions of this system of equations
-          <me>
-            \syseq{2x + y + 12z = 1; x + 2y + 9z = -1}
-          </me>
-          from this <xref ref="parametric-form-eg-line"/>.
-        </p>
-      </statement>
-      <answer>
-        <p>
-          We computed the parametric form to be
-          <me>
-            \syseq{x = 1 - 5z; y = -1 - 2z\rlap.}
-          </me>
-          We add the trivial equation <m>z=z</m> and organize into columns:
-          <me>
-            \syseq{
-              x = 1 - 5z;
-              y = -1 - 2z;
-              z = \. \+ z
-            }
-            \quad\xrightarrow[\text{vector form}]{\text{parametric}}\quad
-            \vec{x y z} = \vec{1 -1 0} + z\vec{-5 -2 1}.
-          </me>
-          This is the line through <m>(1,-1,0)</m> (the particular solution) in the direction of <m>(-5,-2,1)</m>.
-        </p>
-      </answer>
-    </example>
-
-    <example xml:id="parametric-vector-form-eg-plane">
-      <statement>
-        <p>
-          Find the parametric vector form of the solutions of the linear equation
-          <me>x + y + z = 1</me>
-          from this <xref ref="parametric-form-eg-plane"/>.
-        </p>
-      </statement>
-      <answer>
-        <p>
-          We computed the parametric form to be
-          <me>
-            x = 1 - y - z.
-          </me>
-          We add the trivial equations <m>y=y</m> and <m>z=z</m> and organize into columns:
-          <me>
-            \syseq{x = 1 - y - z; y = \. \+ y; z = \. \+ \. \+ z}
-            \quad\xrightarrow[\text{vector form}]{\text{parametric}}\quad
-            \vec{x y z} = \vec{1 0 0} + y\vec{-1 1 0} + z\vec{-1 0 1}.
-          </me>
-          This is the plane through <m>(1,0,0)</m> (the particular solution) and the two solutions <m>(1,0,0)+(-1,1,0)</m> and <m>(1,0,0)+(-1,0,1)</m>.
-        </p>
-      </answer>
-    </example>
-
-
-  </subsection>
-
 
 </section>

@@ -80,7 +80,7 @@ the license is included in gfdl.xml.
       A vector is a device that allows us to do algebra with several numbers at the same time.
     </p>
 
-    <definition>
+    <definition xml:id="definition-vectors">
       <title>Vectors</title>
       <idx><h>Real <m>n</m>-space</h></idx>
       <idx><h>Vector</h><h>definition of</h></idx>
@@ -336,7 +336,7 @@ the license is included in gfdl.xml.
       Combining vector addition and scalar multiplication is a fundamental construction with its own name.
     </p>
 
-    <definition>
+    <definition xml:id="defn-linear-combo">
       <idx><h>Linear combination</h><h>definition of</h></idx>
       <idx><h>Vector</h><h>linear combination of</h><see>Linear combination</see></idx>
       <statement>

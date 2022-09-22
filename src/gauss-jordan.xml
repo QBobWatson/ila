@@ -404,7 +404,7 @@ the license is included in gfdl.xml.
           </me>
         </p>
       </statement>
-      <solution>
+      <answer>
         <p>
           After removing the augmentation line, we apply the algorithm:
           <latex-code>
@@ -539,7 +539,7 @@ the license is included in gfdl.xml.
         <caption>Animated slideshow of the row reduction in this example.</caption>
         <mathbox source="demos/rowred4.html" height="500px"/>
       </figure>
-      </solution>
+      </answer>
     </example>
 
     <p>
@@ -635,7 +635,7 @@ the license is included in gfdl.xml.
           </me>
         </p>
       </statement>
-      <solution>
+      <answer>
         <p>
           In order to demonstrate the relationship between Jordan substitution and back-substitution, we apply the algorithm on the left and show the effect on the associated system of equations on the right.
           <latex-code>
@@ -796,7 +796,7 @@ the license is included in gfdl.xml.
         <caption>Animated slideshow of the row reduction in this example.</caption>
         <mathbox source="demos/rowred5.html" height="500px"/>
       </figure>
-      </solution>
+      </answer>
     </example>
 
     <p>
