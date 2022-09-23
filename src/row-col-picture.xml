@@ -14,7 +14,14 @@ the license is included in gfdl.xml.
 
   <objectives>
     <ol>
-      <li>Write the objectives.</li>
+      <li>Understand the relationship between the solution set of <m>Ax=0</m> and the solution sets of <m>Ax=b</m> for different values of <m>b</m>.</li>
+      <li>Learn to express a solution set as a (translate of a) span.</li>
+      <li>Understand the relationship between the span of the columns of <m>A</m> and the consistency of the system <m>Ax=b</m>.</li>
+      <li>Learn to visualize the system of equations <m>Ax=b</m> for varying values of <m>b</m> using the row and column pictures.</li>
+      <li><em>Recipe:</em> parametric vector form.</li>
+      <li><em>Pictures:</em> the solution sets of <m>Ax=b</m> for varying values of <m>b</m>, the column picture criterion for consistency, the row and column pictures combined.</li>
+      <li><em>Theorems:</em> the solution set of <m>Ax=0</m> is a span, the column picture criterion of consistency.</li>
+      <li><em>Vocabulary words:</em> <term>row picture,</term> <term>column picture,</term> <term>parametric vector form,</term> <term>particular solution,</term> <term>homogeneous equation,</term> <term>inhomogeneous equation,</term> <term>trivial solution,</term> <term>nontrivial solution.</term></li>
     </ol>
   </objectives>
 
@@ -24,13 +31,17 @@ the license is included in gfdl.xml.
     <p>
       In this section we describe the solution sets of a system of equations <m>Ax=b</m> for varying values of <m>b</m>, as well as the set of all <m>b</m> making <m>Ax=b</m> consistent, in terms of spans.  This allows us to draw pictures of both of these objects of interest.  We separate the pictures into two sides: the <term>row picture</term> will contain the <m>x</m>-vectors (solutions), and the <term>column picture</term> will contain the <m>b</m>-vectors (constants).
     </p>
+    <p>
+      Varying the vector <m>b</m> in <m>Ax=b</m> introduces a new level of complexity.  We treated this question computationally in <xref ref="lu-decomposition"/>; conceptually, varying <m>b</m> gives us a richer understanding of a system of equations.
+    </p>
   </introduction>
 
   <subsection>
     <title>The Row Picture</title>
+    <idx><h>Row picture</h></idx>
 
     <p>
-      In order to relate solution sets to spans, we first show how to write the solutions of a system of equations in terms of <em>vectors.</em>  This is a slight modification of the  <xref ref="parametric-form-algo"/> for computing the parametric form of a solution set.
+      The row picture contains the solution set of a systems of equations.  In order to relate solution sets to spans, we first show how to write the solutions of a system of equations in terms of <em>vectors.</em>  This is a slight modification of the  <xref ref="parametric-form-algo"/> for computing the parametric form of a solution set.
     </p>
 
     <algorithm xml:id="parametric-vector-form-algo">
@@ -757,9 +768,10 @@ the license is included in gfdl.xml.
 
   <subsection xml:id="col-picture">
     <title>The Column Picture</title>
+    <idx><h>Column picture</h></idx>
 
     <p>
-      Now we turn to the problem of expressing the set of all vectors <m>b</m> making <m>Ax=b</m> consistent as a span.  In order to do so, it is convenient to write a system of linear equations as a vector equation.
+      The column picture contains the set of vectors <m>b</m> making <m>Ax=b</m> consistent.  In order to express this as a span, it is convenient to write a system of linear equations as a vector equation.
     </p>
 
     <paragraphs>
@@ -824,7 +836,7 @@ the license is included in gfdl.xml.
         <statement>
           <p>
             Solve the vector equation from the previous <xref ref="vec-eqn-consistent"/>, but with a different vector on the right side:
-            <me> x_1\vec{1 2 6} + x_2\vec{-1 -2 -1} = \vec{8 16 3}. </me>
+            <me> x_1\vec{1 2 6} + x_2\vec{-1 -2 -1} = \vec{2 -2 0}. </me>
           </p>
         </statement>
         <answer>
@@ -865,37 +877,339 @@ the license is included in gfdl.xml.
       </bluebox>
     </paragraphs>
 
-    <p>
-      <idx><h>Column picture</h></idx>
-      The term <q>column picture</q> refers to the fact that we are drawing the <m>b</m>-vectors and the columns of <m>A</m>, which live in <m>\R^m</m>.
-    </p>
-
-    <example hide-type="true">
-      <title>Interactive: A Consistent Vector Equation</title>
-
+    <specialcase xml:id="col-picture-consistent">
       <p>
-        The vector equation
-        <me> x_1\vec{1 2 6} + x_2\vec{-1 -2 -1} = \vec{8 16 3} </me>
+        The matrix equation
+        <me> \mat{1 -1; 2 -2; 6 -1}\vec{x_1 x_2} = \vec{8 16 3} </me>
         from this <xref ref="vec-eqn-consistent"/> has the solution <m>(x_1,x_2)=(-1,-9)</m>.  Since it is consistent, the <xref ref="col-picture-criterion-consistency">criterion</xref> says that
         <me>
           \vec{8 16 3} \in \Span\left\{\vec{1 2 6},\;\vec{-1 -2 -1}\right\}.
         </me>
-        This is something that we can visualize, since we can draw a picture of the span.
-      </p>
+        This is something that we can visualize, since we can draw a picture of a span.
+        <latex-code>
+\begin{tikzpicture}[thin border nodes, myxyz, scale=.5]
 
-      <figure>
-        <caption>The equation <m>A{x\choose y}=b</m> is consistent because <m>b</m> is contained in the span of the columns of <m>A</m>, drawn in purple.  The solution <m>(x,y)</m> is the vector of weights attached to the columns <m>v_1,v_2</m>.  Move the sliders to find values of <m>x</m> and <m>y</m> satisfying <m>A{x\choose y}=b</m>.</caption>
-        <mathbox source="demos/spans.html?v1=1,2,6&amp;v2=-1,-2,-1&amp;target=8,16,3&amp;tlabel=b&amp;range=20&amp;camera=3,.5,1.5" height="500px"/>
-      </figure>
+  \path[clip, resetxy] (-4,-6) rectangle (11,7);
+
+  \def\v{(1,2,6)}
+  \def\w{(-1,-2,-1)}
+  \def\b{(8,16,3)}
+
+  \node[coordinate] (X) at \v {};
+  \node[coordinate] (Y) at \w {};
+
+  \begin{scope}[x=(X), y=(Y), transformxy]
+    \path[clip] (0,2) -- (2/5,12/5) -- (-5/3,-10) -- (-2,-31/3) -- cycle;
+    \fill[seq4!30, nearly opaque] (-2,-11) rectangle (1.5,3);
+    \draw[step=1cm, seq4, very thin] (-2,-11) grid (1.5,3);
+  \end{scope}
+
+  \draw[vector, seq-green] (0,0,0) --
+    node [midway, below=1mm, font=\small] {$\vec{-1 -2 -1}$} \w;
+  \draw[thin, densely dotted] \w -- \projxy\w;
+
+  \begin{scope}[transformxy]
+    \fill[white, opacity=.5] (-2, -4) rectangle (9, 17);
+    \draw[grid lines] (-2, -4) grid (9, 17);
+  \end{scope}
+
+  \begin{scope}[x=(X), y=(Y), transformxy]
+    \path[clip] (-5/3,-10) -- (0,-25/3) -- (3/2,7/2) -- (2/5,12/5) -- cycle;
+    \fill[seq4!30, nearly opaque] (-2,-11) rectangle (1.5,4);
+    \draw[step=1cm, seq4, very thin] (-2,-11) grid (1.5,4);
+  \end{scope}
+
+  \draw[vector, seq-blue] (0,0,0) --
+    node [midway, left=1mm, font=\small] {$\vec{1 2 6}$} \v;
+  \draw[thin, densely dotted] \v -- \projxy\v;
+
+  \draw[vector] (0,0,0) --
+    node [midway, above, font=\small] {$\vec{8 16 3}$} \b;
+  \draw[thin, densely dotted] \b -- \projxy\b;
+
+  \point at (0,0,0);
+
+\end{tikzpicture}
+        </latex-code>
+        This is the <term>column picture</term>: it contains the columns of the matrix and the <m>b</m>-vector.
+      </p>
 
       <p>
-        We had a different picture of a consistent system of equations in <xref ref="systems-eqns"/>.  The vector equation above can be written as the system of equations
+        We had a different picture of a consistent system of equations in <xref ref="systems-eqns"/>.  The matrix equation above can be written as the system of equations
+        <me>
+          \def\r{\color{seq-red}}
+          \def\g{\color{seq-green}}
+          \def\b{\color{seq-blue}}
+          \syseq{
+            \r x_1 \mathbin{\r-} \r x_2 \mathbin{\r=} \r8;
+            \g2x_1 \mathbin{\g-} \g2x_2 \mathbin{\g=} \g16;
+            \b6x_1 \mathbin{\b-} \b x_2 \mathbin{\b=} \b3\rlap.}
+        </me>
+        Each equation defines a line in the plane, and the solution is the point at which all three lines intersect.
+        <latex-code>
+\begin{tikzpicture}[thin border nodes, scale=.8]
 
+  \draw[grid lines] (-4, -13) grid (2, -5);
+
+  \draw[line width=1mm, seq-green] (-4,-12) --
+    node[sloped, pos=.8, font=\small, above=1mm, whitebg] {$2x_1-2x_2=16$} (2,-6);
+  \draw[thick, seq-red] (-4,-12) --
+    node[sloped, pos=.3, font=\small, above=1mm, whitebg] {$x_1-x_2=8$} (2,-6);
+  \draw[thick, seq-blue] (-1/3,-5) --
+    node[pos=.3, font=\small, left=1mm, whitebg] {$6x_1 - x_2 = 3$} (-5/3,-13);
+
+  \point[seq-orange, "{$(-1,-9)$}" {seq-orange, font=\small, below right}] at (-1,-9);
+
+\end{tikzpicture}
+        </latex-code>
+        This is the <term>row picture</term>: it contains the solutions (the <m>x</m>-vectors).
       </p>
 
+    </specialcase>
+
+    <example hide-type="true">
+      <title>Interactive: A Consistent System of Equations</title>
+
+      <figure>
+        <caption>The equation <m>A{x\choose y}=b</m> from this <xref ref="col-picture-consistent"/> is consistent because <m>b</m> is contained in the span (drawn in violet) of the columns of <m>A</m>.  The solution <m>(x,y)</m> is the vector of weights attached to the columns <m>v_1,v_2</m>.  Move the sliders to find values of <m>x</m> and <m>y</m> satisfying <m>A{x\choose y}=b</m>.</caption>
+        <mathbox source="demos/spans.html?v1=1,2,6&amp;v2=-1,-2,-1&amp;target=8,16,3&amp;tlabel=b&amp;range=20&amp;camera=3,.5,1.5" height="500px"/>
+      </figure>
+    </example>
+
+    <specialcase xml:id="col-picture-inconsistent">
+      <p>
+        The matrix equation
+        <me> \mat{1 -1; 2 -2; 6 -1}\vec{x_1 x_2} = \vec{2 -2 0} </me>
+        from this <xref ref="vec-eqn-inconsistent"/> has no solution.  Since it is inconsistent, the <xref ref="col-picture-criterion-consistency">criterion</xref> says that
+        <me>
+          \vec{2 -2 0} \notin \Span\left\{\vec{1 2 6},\;\vec{-1 -2 -1}\right\}.
+        </me>
+        This is also something that we can visualize.
+        <latex-code>
+\begin{tikzpicture}[thin border nodes, myxyz, scale=.5]
+
+  \path[clip, resetxy] (-6,-6) rectangle (7,7);
+
+  \def\v{(1,2,6)}
+  \def\w{(-1,-2,-1)}
+  \def\b{(2,-2,0)}
+
+  \node[coordinate] (X) at \v {};
+  \node[coordinate] (Y) at \w {};
+
+  \begin{scope}[x=(X), y=(Y), transformxy]
+    \path[clip] (0,2) -- (2/5,12/5) -- (-5/3,-10) -- (-2,-31/3) -- cycle;
+    \fill[seq4!30, nearly opaque] (-2,-11) rectangle (1.5,3);
+    \draw[step=1cm, seq4, very thin] (-2,-11) grid (1.5,3);
+  \end{scope}
+
+  \draw[vector, seq-green] (0,0,0) --
+    node [midway, below=1mm, font=\small] {$\vec{-1 -2 -1}$} \w;
+  \draw[thin, densely dotted] \w -- \projxy\w;
+
+  \begin{scope}[transformxy]
+    \fill[white, opacity=.5] (-2, -4) rectangle (9, 17);
+    \draw[grid lines] (-2, -4) grid (9, 17);
+  \end{scope}
+
+  \begin{scope}[x=(X), y=(Y), transformxy]
+    \path[clip] (-5/3,-10) -- (0,-25/3) -- (3/2,7/2) -- (2/5,12/5) -- cycle;
+    \fill[seq4!30, nearly opaque] (-2,-11) rectangle (1.5,4);
+    \draw[step=1cm, seq4, very thin] (-2,-11) grid (1.5,4);
+  \end{scope}
+
+  \draw[vector, seq-blue] (0,0,0) --
+    node [midway, left=1mm, font=\small] {$\vec{1 2 6}$} \v;
+  \draw[thin, densely dotted] \v -- \projxy\v;
+
+  \draw[vector] (0,0,0) --
+    node [pos=1, above=1mm, font=\small] {$\vec{2 -2 0}$} \b;
+
+  \point at (0,0,0);
+
+\end{tikzpicture}
+        </latex-code>
+        This is the <term>column picture</term>: it contains the columns of the matrix and the <m>b</m>-vector.
+      </p>
+
+      <p>
+        We also had a different picture of an inconsistent system of equations in <xref ref="systems-eqns"/>.  The matrix equation above can be written as the system of equations
+        <me>
+          \def\r{\color{seq-red}}
+          \def\g{\color{seq-green}}
+          \def\b{\color{seq-blue}}
+          \syseq{
+            \r x_1 \mathbin{\r-} \r x_2 \mathbin{\r=} \r2;
+            \g2x_1 \mathbin{\g-} \g2x_2 \mathbin{\g=} \g-2;
+            \b6x_1 \mathbin{\b-} \b x_2 \mathbin{\b=} \b0\rlap.}
+        </me>
+        These equations define three lines in the plane which do not have a common intersection point.
+        <latex-code>
+\begin{tikzpicture}[thin border nodes, scale=.8]
+
+  \draw[grid lines] (-3, -4) grid (3, 4);
+
+  \draw[thick, seq-green] (-3,-2) --
+    node[sloped, pos=.7, font=\small, below=1mm, whitebg] {$2x_1-2x_2=-2$} (3,4);
+  \draw[thick, seq-red] (-3,-4) --
+    node[sloped, pos=.3, font=\small, above=1mm, whitebg] {$x_1-x_2=2$} (3,2);
+  \draw[thick, seq-blue] (-2/3,-4) --
+    node[pos=.8, font=\small, left=1mm, whitebg] {$6x_1 - x_2 = 0$} (2/3,4);
+
+\end{tikzpicture}
+        </latex-code>
+        This is the <term>row picture</term>: it contains the solutions (the <m>x</m>-vectors).
+      </p>
+
+    </specialcase>
+
+    <example hide-type="true">
+      <title>Interactive: An Inconsistent System of Equations</title>
+
+      <figure>
+        <caption>The equation <m>A{x\choose y}=b</m> from this <xref ref="col-picture-inconsistent"/> is inconsistent because <m>b</m> is not contained in the span (drawn in violet) of the columns of <m>A</m>.  Move the sliders convince yourself that there are no values of <m>x</m> and <m>y</m> satisfying <m>A{x\choose y}=b</m>.</caption>
+        <mathbox source="demos/spans.html?v1=1,2,6&amp;v2=-1,-2,-1&amp;target=2,-2,0&amp;tlabel=b&amp;range=10&amp;camera=3,.5,1.5" height="500px"/>
+      </figure>
     </example>
 
   </subsection>
 
+  <subsection>
+    <title>The Row and Column Pictures</title>
+
+    <p>
+      Combining the row and column pictures of a system of equations <m>Ax=b</m> gives us a good geometric understanding of the solution sets for varying values of <m>b</m>.
+    </p>
+
+    <note hide-type="true">
+      <title>Summary</title>
+      <idx><h>Row picture</h></idx>
+      <idx><h>Column picture</h></idx>
+      <p>Consider a matrix equation <m>Ax=b</m>.</p>
+      <p>
+        <alert>Row Picture:</alert> For a given value of <m>b</m>,
+        <me>
+          \vec[c]{\text{all solutions} \text{of $Ax=b$}}
+          =
+          \vec[c]{\text{some solution} \text{of $Ax=b$}}
+          + \vec[c]{\text{all solutions} \text{of $Ax=0$}},
+        </me>
+        if there is a solution.  The solution set of <m>Ax=0</m> is a span, and all other nonempty solution sets are <em>parallel</em> and look the <em>same</em>.
+      </p>
+      <p>
+        <alert>Column Picture:</alert> The system of equations <m>Ax=b</m> is <em>consistent</em> if and only if <m>b</m> is in the span of the columns of <m>A</m>.
+      </p>
+    </note>
+
+    <p>
+      The <alert>solution set</alert> and the <alert>span of the columns</alert> are both described by spans.  Do not confuse these two geometric constructions!  The first is concerned with solutions (<m>x</m> vectors, in the row picture), and the second is concerned with which <m>b</m> vectors make the system <m>Ax=b</m> consistent (the column picture).  Thus there are (so far) <em>two different spans</em> associated to a matrix <m>A</m>.
+    </p>
+
+    <bluebox>
+      <idx><h>Row picture</h></idx>
+      <idx><h>Column picture</h></idx>
+      <p>
+        The <term>row picture</term> is a drawing of the solutions of a system of equations, i.e., the set of <m>x</m>-vectors satisfying <m>Ax=b</m>.  It is a contained <m>\R^n</m>, where <m>n</m> is the number of <em>columns</em> of <m>A</m>.
+      </p>
+      <p>
+        The <term>column picture</term> is a drawing of the set of all vectors <m>b</m> making the equation <m>Ax=b</m> consistent.  It is a subspace of <m>\R^m</m>, where <m>m</m> is the number of <em>rows</em> of <m>A</m>.
+      </p>
+    </bluebox>
+
+    <p>
+      When we draw both the row picture and the column picture at the same time, we will place the row picture on the left and the column picture on the right.
+      <latex-code>
+\begin{tikzpicture}[thin border nodes, scale=.7]
+
+  \begin{scope}
+    \node[above=1mm] at (0,4) {Row Picture};
+
+    \draw[grid lines] (-4, -4) rectangle (4, 4);
+    \clip (-4, -4) rectangle (4, 4);
+
+    \draw[thick, black!40] (-4,-2.5) --
+      node[pos=.7, above=1mm, sloped, font=\small] {$Ax=0$}
+      (4,2.5);
+
+    \draw[thick vector, seq-red] (0,0) to["$x$"] (-.7,1.5);
+
+    \draw[thick, seq-violet] ($(-4,-2.5) + (-.7,1.5)$) --
+      node[pos=.7, above=1mm, sloped, font=\small] {$Ax=b$}
+      ($(4,2.5) + (-.7,1.5)$);
+
+    \point at (0,0);
+
+    \node[font=\large] at (2,-2) {$\R^n$};
+
+  \end{scope}
+
+  \draw[very thick, ->] (4.3,.5)
+     to[bend left, "multiply" above=3pt, "by $A$"' below=1mm] (8.7,.5);
+
+  \begin{scope}[xshift=13cm]
+    \node[above=1mm] at (0,4) {Column Picture};
+
+    \draw[grid lines] (-4, -4) rectangle (4, 4);
+    \clip (-4, -4) rectangle (4, 4);
+
+    \draw[thick, seq-blue] (-3.5,4) --
+      node[pos=.75, above=1mm, sloped, font=\small] {$\Span\bigl\{\text{cols of }A\bigr\}$}
+      (3.5,-4);
+
+    \draw[thick vector, seq-red] (0,0) to["$b=Ax$"] ($.4*(-3.5,4)$);
+
+    \point at (0,0);
+
+    \node[font=\large] at (2,2) {$\R^m$};
+
+  \end{scope}
+
+
+\end{tikzpicture}
+      </latex-code>
+      In this picture, we think of <m>A</m> as a <em>function</em>.  Its <em>input</em> is a vector <m>x\in\R^n</m> (in the row picture), and its <em>output</em> is the vector <m>b = Ax\in\R^m</m> (the column picture).  Solving <m>Ax=b</m> means finding all inputs <m>x</m> with output equal to <m>b</m>.
+    </p>
+
+    <p>
+      The following demos encapsulate much of what we have learned so far.
+    </p>
+
+    <example hide-type="true">
+      <title>Interactive: Row and Column Pictures (1)</title>
+      <figure>
+        <caption>Left: the solution set of <m>Ax=b</m> is in violet.  Right: the span of the columns of <m>A</m> is in violet.  As you move <m>x</m>, you change <m>b</m>, so the solution set changes<mdash/>but all solution sets are parallel lines.  If you move <m>b</m> within the span of the columns, the solution set also changes, and the demo solves the equation to find a particular solution <m>x</m>.  If you move <m>b</m> outside of the span of the columns, the system becomes inconsistent, and the solution set disappears.
+        </caption>
+        <mathbox source="demos/Axequalsb.html?mat=1,3:2,6&amp;x=1,1" height="600px"/>
+      </figure>
+    </example>
+
+    <example hide-type="true">
+      <title>Interactive: Row and Column Pictures (2)</title>
+      <figure>
+        <caption>Left: the solution set of <m>Ax=b</m> is in violet.  Right: the span of the columns of <m>A</m> is in violet.  As you move <m>x</m>, you change <m>b</m>, so the solution set changes<mdash/>but all solution sets are parallel planes.  If you move <m>b</m> within the span of the columns, the solution set also changes, and the demo solves the equation to find a particular solution <m>x</m>.  If you move <m>b</m> outside of the span of the columns, the system becomes inconsistent, and the solution set disappears.
+        </caption>
+        <mathbox source="demos/Axequalsb.html" height="600px"/>
+      </figure>
+    </example>
+
+    <example hide-type="true" xml:id="solnsets-line-plane">
+      <title>Interactive: Row and Column Pictures (3)</title>
+      <figure>
+        <caption>Left: the solution set of <m>Ax=b</m> is in violet.  Right: the span of the columns of <m>A</m> is in violet.  As you move <m>x</m>, you change <m>b</m>, so the solution set changes<mdash/>but all solution sets are parallel lines.  If you move <m>b</m> within the span of the columns, the solution set also changes, and the demo solves the equation to find a particular solution <m>x</m>.  If you move <m>b</m> outside of the span of the columns, the system becomes inconsistent, and the solution set disappears.
+        </caption>
+        <mathbox source="demos/Axequalsb.html?mat=1,0,-1:0,1,1:1,1,0" height="600px"/>
+      </figure>
+    </example>
+
+    <example hide-type="true" xml:id="solnsets-always-consistent">
+      <title>Interactive: Row and Column Pictures (4)</title>
+      <figure>
+        <caption>Left: the solution set of <m>Ax=b</m> is in violet.  Right: the span of the columns of <m>A</m> is in violet.  As you move <m>x</m>, you change <m>b</m>, so the solution set changes<mdash/>but all solution sets are parallel lines.  If you move <m>b</m>, the solution set also changes, and the demo solves the equation to find a particular solution <m>x</m>.  Note that it is impossible to move <m>b</m> outside of the span of the columns, so <m>Ax=b</m> is consistent for all values of <m>b</m> in this example.
+        </caption>
+        <mathbox source="demos/Axequalsb.html?mat=2,1,12:1,2,9&amp;x=1,1,0" height="600px"/>
+      </figure>
+    </example>
+
+  </subsection>
 
 </section>

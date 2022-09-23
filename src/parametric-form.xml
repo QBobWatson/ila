@@ -15,15 +15,23 @@ the license is included in gfdl.xml.
   <objectives>
     <ol>
       <li>Learn to express the solution set of a system of linear equations in parametric form.</li>
-      <li>Understand the distinction between an implicit form of a solution set and a parameterized form.</li>
+      <li>Understand the distinction between an implicit form of a solution set and a parametric form.</li>
       <li><em>Recipe:</em> parametric form.</li>
-      <li><em>Vocabulary words:</em> <term>implicit equations,</term> <term>parameterized equations,</term> <term>free variable,</term> <term>parametric form,</term> <term>dimension</term> of a solution set.</li>
+      <li><em>Vocabulary words:</em> <term>implicit equations,</term> <term>parametric equations,</term> <term>free variable,</term> <term>parametric form,</term> <term>dimension</term> of a solution set.</li>
     </ol>
   </objectives>
 
   <introduction>
     <p>
       In this section, we turn to the systematic study of the solution set of a system of equations that has <em>infinitely many</em> solutions.  In this case, <q>solving</q> the system means giving a precise way to produce, or <term>parameterize,</term> all of the solutions.
+    </p>
+  </introduction>
+
+  <subsection>
+    <title>Implicit and Parametric Equations</title>
+
+    <p>
+      A recurring theme throughout this text will be the translation between <term>implicit</term> and <term>parameteric</term> descriptions of the same set.  This is a convenient time to fix our ideas in that regard.
     </p>
 
     <specialcase xml:id="parametric-form-eg1">
@@ -53,20 +61,16 @@ the license is included in gfdl.xml.
       </figure>
     </specialcase>
 
-    <p>
-      A recurring theme throughout this text will be the translation between <term>implicit</term> and <term>parameterized</term> descriptions of the same set.  This is a convenient time to fix our ideas in that regard.
-    </p>
-
     <note hide-type="true">
-      <title>Implicit Versus Parameterized Equations</title>
+      <title>Implicit Versus Parameteric Equations</title>
       <idx><h>Implicit equation</h></idx>
-      <idx><h>Parameterized equation</h></idx>
+      <idx><h>Parameteric equation</h></idx>
       <p>
         The solution set of the system of linear equations
         <me>
           \syseq{2x + y + 12z = 1; x + 2y + 9z = -1}
         </me>
-        is a line in <m>\R^3</m>, as we saw in this <xref ref="parametric-form-eg1"/>.  These equations are called <term>implicit equations</term> for the line: the line is defined <em>implicitly</em> as the simultaneous solutions to those two equations.  These equations define the line without giving you any method to actually <em>produce</em> points on it.
+        is a line in <m>\R^3</m>, as we saw in this <xref ref="parametric-form-eg1"/>.  These equations are called <term>implicit equations</term> for the line: the line is defined <em>implicitly</em> as the simultaneous solutions to those two equations.  These equations define the line by giving you a way to <em>check</em> if a point lies on it, but without giving you any method to actually <em>produce</em> points on it.
       </p>
       <p>
         The parametric form
@@ -78,17 +82,49 @@ the license is included in gfdl.xml.
           \def\r{\textcolor{seq-red}}
           (x,\,y,\,z) = (1-5\r z,\,-1-2\r z,\,\r z) \qquad \text{$\r z$ any real number.}
         </me>
-        This called a <term>parameterized equation</term> for the same line.  It is an expression that <em>produces</em> all points of the line in terms of the parameter <m>z</m>.
+        This called a <term>parameteric equation</term> for the same line.  It is an expression that <em>produces</em> all points of the line in terms of the parameter <m>z</m>.
       </p>
       <p>
         Both forms describe the same line, but in very different ways.
       </p>
     </note>
 
+    <p>
+      Both implicit and parameteric equations are useful.
+      <ul>
+        <li>
+          It is much easier to <em>check</em> whether a point is in a set or not using an implicit description: a point is in the set if and only if the coordinates satisfy the defining equations.  For instance, the point <m>(-4,-3,1)</m> is on the line described by the equations
+          <me>
+            \syseq{2x + y + 12z = 1; x + 2y + 9z = -1}
+          </me>
+          because
+          <me>
+            \syseq{
+              2(-4) + (-3) + 12(1) = 1;
+              (-4) + 2(-3) + 9(1) = -1\rlap.
+            }
+          </me>
+          On the other hand, the point <m>(1,1,1)</m> is not contained on this line because
+          <me>
+            \syseq{
+              2(1) + (1) + 12(1) = 15 \neq, 1;
+              (1) + 2(1) + 9(1) = 11 \neq, -1\rlap.
+            }
+          </me>
+        </li>
+        <li>
+          It is much easier to <em>produce</em> points in a set using a parametric form.  For instance, substituting <m>z=0,1,2</m> into the parameteric form of the same line
+          <me> (x,y,z) = (1-5z,\,-1-2z,\,z) </me>
+          produces the solutions
+          <me> (x,y,z) = (1,\,-1,\,0),\; (-4,\,-3,\,1),\; (-9, -5, 2). </me>
+        </li>
+      </ul>
+    </p>
+
     <note hide-type="true">
-      <title>Implicit Versus Parameterized Equations: Non-Linear Example</title>
+      <title>Implicit Versus Parameteric Equations: Non-Linear Example</title>
       <p>
-        It is illuminating to see an example of implicit and parameterized descriptions of a non-linear geometric object, namely, the unit circle.  An <term>implicit equation</term> for the unit circle is <m>x^2+y^2=1</m>: it is the set of all points in <m>\R^2</m> whose coordinates squared sum to 1.
+        It is illuminating to see an example of implicit and parameteric descriptions of a non-linear geometric object, namely, the unit circle.  An <term>implicit equation</term> for the unit circle is <m>x^2+y^2=1</m>: it is the set of all points in <m>\R^2</m> whose coordinates squared sum to 1.
       </p>
       <p>
         One can <term>parameterize</term> all points on the unit circle using trigonometry: if <m>\theta</m> is any real number, then <m>(\cos\theta,\sin\theta)</m> is the point on the unit circle that lies <m>\theta</m> radians counterclockwise from the positive <m>x</m>-axis.  Here <m>\theta</m> is the parameter.  (Unlike the linear situations we will encounter, different values of <m>\theta</m> can produce the same point: indeed, <m>\theta</m> is only defined up to translation by <m>2\pi</m>.)
@@ -120,7 +156,7 @@ the license is included in gfdl.xml.
       </p>
     </note>
 
-  </introduction>
+  </subsection>
 
   <subsection>
     <title>Parametric Form</title>
@@ -261,7 +297,7 @@ the license is included in gfdl.xml.
      to[bend left, "Orthogonal"' font=\small, "Complements" font=\small] (A.south east);
 \end{tikzpicture}
       </latex-code>
-      We will learn how to pass from parameterized form back to implicit form in <xref provisional="parametric-to-implicit"/>.
+      We will learn how to pass from parameteric form back to implicit form in <xref provisional="parametric-to-implicit"/>.
     </p>
 
     <p>
