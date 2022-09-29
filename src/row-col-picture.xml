@@ -737,7 +737,7 @@ the license is included in gfdl.xml.
       </p>
     </note>
 
-    <note>
+    <note xml:id="span-is-parametric">
       <p>
         Expressing a solution set as a (translate of a) span means writing it in <em>parametric form</em>:
         <me>

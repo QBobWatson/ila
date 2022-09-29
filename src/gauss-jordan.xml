@@ -536,7 +536,7 @@ the license is included in gfdl.xml.
           The third equation is <m>0=6</m>, so this system has no solutions.
         </p>
       <figure>
-        <caption>Animated slideshow of the row reduction in this example.</caption>
+        <caption>Animated slideshow of the elimination algorithm in this example.</caption>
         <mathbox source="demos/rowred4.html" height="500px"/>
       </figure>
       </answer>
@@ -793,7 +793,7 @@ the license is included in gfdl.xml.
           This translates into the system of equations <m>x_1=1,\;x_2=-2,\;x_3=3</m>, so there is only one solution <m>(x_1,x_2,x_3)=(1,-2,3)</m>.
         </p>
       <figure>
-        <caption>Animated slideshow of the row reduction in this example.</caption>
+        <caption>Animated slideshow of the Jordan substitution in this example.</caption>
         <mathbox source="demos/rowred5.html" height="500px"/>
       </figure>
       </answer>

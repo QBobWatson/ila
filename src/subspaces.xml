@@ -18,8 +18,412 @@ the license is included in gfdl.xml.
     </ol>
   </objectives>
 
-  <p>
-    Write the content.
-  </p>
+  <introduction>
+    <p>
+      In this section we introduce some vocabulary for discussing linear spaces containing the origin, namely, the notion of a <term>subspace</term>.  To any matrix we will associate four subspaces: two in the row picture, and two in the column picture.  The row picture subspaces will be orthogonal to each other, as will the column picture subspaces.  In this way, one can view the material in this section as a part of the theoretical machinery needed to understand orthogonality and least squares.
+    </p>
+  </introduction>
+
+  <subsection>
+    <title>Subspaces: Definition and Examples</title>
+
+    <p>
+      So far, to every <m>m\times n</m> matrix <m>A</m> we have associated two spans.
+      <ol>
+        <li>
+          The span of the columns of <m>A</m> is the set of all vectors <m>b\in\R^m</m> making the matrix equation <m>Ax=b</m> consistent.
+        </li>
+        <li>
+          The solution set of the homogeneous equation <m>Ax=0</m> can be written as a span by computing the parametric vector form of the solutions.
+        </li>
+      </ol>
+      The first example arises naturally as a span<mdash/>it is already described in parametric form, as in this <xref ref="span-is-parametric"/>.  The second example, however, is given in implicit form: it is the set of vectors <m>x</m> satisfying the equation <m>Ax=0</m>.  It is possible to write it as a span, but one has to do elimination to find a spanning set.
+    </p>
+
+    <p>
+      The notion of a <term>subspace</term> puts both kinds of examples on the same footing.  To be clear:
+    </p>
+
+    <bluebox xml:id="note-spans-equal-subspaces">
+      <title>Fast-Forward</title>
+      <p>
+        Subspaces are spans, and spans are subspaces.
+      </p>
+    </bluebox>
+
+    <p>
+      In particular, we have already seen many pictures of subspaces in <xref ref="spans"/>.  The reason for the new vocabulary word is to allow us to reason about spans without having to compute a spanning set.  It also formalizes the notion of a <q>linear space containing 0,</q> and gives a criterion for a <em>subset</em> to be a span.
+    </p>
+
+    <paragraphs>
+      <title>Subsets of <m>\R^n</m></title>
+
+      <p>
+        Before delving into the conditions for a subset to be a subspace, we first discuss what we mean by a subset.
+      </p>
+
+      <definition>
+        <idx><h>Subset</h><h>definition of</h></idx>
+        <statement>
+          <p>A <term>subset</term> of <m>\R^n</m> is any collection of vectors in <m>\R^n</m>.</p>
+        </statement>
+      </definition>
+
+      <p>
+        Here are examples of some subsets of <m>\R^2</m>, specified in <xref ref="set-builder-notation" text="title">set builder notation</xref>:
+        <latex-code>
+\begin{tikzpicture}
+
+  \draw (-1.5,0) -- (1.5,0);
+  \draw (0,-1.2) -- (0,1.2);
+  \draw[seq-green, thick] (0,0) circle[radius=1];
+  \node[seq-green, anchor=base] at (0,-1.8) {$\bigl\{(x,y)~:~x^2+y^2=1\bigr\}$};
+  \node[above] at (0,1.2) {(a)};
+
+  \begin{scope}[xshift=4.5cm]
+    \fill[seq-green, opacity=.3] (0,0) rectangle (1.5,1.2);
+    \draw (-1.5,0) -- (1.5,0);
+    \draw (0,-1.2) -- (0,1.2);
+    \node[seq-green, anchor=base] at (0,-1.8) {$\bigl\{(x,y)~:~x,y\geq 0\bigr\}$};
+    \node[above] at (0,1.2) {(b)};
+  \end{scope}
+
+  \begin{scope}[xshift=9cm]
+    \draw[seq-green, thick] (-1.5,0) -- (1.5,0);
+    \draw[seq-green, thick] (0,-1.2) -- (0,1.2);
+    \node[seq-green, anchor=base] at (0,-1.8) {$\bigl\{(x,y)~:~xy= 0\bigr\}$};
+    \node[above] at (0,1.2) {(c)};
+  \end{scope}
+
+\end{tikzpicture}
+        </latex-code>
+        The notation <m>\{(x,y)~:~x^2+y^2=1\}</m> reads as <q>the set of all pairs <m>(x,y)</m> such that <m>x^2+y^2=1</m>.</q>  Everything to the right of the colon is the <term>defining condition</term> of the subset: the element specified on the left of the colon is contained in the subset exactly when the defining condition holds true.
+      </p>
+
+    </paragraphs>
+
+    <p>
+      The notion of a subspace is given by three criteria that characterize linear spaces through the origin among all subsets of <m>\R^n</m>.
+    </p>
+
+    <definition xml:id="subspaces-defn-of">
+      <idx><h>Subspace</h><h>definition of</h></idx>
+      <statement>
+        <p>
+          A <term>subspace</term> of <m>\R^n</m> is a subset <m>V</m> of <m>\R^n</m> satisfying the following conditions:
+          <ol>
+            <li><alert>Closure under addition:</alert> If <m>u,v\in V</m> then <m>u+v\in V</m>.</li>
+            <li><alert>Closure under scalar multiplication:</alert> If <m>v\in V</m> and <m>c\in\R</m> then <m>cv\in V</m>.</li>
+            <li><alert>Contains zero:</alert> The zero vector is in <m>V</m>.</li>
+          </ol>
+        </p>
+      </statement>
+    </definition>
+
+    <example hide-type="true">
+      <title>Non-Examples</title>
+      <p>
+        Let us see how these conditions apply to the subsets drawn above.
+        <ol label="a">
+          <li>
+            <p>
+              The unit circle fails all three properties.
+              <ol label="1">
+                <li>
+                  It is not closed under addition: for instance, <m>{1\choose0}</m> and <m>{0\choose 1}</m> are on the unit circle, but their sum <m>{1\choose 1}</m> is not.
+                </li>
+                <li>
+                  It is not closed under scalar multiplication: for instance, <m>{1\choose 0}</m> is on the unit circle, but <m>2{1\choose 0}</m> is not.
+                </li>
+                <li>
+                  It does not contain the zero vector.
+                </li>
+              </ol>
+              <latex-code>
+\begin{tikzpicture}
+  \draw (-1.5,0) -- (1.5,0);
+  \draw (0,-1.2) -- (0,1.2);
+  \draw[seq-green, thick] (0,0) circle[radius=1];
+  \node[seq-green, anchor=base] at (0,-1.8) {$\bigl\{(x,y)~:~x^2+y^2=1\bigr\}$};
+  \draw[vector, seq-red] (0,0) -- (2,0);
+  \draw[vector] (0,0) -- (1,0);
+  \draw[vector] (0,0) -- (0,1);
+  \draw[vector, seq-red] (0,0) -- (1,1);
+  \point[seq-red] at (0,0);
+\end{tikzpicture}
+              </latex-code>
+            </p>
+          </li>
+          <li>
+            <p>
+              The first quadrant satisfies properties 1 and 3.
+              <ol label="1">
+                <li>
+                  It is closed under addition: if <m>{x_1\choose y_1}</m> and <m>{x_2\choose y_2}</m> are contained in the first quadrant, then <m>x_1,y_1,x_2,</m> and <m>y_2</m> are all nonnegative, so <m>x_1+x_2\geq0</m> and <m>y_1+y_2\geq0</m>, and thus <m>{x_1+y_1\choose x_2+y_2}</m> is again in the first quadrant.
+                </li>
+                <li>
+                  It is not closed under scalar multiplication: for instance, <m>{1\choose1}</m> is in the first quadrant, but <m>-{1\choose1}</m> is not.
+                </li>
+                <li>
+                  It does contain the zero vector.
+                </li>
+              </ol>
+              <latex-code>
+\begin{tikzpicture}
+    \fill[seq-green, opacity=.3] (0,0) rectangle (1.5,1.2);
+    \draw (-1.5,0) -- (1.5,0);
+    \draw (0,-1.2) -- (0,1.2);
+    \node[seq-green, anchor=base] at (0,-1.8) {$\bigl\{(x,y)~:~x,y\geq 0\bigr\}$};
+    \draw[vector] (0,0) -- (1,1);
+    \draw[vector, seq-red] (0,0) -- (-1,-1);
+\end{tikzpicture}
+              </latex-code>
+            </p>
+          </li>
+          <li>
+            <p>
+              The union of the coordinate axes satisfies properties 2 and 3.
+              <ol label="1">
+                <li>
+                  It is not closed under addition: for instance, <m>{1\choose0}</m> and <m>{0\choose 1}</m> lie on the coordinate axes, but their sum <m>{1\choose 1}</m> does not.
+                </li>
+                <li>
+                  It is closed under scalar multiplication: if <m>{x\choose y}</m> satisfies <m>xy=0</m>, and if <m>c\in\R</m> is a scalar, then <m>(cx)(cy)=c^2(xy)=0</m>, so <m>c{x\choose y}={cx\choose cy}</m> again satisfies the defining condition.
+                </li>
+                <li>
+                  It does contain the zero vector.
+                </li>
+              </ol>
+              <latex-code>
+\begin{tikzpicture}
+    \draw[seq-green, thick] (-1.5,0) -- (1.5,0);
+    \draw[seq-green, thick] (0,-1.2) -- (0,1.2);
+    \node[seq-green, anchor=base] at (0,-1.8) {$\bigl\{(x,y)~:~xy= 0\bigr\}$};
+    \draw[vector] (0,0) -- (1,0);
+    \draw[vector] (0,0) -- (0,1);
+    \draw[vector, seq-red] (0,0) -- (1,1);
+\end{tikzpicture}
+              </latex-code>
+            </p>
+          </li>
+        </ol>
+        Since none of these subsets satisfies all three conditions, none of them is a subspace.
+      </p>
+    </example>
+
+    <p>
+      In order to show that a subset is <em>not</em> a subspace, it suffices to exhibit a single counterexample to any of the three defining criteria.  In the non-example above, we showed that the first quadrant is not a subspace by noting that <m>{1\choose1}</m> is in the first quadrant but <m>-{1\choose1}</m> is not.
+    </p>
+    <p>
+      In practice, this is where the defining criteria are most useful: in verifying that a subset is <em>not</em> a subspace.  However, in order to understand what the three criteria actually say, it is instructive to verify directly from the criteria that a subset is a subspace.  We will see later how one would ordinarily show that a subset is a subspace.
+    </p>
+
+    <specialcase xml:id="verify-subspace-axioms">
+      <p>
+        Let us verify that
+        <me> V = \left\{ \vec{x y z}~:~x + y = z \right\} </me>
+        is a subspace.  In this case, the condition that defines the subset is <m>x+y=z</m>: that is, a vector is in <m>V</m> if its third coordinate is the sum of its first two coordinates.
+        <ol>
+          <li>
+            In order to show that <m>V</m> is closed under addition, we have to show that if <m>u</m> and <m>v</m> satisfy the defining condition, then so does <m>u+v</m>.  Let <m>u = (x_1,y_1,z_1)</m> and <m>v = (x_2,y_2,z_2)</m> be vectors in <m>V</m>.  This means that <m>x_1 + y_1 = z_1</m> and <m>x_2 + y_2 = z_2</m>.  Their sum is <m>u+v = (x_1+x_2,\,y_1+y_2,\,z_1+z_2)</m>.  We have to verify that the sum satisfies the defining condition
+            <me> (x_1+x_2) + (y_1+y_2) = (z_1+z_2), </me>
+            which is clear by adding the equations <m>x_1 + y_1 = z_1</m> and <m>x_2 + y_2 = z_2</m> together.
+          </li>
+          <li>
+            In order to show that <m>V</m> is closed under multiplication, we have to show that if <m>u</m> satisfies the defining condition and <m>c\in\R</m> is any scalar, then <m>cu</m> also satisfies the defining condition.  Let <m>u=(x,y,z)</m> be in <m>V</m>, so <m>x+y=z</m>.  The scalar product is <m>cu=(cx,cy,cz)</m>.  We have to verify that <m>cu</m> satisfies the defining condition
+            <me> (cx) + (cy) = (cz), </me>
+            which is clear by multiplying both sides of the equation <m>x+y=z</m> by <m>c</m>.
+          </li>
+          <li>
+            In order to show that <m>V</m> contains the zero vector, we have to show that <m>(0,0,0)</m> satisfies the defining condition, which it does:
+            <me> 0 + 0 = 0. </me>
+          </li>
+        </ol>
+        Since <m>V</m> satisfies all three criteria, it is a subspace.
+      </p>
+    </specialcase>
+
+    <p>
+      Next we give two easy examples of subspaces.
+    </p>
+
+    <specialcase xml:id="zero-is-a-subspace">
+      <title><m>\{0\}</m> is a Subspace</title>
+      <idx><h>Real <m>n</m>-space</h><h>as a subspace of itself</h></idx>
+      <idx><h>Subspace</h><h>real <m>n</m>-space</h></idx>
+      <p>
+        The subset <m>\{0\}</m> is a subspace: <m>0+0=0\in\{0\}</m>, <m>c0=0\in\{0\}</m> for any scalar <m>c</m>, and <m>0\in\{0\}</m>.
+      </p>
+    </specialcase>
+
+    <specialcase>
+      <title><m>\R^n</m> is a Subspace</title>
+      <idx><h>Subspace</h><h>zero</h></idx>
+      <p>
+        The subset <m>\R^n</m> is a subspace of itself: the sum of two vectors is a vector, the product of a scalar and a vector is a vector, and zero is a vector.
+      </p>
+    </specialcase>
+
+    <p>
+      One has to take extra care with the empty set.
+    </p>
+
+    <specialcase>
+      <title>The Empty Set is Not a Subspace</title>
+      <p>
+        The <xref ref="empty-set-versus-zero-set" text="title">empty set</xref> <m>\{\}</m> is not a subspace: it does not contain the zero vector.  It is closed under addition and scalar multiplication, however, since both conditions are vacuous: it is true that <m>u+v\in\{\}</m> for every <m>u,v\in\{\}</m> and that <m>cu\in\{\}</m> for every <m>u\in\{\}</m> and every <m>c\in\R</m>, since there are no vectors to check.
+      </p>
+      <p>
+        In fact, if <m>V</m> is any <em>nonempty</em> subset that is closed under multiplication, then it contains 0: if <m>v\in V</m> is any vector then <m>0 = 0v\in V</m>.  So the empty set is the only example of a subset that satisfies the first two criteria but not the third.
+      </p>
+    </specialcase>
+
+    <p>
+      As with spans, subspaces are linear spaces <em>containing the origin</em>.
+      <latex-code>
+        <![CDATA[
+\begin{tikzpicture}[thin border nodes, scale=.9]
+    \draw[grid lines] (-3,-2) grid (4, 3);
+    \path[clip] (-3,-2) rectangle (4, 3);
+    \draw[thin, seq4] (-3, -.5) -- (4, 2.5);
+    \node[seq4,whitebg] at (0,2) {not a subspace};
+    \point at (0,0);
+\end{tikzpicture}
+        ]]>
+      </latex-code>
+    </p>
+
+    <p>
+      Now we will prove that <xref ref="note-spans-equal-subspaces">subspaces are the same as spans</xref>.  The idea is roughly as follows.  Let <m>V</m> be a subspace.
+      <ul>
+        <li>
+          If <m>v</m> is a vector in <m>V</m>, then all scalar multiples of <m>v</m> are in <m>V</m>.   In other words the line through any nonzero vector in <m>V</m> is also contained in <m>V</m>.
+        </li>
+        <li>
+          If <m>u,v</m> are vectors in <m>V</m> and <m>c,d</m> are scalars, then <m>cu</m> and <m>dv</m> are also in <m>V</m>, so <m>cu+dv</m> is in <m>V</m>.  Therefore, all of <m>\Span\{u,v\}</m> is contained in <m>V</m>
+        </li>
+        <li>
+          Similarly, if <m>v_1,v_2,\ldots,v_n</m> are all in <m>V</m>, then <m>\Span\{v_1,v_2,\ldots,v_n\}</m> is contained in <m>V</m>.  In other words, <em>a subspace contains the span of any vectors in it.</em>
+        </li>
+      </ul>
+      If you choose enough vectors, then eventually their span will fill up <m>V</m>, so a <em>subspace is a span</em>.  See this <xref ref="subspaces-spans-are-subspaces"/> below for a formal proof.
+    </p>
+
+    <theorem xml:id="subspaces-spans-are-subspaces">
+      <title>Spans are Subspaces and Subspaces are Spans</title>
+      <idx><h>Span</h><h>is a subspace</h></idx>
+      <idx><h>Subspace</h><h>is a span</h></idx>
+      <statement>
+        <p>
+          If <m>v_1,v_2,\ldots,v_n</m> are any vectors in <m>\R^m</m>, then <m>\Span\{v_1,v_2,\ldots,v_n\}</m> is a subspace of <m>\R^m</m>.  Moreover, any subspace of <m>\R^m</m> can be written as a span of a set of <m>n</m> vectors in <m>\R^m</m> for <m>n\leq m</m>.
+        </p>
+      </statement>
+
+      <proof>
+        <p>
+          To show that <m>\Span\{v_1,v_2,\ldots,v_n\}</m> is a subspace, we have to verify the three defining properties.  If <m>n=0</m> then <m>V = \Span\{\} = \{0\}</m>, which is a subspace, as we saw in this <xref ref="zero-is-a-subspace"/>.  So suppose that <m>n\geq 1.</m>
+          <ol>
+            <li>
+              If <m>u = a_1v_1 + a_2v_2 + \cdots + a_nv_n</m> and
+              <m>v = b_1v_1 + b_2v_2 + \cdots + b_nv_n</m> are in <m>\Span\{v_1,v_2,\ldots,v_n\}</m>, then
+              <me>u + v = (a_1+b_1)v_1 + (a_2+b_2)v_2 + \cdots + (a_n+b_n)v_n</me>
+              is also in <m>\Span\{v_1,v_2,\ldots,v_n\}</m>.
+            </li>
+            <li>
+              If <m>v = a_1v_1 + a_2v_2 + \cdots + a_nv_n</m> is in <m>\Span\{v_1,v_2,\ldots,v_n\}</m> and <m>c</m> is a scalar, then
+              <me>cv = (ca_1)v_1 + (ca_2)v_2 + \cdots + (ca_n)v_n</me>
+              is also in <m>\Span\{v_1,v_2,\ldots,v_n\}</m>.
+            </li>
+            <li>
+              The zero vector <m>0 = 0v_1 + 0v_2 + \cdots + 0v_n</m> is in the span.
+            </li>
+          </ol>
+          Since <m>\Span\{v_1,v_2,\ldots,v_n\}</m> satisfies the three criteria, it is a subspace.
+        </p>
+        <p>
+          Now let <m>V</m> be a subspace of <m>\R^m</m>.  To show that <m>V</m> is a span, we will use some facts about linearly independent vectors from <xref ref="linear-independence"/>.  If <m>V</m> is the zero subspace, then it is the span of the empty set, so we may assume <m>V</m> is nonzero. Choose a nonzero vector <m>v_1</m> in <m>V</m>.  If <m>V = \Span\{v_1\}</m>, then we are done.  Otherwise, there exists a vector <m>v_2</m> that is in <m>V</m> but not in <m>\Span\{v_1\}</m>.  Then <m>\Span\{v_1,v_2\}</m> is contained in <m>V</m>, and by the <xref provisional="linindep-increasing-span">increasing span criterion</xref>, the set <m>\{v_1,v_2\}</m> is linearly independent.  If <m>V = \Span\{v_1,v_2\}</m> then we are done.  Otherwise, we continue in this fashion until we have written <m>V = \Span\{v_1,v_2,\ldots,v_n\}</m> for some linearly independent set <m>\{v_1,v_2,\ldots,v_n\}</m>.  This process terminates after at most <m>n</m> steps by this <xref provisional="linindep-wide-matrix"/>.
+        </p>
+      </proof>
+    </theorem>
+
+    <p>
+      If <m>V = \Span\{v_1,v_2,\ldots,v_n\}</m>, we say that <m>V</m> is the subspace <term>spanned by</term> the vectors <m>v_1,v_2,\ldots,v_n</m>.  We call <m>\{v_1,v_2,\ldots,v_n\}</m> a <term>spanning set</term> for <m>V</m>.
+    </p>
+
+    <p>
+      For example, we have
+      <me> \R^n = \Span\{e_1,e_2,\ldots,e_n\}</me>
+      by this <xref ref="linear-combo-unit-coordinate-vecs"/>, and <m>\{0\} = \Span\{\}</m> by <xref ref="span-empty-set" text="title">convention</xref>.
+    </p>
+
+    <example>
+      <statement>
+        <p>
+          Find a spanning set for the subspace
+          <me> V = \left\{ \vec{x y z}~:~x + y = z \right\} </me>
+          from this <xref ref="verify-subspace-axioms"/>.
+        </p>
+      </statement>
+      <solution>
+        <p>
+          We can rewrite the defining equation as <m>x + y - z = 0</m>, so <m>V</m> is the solution set of a single homogeneous linear equation.  The corresponding matrix is <m>\mat{1 1 -1}</m>; we compute the parametric vector form of the solution set to be
+          <me>
+            \vec{x y z} = y\vec{-1 1 0} + z\vec{1 0 1}.
+          </me>
+          It follows that
+          <me>
+            V = \Span\left\{\vec{-1 1 0},\;\vec{1 0 1}\right\}.
+          </me>
+        </p>
+      </solution>
+    </example>
+
+    <bluebox>
+      <title>Subspaces Versus Spanning Sets</title>
+      <p>
+        Be careful not to confuse a spanning set with the subspace it spans.
+        <ul>
+          <li>
+            A <alert>subspace</alert> is a linear space.  It is a point, line, plane, etc., and if it is nonzero then it contains <em>infinitely many vectors.</em>  Notation:
+            <me> \Span\{v_1,v_2,\ldots,v_n\}. </me>
+          </li>
+          <li>
+            A <alert>spanning set</alert> is a <em>finite</em> list of vectors used to <xref ref="span-is-parametric" text="title">parameterize</xref> a subspace.  Notation:
+            <me> \{v_1,v_2,\ldots,v_n\}. </me>
+          </li>
+        </ul>
+        In pictures:
+        <latex-code>
+\begin{tikzpicture}[thin border nodes, myxyz]
+  \def\v{(-.3,1.5,1)}
+  \def\w{(1,2,.3)}
+
+  \node[coordinate] (X) at \v {};
+  \node[coordinate] (Y) at \w {};
+
+  \begin{scope}[x=(X), y=(Y), transformxy]
+    \fill[seq4!30, nearly opaque] (-1,-1) rectangle (1,1);
+    \draw[step=.5cm, seq4, very thin] (-1,-1) grid (1,1);
+  \end{scope}
+
+  \point at (0,0,0);
+
+  \node[below] at (0, -1.5cm) {$\Span\{v,w\}$};
+
+\begin{scope}[xshift=6cm]
+  \draw[vector, seq4] (0,0,0) --
+    node [midway, above=1pt] {$v$} \v;
+  \draw[vector, seq4] (0,0,0) --
+    node [midway, below=1mm] {$w$} (-1,-2,-.3);
+  \point at (0,0,0);
+  \node[below] at (0, -1.5cm) {$\{v,w\}$};
+\end{scope}
+
+\end{tikzpicture}
+        </latex-code>
+      </p>
+    </bluebox>
+
+  </subsection>
 
 </section>

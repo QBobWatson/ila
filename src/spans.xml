@@ -742,7 +742,7 @@ the license is included in gfdl.xml.
       </statement>
     </definition>
 
-    <note hide-type="true">
+    <note hide-type="true" xml:id="empty-set-versus-zero-set">
       <title>Warning</title>
       <p>
         The following is a common source of confusion.

@@ -14,12 +14,12 @@ the license is included in gfdl.xml.
 
   <objectives>
     <ol>
-      <li>Understand how to use an LU decomposition or a <m>PA=LU</m> decomposition to solve <m>Ax=b</m> quickly by computer.</li>
-      <li>Understand when LU decompositions and <m>PA=LU</m> decompositions should be used to solve systems of equations.</li>
+      <li>Understand how to use an LU decomposition or a PALU decomposition to solve <m>Ax=b</m> quickly by computer.</li>
+      <li>Understand when LU decompositions and PALU decompositions should be used to solve systems of equations.</li>
       <li>Learn the relationship between Gaussian elimination, elementary matrices, and LU decompositions.</li>
       <li>Learn how to minimize rounding errors using maximal partial pivoting.</li>
-      <li><em>Recipes:</em> solve <m>Ax=b</m> using <m>A=LU</m>, compute an LU decomposition using the 2-column method, solve <m>Ax=b</m> using <m>PA=LU</m>, compute a <m>PA=LU</m> decomposition using the 3-column method, Gaussian elimination with maximal partial pivoting.</li>
-      <li><em>Vocabulary words:</em> <term>LU decomposition,</term> <term>permutation matrix,</term> <term><m>PA=LU</m> decomposition.</term></li>
+      <li><em>Recipes:</em> solve <m>Ax=b</m> using <m>A=LU</m>, compute an LU decomposition using the 2-column method, solve <m>Ax=b</m> using <m>PA=LU</m>, compute a PALU decomposition using the 3-column method, Gaussian elimination with maximal partial pivoting.</li>
+      <li><em>Vocabulary words:</em> <term>LU decomposition,</term> <term>permutation matrix,</term> <term>PALU decomposition.</term></li>
     </ol>
   </objectives>
 
@@ -572,7 +572,7 @@ the license is included in gfdl.xml.
               Computing <m>A\inv</m> takes <m>\approx\frac 43n^3</m> flops, which is twice as many as Gaussian elimination.
             </li>
             <li>
-              Computing <m>A\inv</m> is not numerically stable: it is less accurate than an LU decomposition due to rounding errors.  (A <m>PA=LU</m> decomposition with maximal partial pivoting is even more accurate; see <xref ref="sec-mpp">below</xref>.)
+              Computing <m>A\inv</m> is not numerically stable: it is less accurate than an LU decomposition due to rounding errors.  (A PALU decomposition with maximal partial pivoting is even more accurate; see <xref ref="sec-mpp">below</xref>.)
             </li>
             <li>
               Computing the matrix-vector product <m>A\inv b</m> also requires about <m>2n^2</m> flops for each value of <m>b</m>, so the inverse matrix does not save any time.
@@ -589,11 +589,11 @@ the license is included in gfdl.xml.
     <title>LU Decompositions with Row Swaps: <m>PA=LU</m></title>
 
     <p>
-      A matrix <m>A</m> admits an LU decomposition only if it can be reduced to row echelon form <em>without any row swaps</em>.  However, some matrices require row swaps to find a nonzero pivot.  More importantly, we will see <xref ref="sec-mpp">below</xref> that there are numerical advantages to performing a row swap even when it is not strictly necessarily.  We therefore need to introduce a more sophisticated variant of the LU decomposition, called a <m>PA=LU</m> decomposition.
+      A matrix <m>A</m> admits an LU decomposition only if it can be reduced to row echelon form <em>without any row swaps</em>.  However, some matrices require row swaps to find a nonzero pivot.  More importantly, we will see <xref ref="sec-mpp">below</xref> that there are numerical advantages to performing a row swap even when it is not strictly necessarily.  We therefore need to introduce a more sophisticated variant of the LU decomposition, called a PALU decomposition.
     </p>
 
     <p>
-      The idea behind the <m>PA=LU</m> decomposition is to <q>do all of the row swaps first</q>, then compute an LU decomposition.  (Of course, we cannot tell in advance which row swaps will be necessary, but this problem can be solved with some extra bookkeeping.)  Performing a row swap on a matrix <m>A</m> is the same as left-multiplying <m>A</m> by an elementary matrix <m>P_1</m> for a row swap.  Hence performing a number of row swaps on <m>A</m> is accomplished by multiplying by a number of elementary matrices for row swaps:
+      The idea behind the PALU decomposition is to <q>do all of the row swaps first</q>, then compute an LU decomposition.  (Of course, we cannot tell in advance which row swaps will be necessary, but this problem can be solved with some extra bookkeeping.)  Performing a row swap on a matrix <m>A</m> is the same as left-multiplying <m>A</m> by an elementary matrix <m>P_1</m> for a row swap.  Hence performing a number of row swaps on <m>A</m> is accomplished by multiplying by a number of elementary matrices for row swaps:
       <me> A \quad\xrightarrow[\text{swaps}]{\text{row}}\quad P_r\cdots P_2P_1\,A. </me>
       Multiplying the elementary matrices together into <m>P = P_r\cdots P_2P_1</m> yields the following kind of matrix.
     </p>
@@ -636,57 +636,60 @@ the license is included in gfdl.xml.
     </remark>
 
     <p>
-      Now that we have defined the <m>P</m>, we can say what a <m>PA=LU</m> decomposition is.
+      Now that we have defined the <m>P</m>, we can say what a PALU decomposition is.
     </p>
 
     <fact>
-      <title><m>PA=LU</m> Decomposition</title>
-      <idx><h><m>PA=LU</m> Decomposition</h></idx>
+      <title>PALU Decomposition</title>
+      <idx><h>PALU Decomposition</h></idx>
       <p>
         Any <m>m\times n</m> matrix <m>A</m> has a factorization
         <latex-code mode="bare">
-          \def\r{\textcolor{seq-red}}
-          \def\g{\textcolor{seq-green}}
-          \def\b{\textcolor{seq-violet}}
+          \def\rr{\textcolor{seq-red}}
+          \def\gg{\textcolor{seq-green}}
+          \def\bb{\textcolor{seq-violet}}
         </latex-code>
-        <me>
-          \b{P}A = \r{L}\g{U}
-        </me>
-        where <m>\b P</m> is an <m>m\times m</m> permutation matrix, <m>\r L</m> is an <m>m\times m</m> lower-unitriangular matrix, and <m>\g U</m> is an <m>m\times n</m> matrix in row echelon form.
+        <men xml:id="palu-decomposition-equation">
+          \def\rr{\textcolor{seq-red}}
+          \def\gg{\textcolor{seq-green}}
+          \def\bb{\textcolor{seq-violet}}
+          \bb{P}A = \rr{L}\gg{U}
+        </men>
+        where <m>\bb P</m> is an <m>m\times m</m> permutation matrix, <m>\rr L</m> is an <m>m\times m</m> lower-unitriangular matrix, and <m>\gg U</m> is an <m>m\times n</m> matrix in row echelon form.
       </p>
     </fact>
 
     <p>
-      Again, the idea is that we find an <m>LU</m> decomposition of <m>PA</m>, which is just <m>A</m> with its rows rearranged.  Note that a <m>PA=LU</m> decomposition with <m>P=I_m</m> is just an LU decomposition.
+      Equation <xref ref="palu-decomposition-equation"/> is called a <term>PALU decomposition</term> of <m>A</m>.  Again, the idea is that we find an <m>LU</m> decomposition of <m>PA</m>, which is just <m>A</m> with its rows rearranged.  Note that a PALU decomposition with <m>P=I_m</m> is just an LU decomposition.
     </p>
 
     <example>
       <p>
         The matrix
         <me> A = \mat{1 1 1; -10 -20 -30; 5 15 10} </me>
-        has a <m>PA=LU</m> decomposition
+        has a PALU decomposition
         <me>
-          \def\r{\textcolor{seq-red}}
-          \def\g{\textcolor{seq-green}}
-          \def\b{\textcolor{seq-violet}}
-          \b{\mat{0 1 0; 0 0 1; 1 0 0}}\,A
-          = \b{P}A = \r{L}\g{U}
-          = \r{\mat{1 0 0; -1/2 1 0; -1/10 -1/5 1}}
-            \g{\mat{-10 -20 -30; 0 5 -5; 0 0 -3}}.
+          \def\rr{\textcolor{seq-red}}
+          \def\gg{\textcolor{seq-green}}
+          \def\bb{\textcolor{seq-violet}}
+          \bb{\mat{0 1 0; 0 0 1; 1 0 0}}\,A
+          = \bb{P}A = \rr{L}\gg{U}
+          = \rr{\mat{1 0 0; -1/2 1 0; -1/10 -1/5 1}}
+            \gg{\mat{-10 -20 -30; 0 5 -5; 0 0 -3}}.
         </me>
       </p>
     </example>
 
     <p>
-      Solving <m>Ax=b</m> using a <m>PA=LU</m> decomposition is not much different than with an LU decomposition.
+      Solving <m>Ax=b</m> using a PALU decomposition is not much different than with an LU decomposition.
     </p>
 
     <algorithm>
       <title>Solving <m>Ax=b</m> using <m>PA=LU</m></title>
-      <idx><h><m>PA=LU</m> Decomposition</h><h>solving <m>Ax=b</m></h></idx>
+      <idx><h>PALU Decomposition</h><h>solving <m>Ax=b</m></h></idx>
       <statement>
         <p>
-          The <alert>inputs</alert> are an <m>m\times n</m> matrix <m>A</m> along with a <m>PA=LU</m> decomposition, and a vector <m>b\in\R^m</m>.  The <alert>output</alert> is a solution <m>x</m> of <m>Ax=b</m>.
+          The <alert>inputs</alert> are an <m>m\times n</m> matrix <m>A</m> along with a PALU decomposition, and a vector <m>b\in\R^m</m>.  The <alert>output</alert> is a solution <m>x</m> of <m>Ax=b</m>.
           <ul label="">
             <li>
               <alert>Step 0:</alert> Compute the vector <m>Pb</m>:
@@ -779,14 +782,14 @@ the license is included in gfdl.xml.
     </example>
 
     <p>
-      A <m>PA=LU</m> decomposition is constructed by performing elimination with elementary matrices, as with LU decompositions<mdash/>with one additional trick needed to <q>push all of the permutations to the right.</q>  In lieu of a formal proof that <m>PA=LU</m> decompositions exist, we give an example.
+      A PALU decomposition is constructed by performing elimination with elementary matrices, as with LU decompositions<mdash/>with one additional trick needed to <q>push all of the permutations to the right.</q>  In lieu of a formal proof that PALU decompositions exist, we give an example.
     </p>
 
     <example xml:id="plu-example-1">
       <title><m>PA=LU</m> with Elementary Matrices</title>
       <statement>
         <p>
-          Compute a <m>PA=LU</m> decomposition of the matrix
+          Compute a PALU decomposition of the matrix
           <me> A = \mat{1 1 1; -10 -20 -30; 5 15 10}. </me>
         </p>
       </statement>
@@ -855,15 +858,15 @@ the license is included in gfdl.xml.
     </example>
 
     <p>
-      As with LU decompositions, one can produce a <m>PA=LU</m> decomposition efficiently using some clever bookkeeping.
+      As with LU decompositions, one can produce a PALU decomposition efficiently using some clever bookkeeping.
     </p>
 
     <algorithm>
-        <title><m>PA=LU</m> Decomposition; 3-Column Method</title>
-        <idx><h><m>PA=LU</m> Decomposition</h><h>3-column method</h></idx>
+        <title>PALU Decomposition; 3-Column Method</title>
+        <idx><h>PALU Decomposition</h><h>3-column method</h></idx>
         <statement>
           <p>
-            The <alert>input</alert> is an <m>m\times n</m> matrix <m>A</m>.  The <alert>output</alert> is a <m>PA=LU</m> decomposition.
+            The <alert>input</alert> is an <m>m\times n</m> matrix <m>A</m>.  The <alert>output</alert> is a PALU decomposition.
             <ul label="">
               <li>
                 <alert>Setup:</alert> Prepare three matrices.  Start with the <m>m\times m</m> identity matrix in the left column, a blank <m>m\times m</m> matrix in the middle column, and place the matrix <m>A</m> in the right column.
@@ -1081,7 +1084,7 @@ the license is included in gfdl.xml.
       <example xml:id="three-col-method-eg1">
         <statement>
           <p>
-            Use the 3-column method to find a <m>PA=LU</m> decomposition of the matrix
+            Use the 3-column method to find a PALU decomposition of the matrix
             <me> A = \mat{1 1 1; -10 -20 -30; 5 15 10} </me>
             from the above <xref ref="plu-example-1"/>.
           </p>
@@ -1266,12 +1269,12 @@ the license is included in gfdl.xml.
       </example>
 
       <p>
-        The 3-column method for finding the <m>PA=LU</m> decomposition again requires more bookkeeping than the <xref ref="lu-2-col-method">2-column method</xref>, but does not involve any additional floating point operations.
+        The 3-column method for finding the PALU decomposition again requires more bookkeeping than the <xref ref="lu-2-col-method">2-column method</xref>, but does not involve any additional floating point operations.
       </p>
 
       <bluebox>
         <p>
-          Computing a <m>PA=LU</m> decomposition takes the same amount of time as an LU decomposition, and solving <m>Ax=b</m> using a <m>PA=LU</m> decomposition takes the same amount of time as solving <m>Ax=b</m> with an LU decomposition.
+          Computing a PALU decomposition takes the same amount of time as an LU decomposition, and solving <m>Ax=b</m> using a PALU decomposition takes the same amount of time as solving <m>Ax=b</m> with an LU decomposition.
         </p>
       </bluebox>
 
@@ -1444,7 +1447,7 @@ the license is included in gfdl.xml.
     </specialcase>
 
     <p>
-      In order to take advantage of the speed of an LU decomposition and the numerical accuracy of maximal partial pivoting at the same time, it is necessary to compute a <m>PA=LU</m> decomposition.
+      In order to take advantage of the speed of an LU decomposition and the numerical accuracy of maximal partial pivoting at the same time, it is necessary to compute a PALU decomposition.
     </p>
 
     <example>
