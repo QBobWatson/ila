@@ -503,7 +503,7 @@ the license is included in gfdl.xml.
 
     </paragraphs>
 
-    <paragraphs>
+    <paragraphs xml:id="span-2-vecs">
       <title>Span of Two Vectors</title>
 
       <p>
@@ -780,8 +780,7 @@ the license is included in gfdl.xml.
 \begin{tikzpicture}[thin border nodes, scale=.9]
     \draw[grid lines] (-3,-2) grid (4, 3);
     \path[clip] (-3,-2) rectangle (4, 3);
-    \draw[thin, seq4] (-3, -.5) -- (4, 2.5);
-    \node[seq4,whitebg] at (0,2) {not a span};
+    \draw[thin, seq4] (-3, -.5) to["not a span" {sloped, pos=.5}] (4, 2.5);
     \point at (0,0);
 \end{tikzpicture}
         ]]>
@@ -821,6 +820,20 @@ the license is included in gfdl.xml.
         Since <m>b</m> is a linear combination of <m>(1,2,6)</m> and <m>(-1,-2,-1)</m>, it is contained in the span.
       </p>
     </specialcase>
+
+    <p>
+      Checking whether a vector is contained in a span requires elimination, which is <em>work</em>.  This is because a span is a <xref ref="implicit-vs-parametric" text="title">parametric</xref> discription of a linear space.  For instance, describing a plane as a span as in the previous example
+      <me> \Span\left\{\vec{1 2 6},\;\vec{-1 -2 -1}\right\} </me>
+      gives us a method to produce all of the vectors in the plane using parameters: every vector in the plane has the form
+      <me> v = \textcolor{seq-red}{x_1}\vec{1 2 6} + \textcolor{seq-red}{x_2}\vec{-1 -2 -1} </me>
+      for some values of the <em>parameters</em> <m>\textcolor{seq-red}{x_1}</m> and <m>\textcolor{seq-red}{x_2}</m>.  This span also has an <em>implicit</em> description as the set of all vectors <m>(x,y,z)</m> satisfying <m>y = 2x</m>, from which it is easy to check that <m>(8,16,3)</m> is in the plane.  We will say more about this in <xref ref="orthogonal-complements"/>.
+    </p>
+
+    <bluebox xml:id="spans-are-parametric">
+      <p>
+        Writing a linear space as a span means giving a <em>parametric</em> description of the linear space.
+      </p>
+    </bluebox>
 
   </subsection>
 

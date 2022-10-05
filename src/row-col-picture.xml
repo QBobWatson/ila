@@ -737,9 +737,9 @@ the license is included in gfdl.xml.
       </p>
     </note>
 
-    <note xml:id="span-is-parametric">
+    <note xml:id="translates-of-spans-are-parametric">
       <p>
-        Expressing a solution set as a (translate of a) span means writing it in <em>parametric form</em>:
+        As in this <xref ref="spans-are-parametric"/>, expressing a solution set as a translate of a span means writing it in <em>parametric form</em>:
         <me>
           \def\r{\textcolor{seq-red}}
           \begin{split}
@@ -751,7 +751,7 @@ the license is included in gfdl.xml.
         <latex-code>
 \begin{tikzpicture}
   \node[align=center, draw=blue!50, thick, rounded corners, inner sep=2mm]
-    (A) {writing a\\linear space\\as a span};
+    (A) {writing a\\linear space\\as a translate\\of a span};
   \node[align=center, draw=blue!50, thick, rounded corners, inner sep=2mm,
         right=3cm of A.east]
    (B) {parametric\\description};
@@ -1081,7 +1081,7 @@ the license is included in gfdl.xml.
       Combining the row and column pictures of a system of equations <m>Ax=b</m> gives us a good geometric understanding of the solution sets for varying values of <m>b</m>.
     </p>
 
-    <note hide-type="true">
+    <note hide-type="true" xml:id="soln-sets-summary">
       <title>Summary</title>
       <idx><h>Row picture</h></idx>
       <idx><h>Column picture</h></idx>
@@ -1105,7 +1105,7 @@ the license is included in gfdl.xml.
       The <alert>solution set</alert> and the <alert>span of the columns</alert> are both described by spans.  Do not confuse these two geometric constructions!  The first is concerned with solutions (<m>x</m> vectors, in the row picture), and the second is concerned with which <m>b</m> vectors make the system <m>Ax=b</m> consistent (the column picture).  Thus there are (so far) <em>two different spans</em> associated to a matrix <m>A</m>.
     </p>
 
-    <bluebox>
+    <bluebox xml:id="row-and-col-picture-defns">
       <idx><h>Row picture</h></idx>
       <idx><h>Column picture</h></idx>
       <p>

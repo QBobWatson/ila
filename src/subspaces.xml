@@ -14,7 +14,13 @@ the license is included in gfdl.xml.
 
   <objectives>
     <ol>
-      <li>Write the objectives.</li>
+      <li>Learn the criteria for a subset to be a subspace.</li>
+      <li>Learn how to verify that a subset is or is not a subspace.</li>
+      <li>Understand the relationship between spans and subspaces.</li>
+      <li>Learn about implicit and parametric descriptions of subspaces.</li>
+      <li>Learn to express a subspace as a column space or a null space.</li>
+      <li><em>Recipe:</em> compute a spanning set for a null space.</li>
+      <li><em>Vocabulary words:</em> <term>subset,</term> <term>subspace,</term> <term>spanning set,</term> <term>column space,</term> <term>null space.</term></li>
     </ol>
   </objectives>
 
@@ -37,7 +43,7 @@ the license is included in gfdl.xml.
           The solution set of the homogeneous equation <m>Ax=0</m> can be written as a span by computing the parametric vector form of the solutions.
         </li>
       </ol>
-      The first example arises naturally as a span<mdash/>it is already described in parametric form, as in this <xref ref="span-is-parametric"/>.  The second example, however, is given in implicit form: it is the set of vectors <m>x</m> satisfying the equation <m>Ax=0</m>.  It is possible to write it as a span, but one has to do elimination to find a spanning set.
+      The first example arises naturally as a span<mdash/>it is already described in parametric form, as in this <xref ref="spans-are-parametric"/>.  The second example, however, is given in implicit form: it is the set of vectors <m>x</m> satisfying the equation <m>Ax=0</m>.  It is possible to write it as a span, but one has to do elimination to find a spanning set.
     </p>
 
     <p>
@@ -52,7 +58,7 @@ the license is included in gfdl.xml.
     </bluebox>
 
     <p>
-      In particular, we have already seen many pictures of subspaces in <xref ref="spans"/>.  The reason for the new vocabulary word is to allow us to reason about spans without having to compute a spanning set.  It also formalizes the notion of a <q>linear space containing 0,</q> and gives a criterion for a <em>subset</em> to be a span.
+      In particular, we have already seen many pictures of subspaces in <xref ref="spans"/>.  The reason for the new vocabulary word is to allow us to reason about spans without having to compute a spanning set.  The definition of a subspace also formalizes the notion of a <q>linear space containing 0,</q> and gives a criterion for a <em>subset</em> to be a span.
     </p>
 
     <paragraphs>
@@ -112,7 +118,7 @@ the license is included in gfdl.xml.
         <p>
           A <term>subspace</term> of <m>\R^n</m> is a subset <m>V</m> of <m>\R^n</m> satisfying the following conditions:
           <ol>
-            <li><alert>Closure under addition:</alert> If <m>u,v\in V</m> then <m>u+v\in V</m>.</li>
+            <li><alert>Closure under addition:</alert> If <m>u\in v</m> and <m>v\in V</m> then <m>u+v\in V</m>.</li>
             <li><alert>Closure under scalar multiplication:</alert> If <m>v\in V</m> and <m>c\in\R</m> then <m>cv\in V</m>.</li>
             <li><alert>Contains zero:</alert> The zero vector is in <m>V</m>.</li>
           </ol>
@@ -127,7 +133,7 @@ the license is included in gfdl.xml.
         <ol label="a">
           <li>
             <p>
-              The unit circle fails all three properties.
+              The unit circle fails all three criteria.
               <ol label="1">
                 <li>
                   It is not closed under addition: for instance, <m>{1\choose0}</m> and <m>{0\choose 1}</m> are on the unit circle, but their sum <m>{1\choose 1}</m> is not.
@@ -156,7 +162,7 @@ the license is included in gfdl.xml.
           </li>
           <li>
             <p>
-              The first quadrant satisfies properties 1 and 3.
+              The first quadrant satisfies criteria 1 and 3.
               <ol label="1">
                 <li>
                   It is closed under addition: if <m>{x_1\choose y_1}</m> and <m>{x_2\choose y_2}</m> are contained in the first quadrant, then <m>x_1,y_1,x_2,</m> and <m>y_2</m> are all nonnegative, so <m>x_1+x_2\geq0</m> and <m>y_1+y_2\geq0</m>, and thus <m>{x_1+y_1\choose x_2+y_2}</m> is again in the first quadrant.
@@ -182,7 +188,7 @@ the license is included in gfdl.xml.
           </li>
           <li>
             <p>
-              The union of the coordinate axes satisfies properties 2 and 3.
+              The union of the coordinate axes satisfies criteria 2 and 3.
               <ol label="1">
                 <li>
                   It is not closed under addition: for instance, <m>{1\choose0}</m> and <m>{0\choose 1}</m> lie on the coordinate axes, but their sum <m>{1\choose 1}</m> does not.
@@ -207,15 +213,23 @@ the license is included in gfdl.xml.
             </p>
           </li>
         </ol>
-        Since none of these subsets satisfies all three conditions, none of them is a subspace.
+        Since none of these subsets satisfies all three criteria, none of them is a subspace.
       </p>
     </example>
 
     <p>
-      In order to show that a subset is <em>not</em> a subspace, it suffices to exhibit a single counterexample to any of the three defining criteria.  In the non-example above, we showed that the first quadrant is not a subspace by noting that <m>{1\choose1}</m> is in the first quadrant but <m>-{1\choose1}</m> is not.
+      In the one of the non-examples above, we showed that the first quadrant is not a subspace by noting that <m>{1\choose1}</m> is in the first quadrant but <m>-{1\choose1}</m> is not.  More generally:
     </p>
+
+    <note hide-type="true" xml:id="not-subspace-by-counterexample">
+      <title>A Subset is Not a Subspace if You Can Find One Counterexample</title>
+      <p>
+        In order to show that a subset is <em>not</em> a subspace, it suffices to exhibit a single counterexample to any of the three defining criteria.
+      </p>
+    </note>
+
     <p>
-      In practice, this is where the defining criteria are most useful: in verifying that a subset is <em>not</em> a subspace.  However, in order to understand what the three criteria actually say, it is instructive to verify directly from the criteria that a subset is a subspace.  We will see later how one would ordinarily show that a subset is a subspace.
+      In practice, this is where the defining criteria are most useful: in verifying that a subset is <em>not</em> a subspace.  However, in order to understand what the three criteria actually say, it is instructive to verify directly from the criteria that a subset is a subspace.  We will see <xref ref="dont-verify-subspace-by-hand">later</xref> how one would ordinarily show that a subset is a subspace.
     </p>
 
     <specialcase xml:id="verify-subspace-axioms">
@@ -240,6 +254,9 @@ the license is included in gfdl.xml.
           </li>
         </ol>
         Since <m>V</m> satisfies all three criteria, it is a subspace.
+      </p>
+      <p>
+        We will show in this <xref ref="subspace-is-a-null-space"/> how one would verify that <m>V</m> is a subspace in practice.
       </p>
     </specialcase>
 
@@ -285,8 +302,7 @@ the license is included in gfdl.xml.
 \begin{tikzpicture}[thin border nodes, scale=.9]
     \draw[grid lines] (-3,-2) grid (4, 3);
     \path[clip] (-3,-2) rectangle (4, 3);
-    \draw[thin, seq4] (-3, -.5) -- (4, 2.5);
-    \node[seq4,whitebg] at (0,2) {not a subspace};
+    \draw[thin, seq4] (-3, -.5) to["not a subspace" {sloped, pos=.5}]  (4, 2.5);
     \point at (0,0);
 \end{tikzpicture}
         ]]>
@@ -306,7 +322,7 @@ the license is included in gfdl.xml.
           Similarly, if <m>v_1,v_2,\ldots,v_n</m> are all in <m>V</m>, then <m>\Span\{v_1,v_2,\ldots,v_n\}</m> is contained in <m>V</m>.  In other words, <em>a subspace contains the span of any vectors in it.</em>
         </li>
       </ul>
-      If you choose enough vectors, then eventually their span will fill up <m>V</m>, so a <em>subspace is a span</em>.  See this <xref ref="subspaces-spans-are-subspaces"/> below for a formal proof.
+      If you choose enough vectors, then eventually their span will fill up <m>V</m>, so a <em>subspace is a span</em>.  The next theorem gives a formal proof.
     </p>
 
     <theorem xml:id="subspaces-spans-are-subspaces">
@@ -324,13 +340,12 @@ the license is included in gfdl.xml.
           To show that <m>\Span\{v_1,v_2,\ldots,v_n\}</m> is a subspace, we have to verify the three defining properties.  If <m>n=0</m> then <m>V = \Span\{\} = \{0\}</m>, which is a subspace, as we saw in this <xref ref="zero-is-a-subspace"/>.  So suppose that <m>n\geq 1.</m>
           <ol>
             <li>
-              If <m>u = a_1v_1 + a_2v_2 + \cdots + a_nv_n</m> and
-              <m>v = b_1v_1 + b_2v_2 + \cdots + b_nv_n</m> are in <m>\Span\{v_1,v_2,\ldots,v_n\}</m>, then
+              We have to show that the sum of two linear combinations of <m>v_1,v_2,\ldots,v_n</m> is again a linear combination of <m>v_1,v_2,\ldots,v_n</m>.  If <m>u = a_1v_1 + a_2v_2 + \cdots + a_nv_n</m> and <m>v = b_1v_1 + b_2v_2 + \cdots + b_nv_n</m> are in <m>\Span\{v_1,v_2,\ldots,v_n\}</m>, then
               <me>u + v = (a_1+b_1)v_1 + (a_2+b_2)v_2 + \cdots + (a_n+b_n)v_n</me>
               is also in <m>\Span\{v_1,v_2,\ldots,v_n\}</m>.
             </li>
             <li>
-              If <m>v = a_1v_1 + a_2v_2 + \cdots + a_nv_n</m> is in <m>\Span\{v_1,v_2,\ldots,v_n\}</m> and <m>c</m> is a scalar, then
+              We have to show that a scalar multiple of a linear combination of <m>v_1,v_2,\ldots,v_n</m> is again a linear combination of <m>v_1,v_2,\ldots,v_n</m>.  If <m>v = a_1v_1 + a_2v_2 + \cdots + a_nv_n</m> is in <m>\Span\{v_1,v_2,\ldots,v_n\}</m> and <m>c</m> is a scalar, then
               <me>cv = (ca_1)v_1 + (ca_2)v_2 + \cdots + (ca_n)v_n</me>
               is also in <m>\Span\{v_1,v_2,\ldots,v_n\}</m>.
             </li>
@@ -341,7 +356,7 @@ the license is included in gfdl.xml.
           Since <m>\Span\{v_1,v_2,\ldots,v_n\}</m> satisfies the three criteria, it is a subspace.
         </p>
         <p>
-          Now let <m>V</m> be a subspace of <m>\R^m</m>.  To show that <m>V</m> is a span, we will use some facts about linearly independent vectors from <xref ref="linear-independence"/>.  If <m>V</m> is the zero subspace, then it is the span of the empty set, so we may assume <m>V</m> is nonzero. Choose a nonzero vector <m>v_1</m> in <m>V</m>.  If <m>V = \Span\{v_1\}</m>, then we are done.  Otherwise, there exists a vector <m>v_2</m> that is in <m>V</m> but not in <m>\Span\{v_1\}</m>.  Then <m>\Span\{v_1,v_2\}</m> is contained in <m>V</m>, and by the <xref provisional="linindep-increasing-span">increasing span criterion</xref>, the set <m>\{v_1,v_2\}</m> is linearly independent.  If <m>V = \Span\{v_1,v_2\}</m> then we are done.  Otherwise, we continue in this fashion until we have written <m>V = \Span\{v_1,v_2,\ldots,v_n\}</m> for some linearly independent set <m>\{v_1,v_2,\ldots,v_n\}</m>.  This process terminates after at most <m>n</m> steps by this <xref provisional="linindep-wide-matrix"/>.
+          Now let <m>V</m> be a subspace of <m>\R^m</m>.  To show that <m>V</m> is a span, we will use some facts about linearly independent vectors from <xref ref="linear-independence"/>.  If <m>V</m> is the zero subspace, then it is the span of the empty set, so we may assume <m>V</m> is nonzero. Choose a nonzero vector <m>v_1</m> in <m>V</m>.  If <m>V = \Span\{v_1\}</m>, then we are done.  Otherwise, there exists a vector <m>v_2</m> that is in <m>V</m> but not in <m>\Span\{v_1\}</m>.  Then <m>\Span\{v_1,v_2\}</m> is contained in <m>V</m>, and by the <xref provisional="linindep-increasing-span">increasing span criterion</xref>, the set <m>\{v_1,v_2\}</m> is linearly independent.  If <m>V = \Span\{v_1,v_2\}</m> then we are done.  Otherwise, we continue in this fashion until we have written <m>V = \Span\{v_1,v_2,\ldots,v_n\}</m> for some linearly independent set <m>\{v_1,v_2,\ldots,v_n\}</m>.  This process terminates after at most <m>m</m> steps by this <xref provisional="linindep-wide-matrix"/>.
         </p>
       </proof>
     </theorem>
@@ -388,7 +403,7 @@ the license is included in gfdl.xml.
             <me> \Span\{v_1,v_2,\ldots,v_n\}. </me>
           </li>
           <li>
-            A <alert>spanning set</alert> is a <em>finite</em> list of vectors used to <xref ref="span-is-parametric" text="title">parameterize</xref> a subspace.  Notation:
+            A <alert>spanning set</alert> is a <em>finite</em> list of vectors used to <xref ref="spans-are-parametric" text="title">parameterize</xref> a subspace.  Notation:
             <me> \{v_1,v_2,\ldots,v_n\}. </me>
           </li>
         </ul>
@@ -423,6 +438,387 @@ the license is included in gfdl.xml.
         </latex-code>
       </p>
     </bluebox>
+
+  </subsection>
+
+  <subsection>
+    <title>The Column Space and the Null Space</title>
+
+    <p>
+      With the language of subspaces in hand, we give new names to the two subspaces we have associated with a matrix <m>A</m>, namely, the span of the columns of <m>A</m> and the solution set of <m>Ax=0</m>.
+    </p>
+
+    <paragraphs>
+      <title>The Column Space</title>
+      <p>We begin with the span of the columns of a matrix.</p>
+
+      <definition>
+        <idx><h>Column space</h><h>definition of</h></idx>
+        <notation><usage>\Col(A)</usage><description>Column space</description></notation>
+        <statement>
+          <p>
+            The <term>column space</term> of a matrix <m>A</m> is the span of the columns of <m>A</m>.  It is written <m>\Col(A)</m>.
+            <men xml:id="col-space-vs-span">
+              \Col\mat[c]{| | {} |; v_1 v_2 \cdots, v_n; | | {} |}
+              = \Span\bigr\{v_1,\,v_2,\,\ldots,\,v_n\bigr\}.
+            </men>
+            The column space is a subspace of <m>\R^{\textcolor{seq-red}m}</m>, where <m>\textcolor{seq-red}m</m> is the number of <em>rows</em> of <m>A</m>.  It is drawn in the <xref ref="row-and-col-picture-defns" text="title">column picture</xref>.
+          </p>
+        </statement>
+      </definition>
+
+      <p>
+        Since a column space is by definition a span and we proved above that a <xref ref="subspaces-spans-are-subspaces">span is a subspace</xref>, a column space is in fact a subspace.  Column spaces and spans are completely interchangeable using equation <xref ref="col-space-vs-span"/>.
+      </p>
+
+      <example xml:id="subspaces-col-1">
+        <statement>
+          <p>
+            Describe the column space of
+            <me>A = \mat{1 -2; 1 -2; 1 -2}</me>.
+          </p>
+        </statement>
+        <solution>
+          <p>
+            The column space is the span of the columns of <m>A</m>:
+            <me>
+              \Col(A) = \Span\left\{\vec{1 1 1},\;\vec{-2 -2 -2}\right\}.
+            </me>
+            These two vectors are collinear, so the column space is is a line in <m>\R^3</m>.
+            <latex-code>
+  \begin{tikzpicture}[myxyz, x={(-.3cm,-.4cm)}, z={(0cm,1cm)}]
+    \path[clip, resetxy] (-4,-2) rectangle (4,2);
+
+    \draw[seq4] (-4,-4,-4) -- (0,0,0);
+    \draw[vector] (0,0,0) -- (-2,-2,-2);
+    \draw[densely dotted] (-2,-2,0) -- (-2,-2,-2);
+
+     \begin{scope}[transformxy]
+      \fill[white, semitransparent] (-2.5,-2.5) rectangle (2.5,2.5);
+      \draw[step=1cm, grid lines] (-2.5,-2.5) grid (2.5,2.5);
+    \end{scope}
+
+    \draw[seq4] (4,4,4) -- (0,0,0);
+    \draw[vector] (0,0,0) -- (1,1,1);
+    \draw[densely dotted] (1,1,0) -- (1,1,1);
+    \node[resetxy,seq4,below right] at (1.5,1.5) {$\Col(A)$};
+    \point at (0,0,0);
+  \end{tikzpicture}
+            </latex-code>
+          </p>
+        </solution>
+      </example>
+
+      <p>
+        Using the relation
+        <me>
+          \mat[c]{| | {} |; v_1 v_2 \cdots, v_n; | | {} |}\vec[c]{x_1 x_2 \vdots, x_n}
+          = x_1v_1 + x_2v_2 + \cdots + x_nv_n,
+        </me>
+        we we see that any linear combination of the columns of <m>A</m> has the form <m>Ax</m>, where the coordinates of <m>x</m> are the weights of the linear combination.
+      </p>
+
+      <bluebox>
+        <p>
+          <me> \Col(A) = \bigl\{Ax~:~x\in\R^n\bigr\} </me>
+        </p>
+      </bluebox>
+
+      <p>
+        In particular, a vector <m>b</m> is contained in <m>\Col(A)</m> if and only if <m>b</m> can be written as <m>Ax</m> for some vector <m>x</m>, i.e., if and only if the matrix equation <m>Ax=b</m> is consistent.  This allows us to restate the <xref ref="col-picture-criterion-consistency" text="title">column picture criterion of consistency</xref>.
+      </p>
+
+      <bluebox xml:id="col-picture-criterion-consistency-2">
+        <title>The Column Picture Criterion for Consistency II</title>
+        <idx><h>Column picture criterion for consistency</h><h>in terms of <m>\Col(A)</m></h></idx>
+        <idx><h>System of linear equations</h><h>consistent</h><h>column picture criterion</h></idx>
+        <p>
+          <me>
+            Ax=b \text{ is \emph{consistent}} \quad\iff\quad
+            b\in\Col(A)
+          </me>
+        </p>
+      </bluebox>
+
+    </paragraphs>
+
+    <paragraphs>
+      <title>The Null Space</title>
+
+      <p>
+        Now we give a new name to the solution set of a homogeneous system of equations.
+      </p>
+
+      <definition>
+        <idx><h>Null space</h><h>definition of</h></idx>
+        <notation><usage>\Nul(A)</usage><description>Null space</description></notation>
+        <statement>
+          <p>
+            The <term>null space</term> of a matrix <m>A</m> is the solution set of the homogeneous system <m>Ax=0</m>.  It is written <m>\Nul(A)</m>.
+            <me>\Nul(A) = \bigl\{ x \in \R^n~:~ Ax=0 \bigr\}.</me>
+            The null space is a subspace of <m>\R^{\textcolor{seq-red}n}</m>, where <m>\textcolor{seq-red}n</m> is the number of <em>columns</em> of <m>A</m>.  It is drawn in the <xref ref="row-and-col-picture-defns" text="title">row picture</xref>.
+          </p>
+        </statement>
+      </definition>
+
+      <p>
+        It is important to remember that this is new terminology for an object we have been discussing all along: a null space is just a solution set of a (homogeneous) system of equations.  For instance,
+        <me>
+          \Nul\mat{1 7 2; -2 1 3; 4 -2 -3}
+          \sptxt{is the solution set of}
+          \syseq{
+            x_1 + 7x_2 + 2x_3 = 0;
+            -2x_1 + x_2 + 3x_3 = 0;
+            4x_1 - 2x_2 - 3x_3 = 0\rlap.
+          }
+        </me>
+      </p>
+
+      <bluebox>
+        <title>Null Spaces are Solution Sets</title>
+        <idx><h>Null space</h><h>is a solution set</h></idx>
+        <idx><h>Solution set</h><h>of a homogeneous system is a null space</h></idx>
+        <p>
+          <me>
+            \Nul(A) \sptxt{is the solution set of } Ax=0.
+          </me>
+        </p>
+      </bluebox>
+
+      <p>
+        We have to justify the assertion that the null space is a subspace.  We already know that a <xref ref="soln-sets-summary" text="title">null space is a span</xref>, so we could appeal to the <xref ref="subspaces-spans-are-subspaces"/> above.  However, it is instructive to verify the subspace axioms directly.
+      </p>
+
+      <proof>
+        <p>
+          A vector <m>x</m> is contained in <m>\Nul(A)</m> when the equation <m>Ax=0</m> is satisfied: this is the defining condition.
+          <ol>
+            <li>
+              Let <m>u,v\in\Nul(A)</m>.  This means that <m>Au=0</m> and <m>Av=0</m>.  We have to verify that <m>u+v\in\Nul(A)</m>, i.e., that <m>u+v</m> also satisfies the defining condition.  This is the case because
+              <me> A(u+v) = Au + Av = 0 + 0 = 0. </me>
+            </li>
+            <li>
+              Let <m>u\in\Nul(A)</m> and let <m>c\in\R</m>.  This means that <m>Au=0</m>; we have to verify that <m>A(cu)=0</m>.  We apply the <xref ref="lem-matrix-algebra" text="title">rules for matrix algebra</xref>:
+              <me> A(cu) = c(Au) = c0 = 0. </me>
+            </li>
+            <li>
+              We have to show that the zero vector satisfies the defining condition.  This is clear because <m>A0=0</m>.
+            </li>
+          </ol>
+        </p>
+      </proof>
+
+      <p>
+        We reiterate that a null space is an example of a subspace that does <em>not</em> come equipped with a spanning set.  When reasoning about a null space, it is more natural to call it a <q>subspace</q> and not a <q>span</q>, since calling a linear space a <q>span</q> means that one has a spanning set of vectors in mind.  One can always produce a spanning set for a null space, but this requires Gauss<ndash/>Jordan elimination, which is <em>work</em>.
+        <latex-code>
+\begin{tikzpicture}
+  \node[align=center, draw=black!50, rounded corners, inner sep=2mm]
+    (A) {$\Nul(A)$};
+  \node[align=center, draw=black!50, rounded corners, inner sep=2mm,
+        right=5cm of A.east]
+   (B) {$\Span\{\cdots\}$};
+  \draw[->, thick] ($(A.east)+(2.5mm,0mm)$)
+   -- node[below] (L1) {(Gauss--Jordan)} node[above] (L2) {Parametric Vector Form} ($(B.west)+(-2.5mm,0mm)$);
+  \node[fit=(L1) (L2), draw=seq-violet, thick, rounded corners] (C) {};
+  \node[below=0mm of C, seq-violet] {WORK};
+\end{tikzpicture}
+        </latex-code>
+      </p>
+
+      <specialcase hide-type="true" xml:id="subspaces-span-nullspace">
+        <title>Recipe: Compute a spanning set for a null space</title>
+        <idx><h>Null space</h><h>computing</h></idx>
+        <p>
+          To find a spanning set for <m>\Nul(A)</m>, compute the parametric vector form of the solutions of the homogeneous equation <m>Ax=0</m>.  The vectors attached to the free variables form a spanning set for <m>\Nul(A)</m>.
+        </p>
+      </specialcase>
+
+      <example>
+        <title>One Free Variable</title>
+        <statement>
+          <p>
+            Find a spanning set for the null space of
+            <me>A = \mat{1 -2; 1 -2; 1 -2}</me>.
+          </p>
+        </statement>
+        <answer>
+          <p>
+            The null space is the solution set of the homogeneous system <m>Ax=0</m>.  To compute this, we need to perform Gauss<ndash/>Jordan elimination on <m>A</m>.  Its reduced row echelon form is
+            <me>\mat{1 -2; 0 0; 0 0}.</me>
+            This gives the equation <m>x-2y=0</m>, or
+            <me>\syseq{x = 2y; y = y}
+            \quad\xrightarrow[\text{vector form}]{\text{parametric}}\quad
+            \vec{x y} = y\vec{2 1}.
+            </me>
+            Hence the null space is <m>\Span\bigl\{{2\choose 1}\bigr\}</m>, which is a line in <m>\R^2</m>.
+            <latex-code>
+\begin{tikzpicture}
+  \draw[grid lines] (-3,-3) grid (3,3);
+  \draw[seq4] (-3,-1.5) --
+  node[seq4, fill=white, sloped, above=2pt, inner sep=1pt, pos=.3] {$\Nul(A)$} (3,1.5);
+  \draw[vector] (0,0) -- (2,1);
+  \point at (0,0);
+\end{tikzpicture}
+            </latex-code>
+          </p>
+        </answer>
+      </example>
+
+      <example>
+        <title>Two Free Variables</title>
+        <statement>
+          <p>
+            Find a spanning set for the null space of the matrix
+            <me>A = \mat{2 3 -8 -5; -1 2 -3 -8}.</me>
+          </p>
+        </statement>
+        <solution>
+          <p>
+            We compute the parametric vector form of the solutions of <m>Ax=0</m>.  The reduced row echelon form of <m>A</m> is
+            <me>\mat{1 0 -1 2; 0 1 -2 -3}.</me>
+            The free variables are <m>x_3</m> and <m>x_4</m>; the parametric vector form of the solution set is
+            <me>
+              \syseq{x_1 = x_3 - 2x_4; x_2 = 2x_3 + 3x_4; x_3 = x_3; x_4 = \. \+ x_4}
+              \quad\xrightarrow[\text{vector form}]{\text{parametric}}\quad
+              \vec{x_1 x_2 x_3 x_4} = x_3\vec{1 2 1 0} + x_4\vec{-2 3 0 1}.
+            </me>
+            Therefore,
+            <me>\Nul(A) = \Span\left\{\vec{1 2 1 0},\;\vec{-2 3 0 1}\right\}.</me>
+          </p>
+        </solution>
+      </example>
+
+      <p>
+        In the above example, the null space was the plane
+        <me>\Nul(A) = \Span\left\{\vec{1 2 1 0},\;\vec{-2 3 0 1}\right\}.</me>
+        A plane is <xref ref="span-2-vecs" text="title">spanned by</xref> any two noncollinear vectors contained in it.  The sum and the difference of the vectors listed above are both contained in the span and are also noncollinear, so we have
+        <me> \Nul(A) = \Span\left\{ \vec{-1 5 1 1},\;\vec{3 -1 1 -1} \right\} </me>
+        as well.  In fact, any nonzero subspace has <em>infinitely many</em> spanning sets; the <xref ref="subspaces-span-nullspace">recipe</xref> above simply produces <em>one</em> of them.  We will return to this point in <xref ref="linear-independence"/>.
+      </p>
+
+      <example>
+        <title>No Free Variables</title>
+        <statement>
+          <p>
+            Find a spanning set for the null space of the matrix
+            <me>A = \mat{1 3; 2 4}.</me>
+          </p>
+        </statement>
+        <solution>
+          <p>
+            A row echelon form of <m>A</m> is
+            <me>\mat{1 3; 0 -2}.</me>
+            There are no free variables, so the only solution of <m>Ax=0</m> is the trivial solution.  In other words,
+            <me>\Nul(A) = \{0\}.</me>
+            This is the <xref ref="span-empty-set" text="title">span of the empty set.</xref>
+          </p>
+        </solution>
+      </example>
+
+    </paragraphs>
+
+    <paragraphs>
+      <title>Writing a Subspace as a Null Space or a Column Space</title>
+
+      <p>
+        A subspace can be be specified in many ways.  In order to perform computations on subspaces, the first thing one should do is to express the subspace as the null space or the column space of a matrix<mdash/>these are easy for computers to understand.  We call this procedure <term>Step 0</term>.
+      </p>
+
+      <note xml:id="dont-verify-subspace-by-hand" hide-type="true">
+        <title>Null Spaces and Column Spaces are Subspaces</title>
+        <p>
+          Once you have expressed a subset as a null space or a column space, it is <em>automatically a subspace</em>: we verified above that null and column spaces are subspaces.  In practice you will rarely verify directly from the axioms that a subset is a subspace.  The axioms are useful for showing that a subset is <em>not</em> a subspace, as in this <xref ref="not-subspace-by-counterexample"/>.
+        </p>
+      </note>
+
+      <specialcase xml:id="subspace-is-a-null-space">
+        <p>
+          The subset
+          <me> V = \left\{ \vec{x y z}~:~x + y = z \right\} </me>
+          from this <xref ref="verify-subspace-axioms"/> can be written as the solution set of the homogeneous equation <m>x + y - z = 0</m>.  It follows that
+          <me> V = \Nul\mat{1 1 -1}, </me>
+          which implies that <m>V</m> is a subspace.
+        </p>
+      </specialcase>
+
+      <p>
+        It is not always obvious <em>how</em> to express a subspace as a column space or a null space.  To do so, it is helpful to consider whether the subspace in question is provided in implict or parametric form.
+      </p>
+
+      <note hide-type="true">
+        <title>Implicit versus Parametric Form</title>
+        <p>
+          A <term>column space</term> is a <em>parametric</em> description of a subspace.  Indeed, a column space is a span, and <xref ref="spans-are-parametric" text="title">spans are in parametric form.</xref>  For instance,
+          <me>
+            \def\r{\textcolor{seq-red}}
+            \Col\mat{1 2 3; 4 5 6; 7 8 9}
+            = \spalignvector*{\text{vectors of} \text{the form}}\quad
+            \r{x_1}\vec{1 4 7} + \r{x_2}\vec{2 5 8} + \r{x_3}\vec{3 6 9};
+          </me>
+          every vector in the column space is obtained by substituting values for the <em>parameters</em> <m>\textcolor{seq-red}{x_1},\textcolor{seq-red}{x_2},</m> and <m>\textcolor{seq-red}{x_3}</m>.
+        </p>
+        <p>
+          A <term>null space</term> is an <em>implicit</em> description of a subspace: it describes the subspace as the set of solutions of a system of equations <m>Ax=0</m>.  For instance,
+        <me>
+          \Nul\mat{1 7 2; -2 1 3; 4 -2 -3}
+          \sptxt{is the solution set of}
+          \syseq{
+            x_1 + 7x_2 + 2x_3 = 0;
+            -2x_1 + x_2 + 3x_3 = 0;
+            4x_1 - 2x_2 - 3x_3 = 0\rlap.
+          }
+        </me>
+        </p>
+      </note>
+
+      <p>
+        When trying to express a subspace as a column space or a null space, one should therefore consider whether the subspace in question is described in implicit or parametric form.
+      </p>
+
+      <bluebox>
+        <title>Rule of Thumb</title>
+        <p>
+          If a subspace is described in terms of <em>parameters</em>, it is probably most natural to express it as a column space.
+        </p>
+        <p>
+          If a subspace is described in terms of <em>solutions of equations</em>, it is probably most natural to express it as a null space.
+        </p>
+      </bluebox>
+
+      <p>
+        In the <xref ref="subspace-is-a-null-space"/> above, the subspace was described as the set of solutions of the equation <m>x+y=z</m>, which is naturally the null space of the matrix <m>\mat{1 1 -1}.</m>
+      </p>
+      <p>
+        Since column spaces and spans are interchangeable, any span is naturally a column space:
+        <me>
+          \Span\left\{\vec{1 4 7},\;\vec{2 5 8},\;\vec{3 6 9}\right\}
+          = \Col\mat{1 2 3; 4 5 6; 7 8 9}.
+        </me>
+      </p>
+
+      <example>
+        <statement>
+          <p>
+            Let <m>V</m> be the plane in <m>\R^3</m> defined by
+            <me>
+              V = \left\{\vec[c]{2x+y y-x 3x-2y}~:~ x,y \in \R \right\}.
+            </me>
+            Write <m>V</m> as a column space or a null space.
+          </p>
+        </statement>
+        <solution>
+          <p>
+            This subspace is defined in terms of the <em>parameters</em> <m>x</m> and <m>y</m>: every value of <m>(x,y)</m> produces a vector in <m>V</m>.  Therefore we should expect that <m>V</m> is most naturally described as a column space.  Since
+            <me>\vec[c]{2x+y y-x 3x-2y} = x\vec{2 -1 3} + y\vec{1 1 -2},</me>
+            we notice that <m>V</m> is exactly the span of the vectors
+            <me>\vec{2 -1 3} \sptxt{and} \vec{1 1 -2}.</me>
+            In other words,
+            <me>V = \Col\mat{2 1; -1 1; 3 -2}.</me>
+          </p>
+        </solution>
+      </example>
+
+    </paragraphs>
 
   </subsection>
 

@@ -61,7 +61,7 @@ the license is included in gfdl.xml.
       </figure>
     </specialcase>
 
-    <note hide-type="true">
+    <note hide-type="true" xml:id="implicit-vs-parametric">
       <title>Implicit Versus Parameteric Equations</title>
       <idx><h>Implicit equation</h></idx>
       <idx><h>Parameteric equation</h></idx>
