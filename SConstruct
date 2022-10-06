@@ -50,6 +50,12 @@ AddOption('--production',
           action='store_true',
           help='Synonym for --build-pdf --minify --scratch')
 
+AddOption('--serve',
+          dest='serve',
+          action='store_true',
+          help='Run a webserver in the build directory')
+
+
 environ = dict(os.environ)
 # This somehow gets set by the nix flake.  It causes <today /> to be the UNIX
 # epoch.
@@ -70,9 +76,27 @@ if GetOption('production'):
 
 env['BASE_DIR'] = env.Entry('#').get_abspath()
 env['BUILD_DIR'] = GetOption('build_dir') or '/tmp/ila-build'
-# env['BUILD_DIR'] = os.path.join(env['BASE_DIR'], 'build')
 env['CACHE_DIR'] = GetOption('cache_dir') or '/tmp/ila-cache'
-# env['CACHE_DIR'] = os.path.join(env['BASE_DIR'], 'cache')
+
+
+if GetOption('serve'):
+    print("Starting a web server at http://localhost:8081/")
+    print("Press ctrl-C to exit...")
+
+    from http.server import ThreadingHTTPServer, SimpleHTTPRequestHandler
+
+    class Server(ThreadingHTTPServer):
+        def finish_request(self, request, client_address):
+            self.RequestHandlerClass(request, client_address, self,
+                                     directory=env['BUILD_DIR'])
+    addr = ('', 8081)
+    with Server(addr, SimpleHTTPRequestHandler) as httpd:
+        try:
+            httpd.serve_forever()
+        except KeyboardInterrupt:
+            print("\nKeyboard interrupt received, exiting...")
+    Exit(0)
+
 
 if GetOption('delete_cache'):
     env['SCRATCH'] = True
@@ -161,26 +185,4 @@ env.SConscriptChdir(1)
 env.SConscript('demos/SConscript', exports='env build_dir cache_dir')
 env.SConscript('src/SConscript', exports='env build_dir cache_dir')
 
-
-def when_done():
-    from SCons.Script import GetBuildFailures
-    if not list(GetBuildFailures()):
-        print("")
-        print("Build successful!")
-        print("Starting a web server at http://localhost:8081/")
-        print("Press ctrl-C to exit...")
-
-        from http.server import ThreadingHTTPServer, SimpleHTTPRequestHandler
-        class Server(ThreadingHTTPServer):
-            def finish_request(self, request, client_address):
-                self.RequestHandlerClass(request, client_address, self,
-                                         directory=build_dir())
-        addr = ('', 8081)
-        with Server(addr, SimpleHTTPRequestHandler) as httpd:
-            try:
-                httpd.serve_forever()
-            except KeyboardInterrupt:
-                print("\nKeyboard interrupt received, exiting...")
-
-atexit.register(when_done)
 
