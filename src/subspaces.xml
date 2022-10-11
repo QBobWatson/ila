@@ -356,20 +356,27 @@ the license is included in gfdl.xml.
           Since <m>\Span\{v_1,v_2,\ldots,v_n\}</m> satisfies the three criteria, it is a subspace.
         </p>
         <p>
-          Now let <m>V</m> be a subspace of <m>\R^m</m>.  To show that <m>V</m> is a span, we will use some facts about linearly independent vectors from <xref ref="linear-independence"/>.  If <m>V</m> is the zero subspace, then it is the span of the empty set, so we may assume <m>V</m> is nonzero. Choose a nonzero vector <m>v_1</m> in <m>V</m>.  If <m>V = \Span\{v_1\}</m>, then we are done.  Otherwise, there exists a vector <m>v_2</m> that is in <m>V</m> but not in <m>\Span\{v_1\}</m>.  Then <m>\Span\{v_1,v_2\}</m> is contained in <m>V</m>, and by the <xref provisional="linindep-increasing-span">increasing span criterion</xref>, the set <m>\{v_1,v_2\}</m> is linearly independent.  If <m>V = \Span\{v_1,v_2\}</m> then we are done.  Otherwise, we continue in this fashion until we have written <m>V = \Span\{v_1,v_2,\ldots,v_n\}</m> for some linearly independent set <m>\{v_1,v_2,\ldots,v_n\}</m>.  This process terminates after at most <m>m</m> steps by this <xref provisional="linindep-wide-matrix"/>.
+          Now let <m>V</m> be a subspace of <m>\R^m</m>.  To show that <m>V</m> is a span, we will use some facts about linearly independent vectors from <xref ref="linear-independence"/>.  If <m>V</m> is the zero subspace, then it is the span of the empty set, so we may assume <m>V</m> is nonzero. Choose a nonzero vector <m>v_1</m> in <m>V</m>.  If <m>V = \Span\{v_1\}</m>, then we are done.  Otherwise, there exists a vector <m>v_2</m> that is in <m>V</m> but not in <m>\Span\{v_1\}</m>.  Then <m>\Span\{v_1,v_2\}</m> is contained in <m>V</m>, and by the <xref ref="linindep-increasing-span">increasing span criterion</xref>, the set <m>\{v_1,v_2\}</m> is linearly independent.  If <m>V = \Span\{v_1,v_2\}</m> then we are done.  Otherwise, we continue in this fashion until we have written <m>V = \Span\{v_1,v_2,\ldots,v_n\}</m> for some linearly independent set <m>\{v_1,v_2,\ldots,v_n\}</m>.  This process terminates after at most <m>m</m> steps by this <xref ref="linindep-wide-matrix" text="title">fact</xref>.
         </p>
       </proof>
     </theorem>
-
-    <p>
-      If <m>V = \Span\{v_1,v_2,\ldots,v_n\}</m>, we say that <m>V</m> is the subspace <term>spanned by</term> the vectors <m>v_1,v_2,\ldots,v_n</m>.  We call <m>\{v_1,v_2,\ldots,v_n\}</m> a <term>spanning set</term> for <m>V</m>.
-    </p>
 
     <p>
       For example, we have
       <me> \R^n = \Span\{e_1,e_2,\ldots,e_n\}</me>
       by this <xref ref="linear-combo-unit-coordinate-vecs"/>, and <m>\{0\} = \Span\{\}</m> by <xref ref="span-empty-set" text="title">convention</xref>.
     </p>
+
+
+    <definition xml:id="def-spanning-set">
+      <idx><h>Spanning Set</h><h>definition of</h></idx>
+      <idx><h>Subspace</h><h>spanning set of</h></idx>
+      <statement>
+        <p>
+          If <m>V = \Span\{v_1,v_2,\ldots,v_n\}</m>, we say that <m>V</m> is the subspace <term>spanned by</term> the vectors <m>v_1,v_2,\ldots,v_n</m>.  We call <m>\{v_1,v_2,\ldots,v_n\}</m> a <term>spanning set</term> for <m>V</m>.
+        </p>
+      </statement>
+    </definition>
 
     <example>
       <statement>
@@ -393,7 +400,7 @@ the license is included in gfdl.xml.
       </solution>
     </example>
 
-    <bluebox>
+    <bluebox xml:id="subspace-vs-spanning-set">
       <title>Subspaces Versus Spanning Sets</title>
       <p>
         Be careful not to confuse a spanning set with the subspace it spans.
@@ -717,7 +724,7 @@ the license is included in gfdl.xml.
 
     </paragraphs>
 
-    <paragraphs>
+    <paragraphs xml:id="step-0">
       <title>Writing a Subspace as a Null Space or a Column Space</title>
 
       <p>

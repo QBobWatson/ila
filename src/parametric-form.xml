@@ -451,7 +451,7 @@ the license is included in gfdl.xml.
       The above observation motivates the following definition.
     </p>
 
-    <definition hide-type="true">
+    <definition hide-type="true" xml:id="def-dim-of-soln-set">
       <title>Provisional Definition</title>
       <idx><h>Dimension</h><h>of a solution set</h></idx>
       <idx><h>Solution set</h><h>dimension of</h></idx>
