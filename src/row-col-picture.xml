@@ -205,7 +205,7 @@ the license is included in gfdl.xml.
         In order for <m>Ax=0</m> to have a nonzero solution, it must have infinitely many solutions; according to this <xref ref="number-of-solutions"/> and this <xref ref="free-variable-defn"/>, this means it must have a <em>free variable.</em>
       </p>
 
-      <bluebox>
+      <bluebox xml:id="free-var-nontrivial-soln">
         <idx><h>System of linear equations</h><h>nontrivial solution</h><h>and free variables</h></idx>
         <p>
           The homogeneous matrix equation <m>Ax=0</m> has a nontrivial solution if and only if <m>A</m> has a free variable.
@@ -316,7 +316,7 @@ the license is included in gfdl.xml.
             <me>\syseq{x_1 = 3x_2; x_2 = x_2\rlap.}</me>
             We turn these into a single vector equation:
             <me>x = \vec{x_1 x_2} = x_2\vec{3 1}.</me>
-            This is the parametric vector form of the solution set. Since <m>x_2</m> is allowed to be anything, this says that the solution set is the set of all scalar multiples of <m>{3\choose 1}</m>, otherwise known as
+            This is the parametric vector form of the solution set. Since <m>x_2</m> is allowed to be anything, this says that the solution set is the set of all scalar multiples of <m>\smallvec{3}{ 1}</m>, otherwise known as
             <me>\Span\left\{\vec{3 1}\right\}.</me>
             We know how to draw the picture of a span of a vector: it is a line.  Therefore, this is a picture of the the solution set:
             <latex-code>
@@ -971,7 +971,7 @@ the license is included in gfdl.xml.
       <title>Interactive: A Consistent System of Equations</title>
 
       <figure>
-        <caption>The equation <m>A{x\choose y}=b</m> from this <xref ref="col-picture-consistent"/> is consistent because <m>b</m> is contained in the span (drawn in violet) of the columns of <m>A</m>.  The solution <m>(x,y)</m> is the vector of weights attached to the columns <m>v_1,v_2</m>.  Move the sliders to find values of <m>x</m> and <m>y</m> satisfying <m>A{x\choose y}=b</m>.</caption>
+        <caption>The equation <m>A\smallvec{x}{ y}=b</m> from this <xref ref="col-picture-consistent"/> is consistent because <m>b</m> is contained in the span (drawn in violet) of the columns of <m>A</m>.  The solution <m>(x,y)</m> is the vector of weights attached to the columns <m>v_1,v_2</m>.  Move the sliders to find values of <m>x</m> and <m>y</m> satisfying <m>A\smallvec{x}{ y}=b</m>.</caption>
         <mathbox source="demos/spans.html?v1=1,2,6&amp;v2=-1,-2,-1&amp;target=8,16,3&amp;tlabel=b&amp;range=20&amp;camera=3,.5,1.5" height="500px"/>
       </figure>
     </example>
@@ -1067,7 +1067,7 @@ the license is included in gfdl.xml.
       <title>Interactive: An Inconsistent System of Equations</title>
 
       <figure>
-        <caption>The equation <m>A{x\choose y}=b</m> from this <xref ref="col-picture-inconsistent"/> is inconsistent because <m>b</m> is not contained in the span (drawn in violet) of the columns of <m>A</m>.  Move the sliders convince yourself that there are no values of <m>x</m> and <m>y</m> satisfying <m>A{x\choose y}=b</m>.</caption>
+        <caption>The equation <m>A\smallvec{x}{ y}=b</m> from this <xref ref="col-picture-inconsistent"/> is inconsistent because <m>b</m> is not contained in the span (drawn in violet) of the columns of <m>A</m>.  Move the sliders convince yourself that there are no values of <m>x</m> and <m>y</m> satisfying <m>A\smallvec{x}{ y}=b</m>.</caption>
         <mathbox source="demos/spans.html?v1=1,2,6&amp;v2=-1,-2,-1&amp;target=2,-2,0&amp;tlabel=b&amp;range=10&amp;camera=3,.5,1.5" height="500px"/>
       </figure>
     </example>

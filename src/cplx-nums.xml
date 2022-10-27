@@ -53,7 +53,7 @@ the license is included in gfdl.xml.
     </p>
 
     <p>
-      We can identify <m>\C</m> with <m>\R^2</m> by <m>a+bi \longleftrightarrow {a\choose b}</m>. So when we draw a picture of <m>\C</m>, we draw the plane:
+      We can identify <m>\C</m> with <m>\R^2</m> by <m>a+bi \longleftrightarrow \smallvec{a}{ b}</m>. So when we draw a picture of <m>\C</m>, we draw the plane:
       <latex-code>
         <![CDATA[
 \begin{tikzpicture}[whitebg nodes, thin border nodes]

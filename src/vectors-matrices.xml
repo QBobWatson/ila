@@ -684,7 +684,7 @@ the license is included in gfdl.xml.
         and computing by rows we have
         <me>
           \mat{1 4; 2 5; 3 6}\vec{2 -1}
-          = \vec{{1\choose4}\cdot{2\choose-1}; {2\choose5}\cdot{2\choose-1}; {3\choose6}\cdot{2\choose-1}}
+          = \vec{\smallvec{1}{4}\cdot\smallvec{2}{-1}; \smallvec{2}{5}\cdot\smallvec{2}{-1}; \smallvec{3}{6}\cdot\smallvec{2}{-1}}
           = \vec{1\cdot 2+4\cdot(-1) 2\cdot 2+5\cdot(-1) 3\cdot 2+6\cdot(-1)}
           = \vec{-2 -1 0}.
         </me>
@@ -1037,7 +1037,7 @@ the license is included in gfdl.xml.
         There is one more operation that we can perform on matrices.
       </p>
 
-      <definition>
+      <definition xml:id="defn-of-transpose">
         <idx><h>Matrix</h><h>transpose of</h></idx>
         <idx><h>Transpose</h><see>Matrix</see></idx>
         <notation><usage>A^T</usage><description>Transpose of a matrix</description></notation>

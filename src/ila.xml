@@ -102,7 +102,7 @@ Free Documentation License"
     </chapter>
 
     <chapter xml:id="chap-svd">
-      <title>The Singular Value Decomposition</title>
+      <title>Singular Value Decompositions</title>
       <introduction>
         <note type-name="Primary Goal">
           <p>

@@ -81,7 +81,9 @@
 \newenvironment{smm}{\left(\begin{smallmatrix}}
                     {\end{smallmatrix}\right)}
 \newcommand*\smallmat[4]%
-  {\ensuremath{\begin{smm}#1&#2\\#3&#4\end{smm}}}
+  {\ensuremath{\begin{smm}\hfill#1&\hfill#2\\\hfill#3&\hfill#4\end{smm}}}
+\newcommand*\smallvec[2]%
+  {\ensuremath{{\hfill#1\choose\hfill#2}}}
 
 \usepackage{tikz}
 \usetikzlibrary{backgrounds}

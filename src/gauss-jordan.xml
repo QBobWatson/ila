@@ -203,7 +203,7 @@ the license is included in gfdl.xml.
       Being in reduced row echelon form is a <em>stronger</em> condition than being in row echelon form.  In particular:
     </p>
 
-    <bluebox>
+    <bluebox xml:id="rref-implies-ref">
       <p>
         Any matrix in reduced row echelon form is also in row echelon form.
       </p>

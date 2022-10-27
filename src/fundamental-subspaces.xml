@@ -10,16 +10,736 @@ the license is included in gfdl.xml.
 *********************************************************************-->
 
 <section xml:id="fundamental-subspaces">
-  <title>The Fundamental Subspaces</title>
+  <title>Four Fundamental Subspaces</title>
 
   <objectives>
     <ol>
-      <li>Write the objectives.</li>
+      <li>Learn the basic properties of the row space and the left null space of a matrix.</li>
+      <li>Gain an organized understanding of the four fundamental subspaces and their numerical relations.</li>
+      <li>Understand the various concepts that are tied to the notion of a full-rank matrix.</li>
+      <li>Understand the relationship between an invertible matrix and a basis for <m>\R^n</m>.</li>
+      <li><em>Recipes:</em> compute a basis for the row space and the left null space by doing elimination on a matrix.</li>
+      <li><em>Theorems:</em> rank-nullity, row rank equals column rank, equivalent conditions for a matrix to have full row rank, equivalent conditions for a matrix to have full column rank, equivalent conditions for invertibility.</li>
+      <li><em>Vocabulary words:</em> <term>row space,</term> <term>left null space,</term> <term>full column rank,</term> <term>full row rank.</term></li>
     </ol>
   </objectives>
 
-  <p>
-    Write the content.
-  </p>
+  <introduction>
+    <p>
+      Thus far, to any matrix <m>A</m> we have associated two subspaces.
+      <ul>
+        <li>
+          The <term>column space</term> of <m>A</m> is the span of its columns.  The pivot columns of <m>A</m> form a basis of <m>\Col(A)</m>, and its dimension is the rank of <m>A</m>.
+        </li>
+        <li>
+          The <term>null space</term> of <m>A</m> is the solution set of <m>Ax=0</m>.  The vectors attached to the free variables in the parametric vector form constitute a basis of <m>\Nul(A)</m>, and its dimension is the number of free variables.
+        </li>
+      </ul>
+      In this section, we introduce two more subspaces: namely, the column space and the null space of the <xref ref="defn-of-transpose" text="title">transpose</xref> matrix <m>A^T</m>.  The orthogonality relationships between these subspaces will form the foundation for the material needed to understand least squares.
+    </p>
+  </introduction>
+
+  <subsection>
+    <title>The Row Space and the Left Null Space</title>
+
+    <p>
+      In this subsection we give names to the other two fundamental subspaces and derive some of their properties.
+    </p>
+
+    <paragraphs>
+      <title>The Row Space</title>
+
+      <p>
+        We begin with the span of the rows of a matrix.
+      </p>
+
+      <definition>
+        <idx><h>Row space</h><h>definition of</h></idx>
+        <notation><usage>\Row(A)</usage><description>Row space</description></notation>
+        <statement>
+          <p>
+            The <term>row space</term> of a matrix <m>A</m> is the span of the rows of <m>A</m>, regarded as <xref ref="vectors-matrices-column-vector" text="title">row vectors.</xref>  It is written <m>\Row(A)</m>.
+            <me>
+              \Row\mat[c]{\matrow{v_1^T}; \matrow{v_2^T}; \vdots; \matrow{v_m^T}}
+              = \Span\bigr\{v_1,\,v_2,\,\ldots,\,v_m\bigr\}.
+            </me>
+            The row space is a subspace of <m>\R^{\textcolor{seq-red}n}</m>, where <m>\textcolor{seq-red}n</m> is the number of <em>columns</em> of <m>A</m>.  It is drawn in the <xref ref="row-and-col-picture-defns" text="title">row picture</xref>.
+          </p>
+        </statement>
+      </definition>
+
+      <p>
+        Since the rows of <m>A</m> are the columns of <m>A^T</m>, the row space is just the column space of the transpose.
+      </p>
+
+      <bluebox>
+        <p><me>\Row(A) = \Col(A^T)</me></p>
+      </bluebox>
+
+      <p>
+        For example,
+        <me>
+          \Row\mat{1 2 3; 4 5 6; 7 8 9}
+          = \Span\left\{\vec{1 2 3},\;\vec{4 5 6},\;\vec{7 8 9}\right\}
+          = \Col\mat{1 4 7; 2 5 8; 3 6 9}.
+        </me>
+        The following fact will be useful when computing a basis of a row space.
+      </p>
+
+      <fact xml:id="row-ops-dont-change-row-space">
+        <statement>
+          <p>
+            Row operations do not change the row space of a matrix.
+          </p>
+        </statement>
+        <proof>
+          <p>
+            Suppose for simplicity that <m>A</m> has three rows:
+            <me> A = \mat{\matrow{v_1^T}; \matrow{v_2^T}; \matrow{v_3^T}}. </me>
+            Then <m>\Row(A) = \Span\{v_1,v_2,v_3\}.</m>
+            <ul>
+              <li>
+                The row replacement <m>R_1\pluseq cR_2</m> has the effect of replacing <m>v_1</m> with <m>v_1+cv_2</m>.  Clearly <m>v_1+cv_2\in\Span\{v_1,v_2,v_3\}</m> because <m>v_1+cv_2</m> is a linear combination of <m>v_1,v_2,</m> and <m>v_3</m>.  It follows that
+                <me>
+                  \Row\mat[c]{\matrow{v_1^T+cv_2^T}; \matrow{v_2^T}; \matrow{v_3^T}}
+                  = \Span\bigl\{v_1+cv_2,\, v_2,\, v_3\bigr\}
+                </me>
+                is contained in <m>\Row(A) = \Span\{v_1,v_2,v_3\}</m>.  On the other hand, <m>v_1 = (v_1+cv_2)-cv_2</m> is contained in <m>\Span\{v_1+cv_2,v_2,v_3\}</m>, so <m>\Row(A)</m> is contained in <m>\Span\{v_1+cv_2,v_2,v_3\}</m>.  Thus row replacements do not change the row space.
+              </li>
+              <li>
+                The row swap <m>R_1\ToT R_2</m> has the effect of replacing <m>\{v_1,v_2,v_3\}</m> with <m>\{v_2,v_1,v_3\}</m>, which does not affect the span.
+              </li>
+              <li>
+                The row scale <m>R_1\timeseq c\;(c\neq0)</m> has the effect of replacing <m>v_1</m> with <m>cv_1</m>.  Since <m>cv_1\in\Span\{v_1\}</m> and <m>v_1=\frac1c(cv_1)\in\Span\{cv_1\}</m> a row scale does not affect the span.
+              </li>
+            </ul>
+          </p>
+        </proof>
+      </fact>
+
+      <p>
+        Since <m>\Row(A)=\Col(A^T)</m>, we can find a basis of <m>\Row(A)</m> by <xref ref="dimension-basis-colspace" text="title">computing the pivot columns</xref> of <m>A^T</m>.  However, it is also possible to compute a basis of <m>\Row(A)</m> by doing elimination on <m>A</m> instead of <m>A^T</m>.
+      </p>
+
+      <theorem xml:id="dimension-basis-rowspace">
+        <idx><h>Basis</h><h>of a row space</h></idx>
+        <idx><h>Row space</h><h>basis of</h><see>Basis</see></idx>
+        <statement>
+          <p>The nonzero rows of any row echelon form of a matrix form a basis of its row space.</p>
+        </statement>
+        <proof>
+          <p>
+            Let <m>U</m> be a row echelon form of <m>A</m>.  We need to show that the nonzero rows of <m>U</m> span <m>\Row(A)</m>, and that they are linearly independent.
+          </p>
+          <p>
+            <em>Spans:</em> Let <m>v_1,v_2,\ldots,v_m</m> be the rows of <m>A</m>, and let <m>w_1,w_2,\ldots,w_r,0,\ldots,0</m> be the rows of <m>U</m>, where the first <m>r</m> rows of <m>U</m> are nonzero.  Since <xref ref="row-ops-dont-change-row-space">row operations do not change the row space,</xref>, we have
+            <me> \Row(A) = \Row(U) = \Span\bigl\{w_1,\,w_2,\,\ldots,\,w_r,\,0,\,\ldots,\,0\bigr\}. </me>
+            Deleting the zero vector from a spanning set does not change the span, so this is equal to <m>\Span\{w_1,w_2,\ldots,w_r\}</m>.
+          </p>
+          <p>
+            <em>Linearly independent:</em> We have to show that if
+            <me> x_1w_1 + x_2w_2 + \cdots + x_rw_r = 0, </me>
+            then <m>x_1 = x_2 = \cdots = x_r = 0</m>.  Since <m>U</m> is in row echelon form, we can solve this vector equation using forward-substitution.  For example, consider the row echelon form matrix
+            <me>
+              \def\r{\color{seq-red}}
+              U = \mat{\r1 2 2 1; 0 0 \r-3 -3; 0 0 0 0}.
+            </me>
+            The pivots are highlighted in red.  To show that the nonzero rows are linearly independent, we need to solve
+            <me>
+              \def\r{\color{seq-red}}
+              \vec{0 0 0 0} = x_1\vec{\r1 2 2 1} + x_2\vec{0 0 \r-3 -3}
+              = \vec[c]{\r x_1 2x_1 2x_1\mathbin{\r-}\r3x_2 x_1-3x_2}.
+            </me>
+            The first equation <m>x_1=0</m> involves only the first pivot.  The third equation <m>2x_1-3x_2=0</m> involves only the first two pivots.  Since each variable is isolated by one of the pivots, forward-substitution implies <m>x_1=x_2=0</m>.
+          </p>
+        </proof>
+      </theorem>
+
+      <example xml:id="row-space-basis-eg">
+        <statement>
+          <p>
+            Find a basis of the row space of the matrix
+            <me> A = \mat{1 2 2 1; 2 4 1 -1; 1 2 -1 -2}. </me>
+          </p>
+        </statement>
+        <answer>
+          <p>
+            A row echelon form of this matrix is
+            <me> A \REF \mat{1 2 2 1; 0 0 -3 -3; 0 0 0 0}. </me>
+            The nonzero rows form a basis:
+            <me> \left\{\vec{1 2 2 1},\;\vec{0 0 -3 -3}\right\}. </me>
+          </p>
+          <p>
+            The reduced row echelon form of <m>A</m> is
+            <me> A \RREF\mat{1 2 0 -1; 0 0 1 1; 0 0 0 0}. </me>
+            Any reduced row echelon form of <m>A</m> is <xref ref="rref-implies-ref" text="title">also in row echelon form,</xref> so the nonzero rows of this matrix also form a basis:
+            <me> \left\{\vec{1 2 0 -1},\;\vec{0 0 1 1}\right\}. </me>
+          </p>
+        </answer>
+      </example>
+
+      <p>
+        We saw in the above example that different row echelon forms yield <em>different</em> bases for the row space.  This is not surprising: a nonzero subspace has <xref ref="infinitely-many-bases" text="title">infinitely many bases.</xref>
+      </p>
+
+      <bluebox>
+        <p>
+          A matrix has <em>many</em> row echelon forms.  The nonzero rows of <em>any one of them</em> form a basis of the row space.
+        </p>
+      </bluebox>
+
+      <p>
+        Each nonzero row of a row echelon form of <m>A</m> contains exactly one pivot, and the zero rows do not contain any pivots, so we get the following fact as a consequence of the <xref ref="dimension-basis-rowspace"/>.
+      </p>
+
+      <corollary xml:id="dim-of-row-space">
+        <idx><h>Dimension</h><h>of a row space</h></idx>
+        <idx><h>Row space</h><h>dimension of</h><see>Dimension</see></idx>
+        <statement>
+          <p>
+            For any matrix <m>A</m>,
+            <me> \dim\Row(A) = \rank(A). </me>
+          </p>
+        </statement>
+      </corollary>
+
+    </paragraphs>
+
+    <paragraphs>
+      <title>The Left Null Space</title>
+
+      <p>
+        Now we introduce the fourth and final fundamental subspace.
+      </p>
+
+      <definition>
+        <idx><h>Left null space</h><h>definition of</h></idx>
+        <statement>
+          <p>
+            The <term>left null space space</term> of a matrix <m>A</m> is the null space of <m>A^T</m>.  This is the solution set of <m>A^Tx=0</m>.
+            <me>\Nul(A^T) = \bigl\{ x \in \R^m~:~ A^Tx=0 \bigr\}.</me>
+            The left null space is a subspace of <m>\R^{\textcolor{seq-red}m}</m>, where <m>\textcolor{seq-red}m</m> is the number of <em>rows</em> of <m>A</m>.  It is drawn in the <xref ref="row-and-col-picture-defns" text="title">column picture</xref>.
+          </p>
+        </statement>
+      </definition>
+
+      <p>
+        Unlike the other three fundamental subspaces, there is no special notation for the left null space: it is simply written <m>\Nul(A^T)</m>.
+      </p>
+
+      <remark>
+        <p>
+          Taking transposes of the equation <m>A^Tx=0</m> gives <m>0 = (A^Tx)^T = x^TA</m>, so we can equivalently write
+          <me> \Nul(A^T) = \bigl\{ x \in \R^m~:~ x^TA=0 \bigr\}.</me>
+          This is the reason for the name <q>left null space</q>.  For example,
+          <me>
+            \begin{split}
+              \mat{1 2 2 1; 2 4 1 -1; 1 2 -1 -2}^T&amp;\vec{1 -1 1} = \vec{0 0 0} \\
+              &amp;\iff\quad
+              \mat{1 -1 1} \mat{1 2 2 1; 2 4 1 -1; 1 2 -1 -2} = \mat{0 0 0}.
+            \end{split}
+          </me>
+        </p>
+      </remark>
+
+      <p>
+        Since the left null space is a null space, we already know its dimension.
+      </p>
+
+      <proposition xml:id="dim-of-left-null-space">
+        <statement>
+          <p>
+            If <m>A</m> is a matrix with <m>m</m> rows, then
+            <me> \dim\Nul(A^T) = m - \rank(A). </me>
+          </p>
+        </statement>
+        <proof>
+          <p>
+            We showed that <m>\dim\Col(A^T) = \dim\Row(A) = \rank(A)</m> in this <xref ref="dim-of-row-space"/>, and we showed that
+            <me>
+              \begin{split}
+              \dim\Col(A^T) + \dim\Nul(A^T) &amp;= \text{the number of columns of $A^T$} \\
+              &amp;= \text{the number of rows of $A$} = m
+              \end{split}
+            </me>
+            in this <xref ref="dim-of-null-space"/>.  Combining these facts gives <m> \dim\Nul(A^T) = m - \rank(A). </m>
+          </p>
+        </proof>
+      </proposition>
+
+      <p>
+        Since the left null space is a null space, one can find a basis of <m>\Nul(A^T)</m> by <xref ref="dimension-basis-nulspace" text="title">computing the parametric vector form</xref> of the solutions of <m>A^Tx=0</m>.  As with the row space, it is also possible to find a basis of <m>\Nul(A^T)</m> by doing elimination on <m>A</m> instead of on <m>A^T</m>.
+      </p>
+
+      <theorem xml:id="dimension-basis-leftnullspace" hide-type="true">
+        <title>Theorem<ndash/>Recipe</title>
+        <idx><h>Basis</h><h>of a left null space</h></idx>
+        <idx><h>Left null space</h><h>basis of</h><see>Basis</see></idx>
+        <statement>
+          <p>
+            Let <m>A</m> be a matrix with <m>m</m> rows and rank <m>r</m>.  To compute a basis of <m>\Nul(A^T)</m>:
+            <ol>
+              <li>
+                Form the augmented matrix <m>\amat{A I_m}</m>.
+              </li>
+              <li>
+                Perform Gaussian elimination on <m>\amat{A I_m}</m> to produce a matrix <m>\amat{U E}</m>.
+              </li>
+              <li>
+                The last <m>m-r</m> rows of <m>U</m> are zero, and the last <m>m-r</m> rows of <m>E</m> form a basis for <m>\Nul(A^T)</m>.
+              </li>
+            </ol>
+          </p>
+        </statement>
+
+        <proof>
+          <p>
+            We begin with an argument using elementary matrices, similar to the <xref ref="invertibility-criterion-proof" text="title">proof</xref> of the invertibility criterion.  Suppose that <m>U</m> is a row echelon form of <m>A</m>.  Let <m>r = \rank(A)</m>, so that <m>U</m> has <m>r</m> nonzero rows.  Since <m>U</m> is obtained from <m>A</m> by performing some number of row operations, there exists a product <m>E</m> of <m>m\times m</m> elementary matrices such that <m>U=EA</m>.  We have
+            <me> E\amat{A I_m} = \amat{EA EI_m} = \amat{U E}, </me>
+            so the result of performing the same row operations on <m>\amat{A I_m}</m> yields the matrix <m>\amat{U E}</m>.  Let <m>v_1^T,v_2^T,\ldots,v_m^T</m> be the rows of <m>E</m>.   The last <m>m-r</m> rows of <m>U</m> are equal to zero; we need to show that <m>\{v_{r+1},v_{r+2},\ldots,v_m\}</m> is a basis for <m>\Nul(A^T)</m>.
+          </p>
+          <p>
+            The last <m>m-r</m> columns of <m>U^T</m> are equal to zero, so <m>U^Te_{r+1} = U^Te_{r+2} = \cdots = U^Te_m = 0</m>.  Since <m>U=EA</m> we have <m>U^T=A^TE^T</m>, so for <m>i=r+1,r+2,\ldots,m</m> we have
+            <me>
+              0 = U^Te_i = A^TE^Te_i = A^T\mat[c]{| | {} |; v_1 v_2 \cdots, v_m; | | {} |}e_i = A^Tv_i.
+            </me>
+            This shows that the last <m>m-r</m> rows of <m>E</m> are contained in <m>\Nul(A^T).</m>
+          </p>
+          <p>
+            We showed <xref ref="dim-of-left-null-space">above</xref> that the left null space has dimension <m>m-r</m>.  The <m>m-r</m> vectors <m>v_{r+1},v_{r+2},\ldots,v_m</m> are contained in <m>\Nul(A^T)</m> by the previous paragraph, so by the <xref ref="basis-theorem" text="title">basis theorem</xref>, in order to show that <m>\{v_{r+1},v_{r+2},\ldots,v_m\}</m> is a basis for <m>\Nul(A^T)</m>, it suffices to show that it is linearly independent.
+          </p>
+          <p>
+            Since <m>E</m> is a product of elementary matrices, it is invertible by this <xref ref="elem-matrix-is-invertible"/> and equation <xref ref="inverse-of-big-product"/>.  It follows from this <xref ref="matrix-inv-facts"/> that <m>E^T</m> is invertible, so by this <xref ref="invertibility-criterion">criterion</xref>, it has a pivot in every column.  By this <xref ref="linindep-criterion-pivot-every-col"/>, the columns of <m>E^T</m> are linearly independent, so the rows of <m>E</m> are linearly independent; this implies a fortiriori that <m>\{v_{r+1},v_{r+2},\ldots,v_m\}</m> is linearly independent.
+          </p>
+        </proof>
+
+      </theorem>
+
+      <p>
+        As with the row space, the above theorem applies to <em>any</em> row echelon form of <m>\amat{A I_m}</m>.
+      </p>
+
+      <example>
+        <statement>
+          <p>
+            Find a basis of the left null space space of the matrix
+            <me> A = \mat{1 2 2 1; 2 4 1 -1; 1 2 -1 -2} </me>
+            from this <xref ref="row-space-basis-eg"/>.
+          </p>
+        </statement>
+        <answer>
+          <p>
+            We form the augmented matrix
+            <me>
+              \amat{A I_m} = \nmat{3}{1 2 2 1 1 0 0; 2 4 1 -1 0 1 0; 1 2 -1 -2 0 0 1}.
+            </me>
+            A row echelon form of this matrix is
+            <me> \nmat{3}{1 2 2 1 1 0 0; 0 0 -3 -3 -2 1 0; 0 0 0 0 1 -1 1} = \amat{U E}. </me>
+            The last row of <m>E</m> forms a basis of <m>\Nul(A^T)</m>:
+            <me> \left\{\vec{1 -1 1}\right\}. </me>
+            We check:
+            <me>
+              \mat{1 -1 1}\mat{1 2 2 1; 2 4 1 -1; 1 2 -1 -2}
+              = \mat{0 0 0}. \quad\bigcheck
+            </me>
+          </p>
+        </answer>
+      </example>
+
+      <p>
+        Row operations do change the left null space of a matrix.  We can see this in the example above: the matrix
+        <me> A = \mat{1 2 2 1; 2 4 1 -1; 1 2 -1 -2} </me>
+        has row echelon form
+        <me> U = \mat{1 2 2 1; 0 0 -3 -3; 0 0 0 0}. </me>
+        The left null space of <m>A</m> is spanned by <m>(1,-1,1)</m>.  Running the <xref ref="dimension-basis-leftnullspace">procedure</xref> above on the REF matrix <m>U</m> shows that the left null space of <m>U</m> is spanned by <m>(0,0,1)</m>.
+      </p>
+    </paragraphs>
+
+  </subsection>
+
+  <subsection>
+    <title>The Four Subspaces: Summary</title>
+
+    <p>
+      Here we summarize many of the facts we have discussed regarding the four fundamental subspaces.
+    </p>
+
+    <table>
+      <title>The Four Subspaces</title>
+      <caption>The four fundamental subspaces of a matrix <m>A</m> with size <m>m\times n</m> and rank <m>r</m>.</caption>
+      <tabular>
+        <col/><col/><col halign="center"/><col/><col/><col halign="center"/>
+        <row bottom="minor">
+          <cell><alert>Subspace</alert></cell>
+          <cell><alert>of</alert></cell>
+          <cell><alert>row/col</alert></cell>
+          <cell><alert>dim</alert></cell>
+          <cell><alert>basis</alert></cell>
+          <cell><alert>changed by row ops?</alert></cell>
+        </row>
+        <row>
+          <cell><m>\Col(A)</m></cell>
+          <cell><m>\R^m</m></cell>
+          <cell>col</cell>
+          <cell><m>r</m></cell>
+          <cell>pivot cols of <m>A</m></cell>
+          <cell>yes</cell>
+        </row>
+        <row>
+          <cell><m>\Nul(A)</m></cell>
+          <cell><m>\R^n</m></cell>
+          <cell>row</cell>
+          <cell><m>n-r</m></cell>
+          <cell>vectors in PVF</cell>
+          <cell>no</cell>
+        </row>
+        <row>
+          <cell><m>\Row(A)</m></cell>
+          <cell><m>\R^n</m></cell>
+          <cell>row</cell>
+          <cell><m>r</m></cell>
+          <cell>nonzero rows of REF</cell>
+          <cell>no</cell>
+        </row>
+        <row>
+          <cell><m>\Nul(A^T)</m></cell>
+          <cell><m>\R^m</m></cell>
+          <cell>col</cell>
+          <cell><m>m-r</m></cell>
+          <cell>last <m>m-r</m> rows of <m>E</m></cell>
+          <cell>yes</cell>
+        </row>
+      </tabular>
+    </table>
+
+    <p>
+      Note that the <em>row picture</em> subspaces <m>\Nul(A),\,\Row(A)</m> are unchanged by row operations, whereas the <em>column picture</em> subspaces <m>\Col(A),\,\Nul(A^T)</m> are changed by row operations.
+    </p>
+
+    <figure>
+      <caption>
+        The four fundamental subspaces of a <m>3\times 3</m> matrix.
+      </caption>
+      <mathbox source="demos/fund_subspaces.html?v1=1,2,3&amp;v2=-2,1,1&amp;v3=-1,3,4" height="400px"/>
+    </figure>
+
+    <p>
+      We also have the following numerical consequences:
+      <me>
+        \begin{split}
+        \dim\Nul(A) + \dim\Col(A) &amp;= n \\
+        \dim\Nul(A^T) + \dim\Row(A) &amp;= m \\
+        \dim\Row(A) + \dim\Nul(A) &amp;= n \\
+        \dim\Col(A) + \dim\Nul(A^T) &amp;= m \\
+        \end{split}
+      </me>
+      The first equality is called the <em>rank-nullity theorem.</em>
+    </p>
+
+    <bluebox>
+      <title>Rank-Nullity Theorem</title>
+      <idx><h>Rank-Nullity Theorem</h></idx>
+      <p>
+        For a matrix <m>A</m> with <m>n</m> columns,
+        <me> \dim\Nul(A) + \dim\Col(A) = n. </me>
+      </p>
+    </bluebox>
+
+    <p>
+      The fact that <m>\dim\Row(A)=r=\dim\Col(A)</m> says that <m>A</m> and <m>A^T</m> have the same number of pivots.  This is surprising, since their pivots can be in completely different locations!
+    </p>
+
+    <bluebox>
+      <title>Row Rank Equals Column Rank</title>
+      <idx><h>Row Rank Equals Column Rank</h></idx>
+      <p>
+        For any matrix <m>A</m>,
+        <me> \rank(A) = \rank(A^T). </me>
+      </p>
+    </bluebox>
+
+    <note>
+      <p>
+        It is possible to compute bases for all four fundamental subspaces of <m>A</m> by doing elimination <em>once</em>.  One forms the augmented matrix <m>\amat{A I_m}</m>, then performs Gauss<ndash/>Jordan elimination to produce a matrix <m>\amat{U E}</m>, where <m>U</m> is the reduced row echelon form of <m>A</m>.
+        <ul>
+          <li>
+            <alert>Basis of <m>\Col(A)</m>:</alert> We can read off the pivots columns of <m>A</m> once we know <m>U</m>.
+          </li>
+          <li>
+            <alert>Basis of <m>\Nul(A)</m>:</alert> We can produce the parametric vector form of the solutions of <m>Ax=0</m> from the reduced row echelon form of <m>A</m>.
+          </li>
+          <li>
+            The nonzero rows of <m>U</m> form a <alert>basis of <m>\Row(A)</m>.</alert>
+          </li>
+          <li>
+            The columns of <m>E</m> to the right of the zero rows of <m>U</m> form a <alert>basis of <m>\Nul(A^T)</m>.</alert>
+          </li>
+        </ul>
+      </p>
+    </note>
+
+    <example>
+      <statement>
+        <p>
+          Find bases for all four fundamental subspaces of the matrix
+          <me> A = \mat{1 -2; -3 6}.</me>
+        </p>
+      </statement>
+      <answer>
+        <p>
+          We form the augmented matrix and perform Gauss<ndash/>Jordan elimination:
+          <me>
+            \hmat{1 -2 1 0; -3 6 0 1}
+            \RREF
+            \hmat{1 -2 0 -1/3; 0 0 1 1/3}.
+          </me>
+          The first column of <m>A</m> is the only pivot column, so <m>\bigl\{\smallvec1{-3}\bigr\}</m> forms a basis for <m>\Col(A)</m>.  The parametric vector form of <m>Ax=0</m> is <m>x=x_2\smallvec 2 1</m>, so <m>\Nul(A)</m> has basis <m>\bigl\{\smallvec21\bigr\}</m>.  The only nonzero row of the reduced row echelon form of <m>A</m> is <m>\smallvec1{-2}^T</m>, so <m>\bigl\{\smallvec1{-2}\bigr\}</m> is a basis for <m>\Row(A)</m>.  Finally, the last row of <m>E</m> forms the basis <m>\bigl\{\smallvec1{1/3}\bigr\}</m> of <m>\Nul(A^T)</m>.
+          <latex-code>
+\begin{tikzpicture}[thin border nodes]
+  \draw[help lines] (-2,-2) rectangle (2,2);
+
+  \node[above] at (0,2) {row picture};
+  \draw[thick, seq1] (-2,-1) -- node[sloped, above, pos=.8] {$\Nul(A)$} (2,1);
+  \draw[thick, seq2] (-1,2) -- node[sloped, above, pos=.8] {$\Row(A)$} (1,-2);
+  \point at (0,0);
+
+  \begin{scope}[xshift=6cm]
+    \draw[help lines] (-2,-2) rectangle (2,2);
+    \node[above] at (0,2) {column picture};
+
+    \draw[thick, seq3] (-2/3,2) -- node[sloped, above, pos=.8] {$\Col(A)$} (2/3,-2);
+    \draw[thick, seq4] (-2,-2/3) -- node[sloped, above, pos=.8] {$\Nul(A^T)$} (2,2/3);
+
+    \point at (0,0);
+  \end{scope}
+\end{tikzpicture}
+          </latex-code>
+        </p>
+        <figure>
+          <caption>
+            The four fundamental subspaces of the matrix <m>A=\smallmat1{-2}{-3}6</m>.
+          </caption>
+          <mathbox source="demos/fund_subspaces.html?v1=1,-3&amp;v2=-2,6" height="400px"/>
+        </figure>
+      </answer>
+    </example>
+
+  </subsection>
+
+  <subsection>
+    <title>Full-Rank Matrices</title>
+
+    <p>
+      The number of pivots of an <m>m\times n</m> matrix <m>A</m> cannot be greater than the number of rows or the number of columns.  However, a <q>randomly chosen</q> matrix will have the largest rank possible.  For a tall matrix (more rows than columns), the rank will be <m>n</m>; for a wide matrix (more columns than rows), the rank will be <m>m</m>; and for a square matrix, the rank will be <m>m=n</m>.  This important special case has its own name.
+    </p>
+
+    <definition>
+      <idx><h>Full row rank</h><h>definition of</h></idx>
+      <idx><h>Full column rank</h><h>definition of</h></idx>
+      <statement>
+        <p>
+          An <m>m\times n</m> matrix <m>A</m> of rank <m>r</m> has:
+          <ul>
+            <li>
+              <term>full column rank</term> if <m>r=n</m> (so there is a pivot in every <em>column</em>);
+              <me>
+                \text{e.g.}\quad \mat{1 0 0; 0 1 0; 0 0 1; 0 0 0}
+              </me>
+            </li>
+            <li>
+              <term>full row rank</term> if <m>r=m</m> (so there is a pivot in every <em>row</em>).
+              <me>
+                \text{e.g.}\quad \mat{1 0 0 0; 0 1 0 0; 0 0 1 0}
+              </me>
+            </li>
+          </ul>
+        </p>
+      </statement>
+    </definition>
+
+    <p>
+      If <m>A</m> has full <em>column</em> rank then <m>A</m> is not wide<mdash/>it has at least as many rows as columns.  Likewise, if <m>A</m> has full <em>row</em> rank then <m>A</m> is not tall<mdash/>it has at least as many columns as rows.  The converse does not hold: for instance,
+      <me> \mat{1 0 0; 0 0 0} </me>
+      is a wide matrix that does not have full row rank.
+    </p>
+
+    <p>
+      We have encountered many concepts so far that characterize matrices of full rank.
+    </p>
+
+    <theorem xml:id="fcr-conditions">
+      <idx><h>Full column rank</h><h>equivalent conditions for</h></idx>
+      <statement>
+        <p>
+          Let <m>A</m> be an <m>m\times n</m> matrix.  <xref ref="what-is-tfae" text="title">The following are equivalent:</xref>
+          <ul label="">
+            <li>
+              <p>
+                <m>(1)</m> <m>A</m> has <alert>full column rank.</alert>
+                <ul label="">
+                  <li><m>(1')</m> <m>A</m> has a pivot in every column.</li>
+                  <li><m>(1'')</m> <m>A</m> has no free columns.</li>
+                </ul>
+              </p>
+            </li>
+            <li>
+              <p>
+                <m>(2)</m> <m>\Nul(A)=\{0\}</m>.
+                <ul label="">
+                  <li><m>(2')</m> <m>Ax=0</m> has only the trivial solution.</li>
+                  <li><m>(2'')</m> <m>Ax=b</m> has zero or one solution for every <m>b\in\R^m</m>.</li>
+                </ul>
+              </p>
+            </li>
+            <li>
+              <m>(3)</m> The columns of <m>A</m> are linearly independent.
+            </li>
+            <li>
+              <m>(4)</m> <m>\dim\Col(A) = n</m>.
+            </li>
+            <li>
+              <p>
+                <m>(5)</m> <m>\dim\Row(A) = n</m>.
+                <ul label="">
+                  <li>
+                    <m>(5')</m> <m>\Row(A) = \R^n.</m>
+                  </li>
+                </ul>
+              </p>
+            </li>
+            <li>
+              <m>(6)</m> <m>A^T</m> has full row rank.
+            </li>
+          </ul>
+        </p>
+      </statement>
+      <proof>
+        <p>
+          The equivalences <m>(1)\iff(1')\iff(1'')</m> are essentially by definition.  The equivalence <m>(2)\iff(2')</m> is also definitional, and we remarked on the equivalence <m>(1'')\iff(2')</m> in this <xref ref="free-var-nontrivial-soln"/>.  The equivalence <m>(2')\iff(2'')</m> is a consequence of the fact that the solution set of <m>Ax=b</m> is either empty or is a translate of the solution set of <m>Ax=0</m>, as we remarked in this <xref ref="solnsets-translate-span"/>.  We noted that <m>(1')\iff(3)</m> in this <xref ref="linindep-criterion-pivot-every-col"/>.  Since <m>\dim\Col(A)=r=\dim\Row(A)=\dim\Col(A^T)</m> and full column rank means <m>r=n</m>, we have <m>(1)\iff(4)\iff(5)\iff(6)</m>.  Finally, <m>(5)\iff(5')</m> due to this <xref ref="all-of-Rn"/>.
+        </p>
+      </proof>
+    </theorem>
+
+    <p>
+      Note the similarities and differences betweeen the previous theorem and the next.
+    </p>
+
+    <theorem xml:id="frr-conditions">
+      <idx><h>Full row rank</h><h>equivalent conditions for</h></idx>
+      <statement>
+        <p>
+          Let <m>A</m> be an <m>m\times n</m> matrix.  <xref ref="what-is-tfae" text="title">The following are equivalent:</xref>
+          <ul label="">
+            <li>
+              <p>
+                <m>(1)</m> <m>A</m> has <alert>full row rank.</alert>
+                <ul label="">
+                  <li><m>(1')</m> <m>A</m> has a pivot in every row.</li>
+                  <li><m>(1'')</m> The row echelon forms of <m>A</m> have no zero rows.</li>
+                </ul>
+              </p>
+            </li>
+            <li>
+              <m>(2)</m> <m>\Nul(A^T) = \{0\}</m>.
+            </li>
+            <li>
+              <p>
+                <m>(3)</m> The columns of <m>A</m> span <m>\R^m</m>.
+                <ul label="">
+                  <li><m>(3')</m> <m>\Col(A)=\R^m</m>.</li>
+                  <li><m>(3'')</m> <m>Ax=b</m> is consistent for every <m>b\in\R^m</m>.</li>
+                </ul>
+              </p>
+            </li>
+            <li>
+              <m>(4)</m> <m>\dim\Col(A)=m</m>.
+            </li>
+            <li>
+              <m>(5)</m> <m>\dim\Row(A) = m</m>.
+            </li>
+            <li>
+              <m>(6)</m> <m>A^T</m> has full column rank.
+            </li>
+          </ul>
+        </p>
+      </statement>
+      <proof>
+        <p>
+          The equivalences <m>(1)\iff(1')\iff(1'')</m> are essentially by definition.  Since <m>r=m</m> if and only if <m>\dim\Nul(A^T)=m-r=0</m>, we see that <m>(1)</m> is equivalent to <m>(2)</m>.   Since <m>\dim\Col(A)=r=\dim\Row(A)=\dim\Col(A^T)</m> and full row rank means <m>r=m</m>, we have <m>(1)\iff(4)\iff(5)\iff(6)</m>.  This <xref ref="all-of-Rn"/> implies <m>(3')\iff(4)</m>, and <m>(3)\iff(3')</m> by definition.  Finally, <m>(3')\iff(3'')</m> by the <xref ref="col-picture-criterion-consistency">column picture criterion for consistency</xref>.
+        </p>
+      </proof>
+    </theorem>
+
+    <p>
+      If <m>A</m> has both full column rank and full row rank, then <m>r=m=n</m>, which means that <m>A</m> is square and has <m>n</m> pivots: in other words, <m>A</m> is <em>invertible</em>.  We can therefore combine the previous theorems with several other useful criteria for invertibility.
+    </p>
+
+    <theorem>
+      <idx><h>Invertible matrix</h><h>equivalent conditions</h></idx>
+      <statement>
+        <p>
+          Let <m>A</m> be an <m>n\times n</m> matrix.  <xref ref="what-is-tfae" text="title">The following are equivalent:</xref>
+          <ul label="">
+            <li><m>(1)</m> <m>A</m> is <term>invertible.</term></li>
+            <li>
+              <p>
+                <m>(2)</m> <m>\rank(A)=n</m>.
+                <ul label="">
+                  <li><m>(2')</m> <m>A</m> has full column rank.</li>
+                  <li><m>(2'')</m> <m>A</m> has full row rank.</li>
+                </ul>
+              </p>
+            </li>
+            <li><m>(3)</m> <m>Ax=b</m> has exactly one solution for every <m>b\in\R^n</m><mdash/>namely, <m>x=A\inv b</m>.</li>
+            <li><m>(4)</m> The reduced row echelon form of <m>A</m> is the identity matrix <m>I_n</m>.</li>
+            <li><m>(5)</m> There is a matrix <m>B</m> such that <m>AB=I_n</m>.</li>
+            <li><m>(6)</m> There is a matrix <m>B</m> such that <m>BA=I_n</m>.</li>
+            <li><m>(7)</m> <m>A^T</m> is invertible.</li>
+          </ul>
+        </p>
+      </statement>
+      <proof>
+        <p>
+          Our previous <xref ref="invertibility-criterion">invertibility criterion</xref> gives <m>(1)\iff(2)\iff(4)</m>.  Conditions <m>(2),\,(2'),</m> and <m>(2'')</m> are all equivalent to <m>r=n</m>.  The equivalence <m>(1)\iff(3)</m> was remarked in this <xref ref="solve-by-dividing-by-A"/>, but is also a consequence of property <m>(2'')</m> of the first <xref ref="fcr-conditions"/> and property <m>(3'')</m> of the second <xref ref="frr-conditions"/>.  The equivalences <m>(1)\iff(5)\iff(6)</m> are all by definition, and <m>(2)\iff(7)</m> follows from <m>\rank(A)=\rank(A^T)</m>.
+        </p>
+      </proof>
+    </theorem>
+
+    <p>
+      This theorem provides the following useful description of invertible matrices.
+    </p>
+
+    <note type-name="Consequence">
+      <p>
+        Let <m>\{v_1,v_2,\ldots,v_{\color{seq-red}n}\}</m> be vectors in <m>\R^{\color{seq-red}n}</m>, so that
+        <me> A = \mat[c]{| | {} |; v_1 v_2 \cdots, v_n; | | {} |} </me>
+        is an <m>\textcolor{seq-red}{n}\times\textcolor{seq-red}{n}</m> matrix.  Note that
+        <me>
+          \begin{split}
+          \Span\{v_1,v_2,\ldots,v_n\} = \R^n
+          &amp;\iff \Col(A) = \R^n \\
+          &amp;\iff A\text{ has full row rank} \\
+          &amp;\iff A\text{ is invertible}
+          \end{split}
+        </me>
+        and that
+        <me>
+          \begin{split}
+          \{v_1,v_2,\ldots,v_n\} \text{ is linearly independent}
+          &amp;\iff A\text{ has full column rank} \\
+          &amp;\iff A\text{ is invertible}.
+          \end{split}
+        </me>
+        By the <xref ref="basis-theorem" text="title">basis theorem</xref>, either of these conditions is equivalent to the statement that <m>\{v_1,v_2,\ldots,v_n\}</m> is a basis for <m>\R^n</m>.
+      </p>
+    </note>
+
+    <bluebox>
+      <p>
+        A basis for <m>\R^n</m> is the same as the columns of an invertible <m>n\times n</m> matrix.
+      </p>
+    </bluebox>
+
+  </subsection>
 
 </section>

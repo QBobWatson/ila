@@ -19,8 +19,9 @@ the license is included in gfdl.xml.
       <li>Learn how to verify that a set of vectors is linearly (in)dependent.</li>
       <li>Gain a geometric understanding of linear (in)dependence.</li>
       <li>Understand the definition of a basis of a subspace and its relationship to the dimension of the subspace.</li>
-      <li><em>Recipes:</em> test if a set of vectors is linearly independent, compute a basis for a column space, compute a basis for a null space.</li>
+      <li><em>Recipes:</em> test if a set of vectors is linearly independent, compute a basis of a column space, compute a basis of a null space.</li>
       <li><em>Picture:</em> linearly (in)dependent sets of vectors in <m>\R^2</m> and <m>\R^3</m>.</li>
+      <li><em>Theorem:</em> the Basis Theorem.</li>
       <li><em>Vocabulary word:</em>  <term>linear relation.</term></li>
       <li><em>Essential vocabulary words:</em> <term>linearly dependent,</term>  <term>linearly independent,</term> <term>basis,</term> <term>dimension.</term></li>
     </ol>
@@ -28,7 +29,7 @@ the license is included in gfdl.xml.
 
   <introduction>
     <p>
-      In <xref ref="subspaces"/> we introduced the notion of a <term>spanning set</term> for a subspace.  This is a way of expressing a subset as a span of some number of vectors, or <xref ref="spans-are-parametric" text="title">said differently,</xref> giving a parametric description of a subspace:
+      In <xref ref="subspaces"/> we introduced the notion of a <term>spanning set</term> of a subspace.  This is a way of expressing a subset as a span of some number of vectors, or <xref ref="spans-are-parametric" text="title">said differently,</xref> giving a parametric description of a subspace:
       <me>
         \def\r{\textcolor{seq-red}}
         \Span\left\{\vec{1 4 7},\;\vec{2 5 8},\;\vec{3 6 9}\right\}
@@ -77,7 +78,7 @@ the license is included in gfdl.xml.
   \draw[vector, seq3] (0,0,0) --
     \u node [right] {$u$};
 
-  \draw[thin, densely dotted] \v -- \u;
+  %\draw[thin, densely dotted] \v -- \u;
 
   \point at (0,0,0);
 
@@ -164,7 +165,7 @@ the license is included in gfdl.xml.
         A homogeneous system of equations has a nontrivial solution if and only if there is a free variable, so equivalently:
       </p>
 
-      <bluebox>
+      <bluebox xml:id="linear-dependent-means-free-variable">
         <p>
           <me>
             \begin{split}
@@ -178,13 +179,9 @@ the license is included in gfdl.xml.
 
       <specialcase>
         <p>
-          Continuing with the <xref ref="eg-redundant-parameterization"/> above, we showed that <m>(3,6,9)</m> is in the span of <m>(1,4,7)</m> and <m>(2,5,8)</m> because
-          <me> \vec{3 6 9} = -\vec{1 4 7} + 2\vec{2 5 8}. </me>
-          Moving the <m>(3,6,9)</m> to the other side of the equation results in the linear relation
-          <me> 0 = -\vec{1 4 7} + 2\vec{2 5 8} - \vec{3 6 9}. </me>
-          Since there exists a linear relation, the set
-          <me> \left\{\vec{1 4 7},\;\vec{2 5 8},\;\vec{3 6 9}\right\} </me>
-          is linearly dependent.
+          Continuing with the <xref ref="eg-redundant-parameterization"/> above, we showed that <m>u</m> is in the span of <m>v</m> and <m>w</m> because <m>u = -v + 2w.</m>  Moving  <m>u</m> to the other side of the equation results in the linear relation
+          <me> 0 = -v + 2v - u. </me>
+          Since there exists a linear relation, the set <m>\{u,v,w\}</m> is linearly dependent.
         </p>
       </specialcase>
 
@@ -205,7 +202,7 @@ the license is included in gfdl.xml.
         <me> v_i = a_1v_1 + \cdots + a_{i-1}v_{i-1} + a_{i+1}v_{i+1} + \cdots + a_nv_n, </me>
         which results in the linear relation
         <me> 0 = a_1v_1 + \cdots + a_{i-1}v_{i-1} - v_i + a_{i+1}v_{i+1} + \cdots + a_nv_n. </me>
-        (This is a nontrivial solution because the weight of <m>v_i</m> is <m>-1</m>.)  Conversely, given a linear relation
+        (The weights are not all zero because the weight of <m>v_i</m> is <m>-1</m>.)  Conversely, given a linear relation
         <me> 0 = a_1v_1 + a_2v_2 + \cdots + a_nv_n, </me>
         there is some <m>i</m> such that <m>a_i\neq 0</m>.  Moving <m>a_iv_i</m> to the other side of the equation and dividing by <m>-a_i</m> yields
         <me> v_i = -\frac 1{a_i}\bigl(a_1v_1 + \cdots + a_{i-1}v_{i-1} + a_{i+1}v_{i+1} + \cdots + a_nv_n\bigr). </me>
@@ -272,7 +269,27 @@ the license is included in gfdl.xml.
       <p>
         Equivalently, vectors <m>\{v_1,v_2,\ldots,v_n\}</m> are linearly independent if and only if, whenever
         <me>x_1v_1 + x_2v_2 + \cdots + x_nv_n = 0,</me>
-        it must be true that <m>x_1=x_2=\cdots=x_n=0.</m>  Alternatively, the negation of the <xref ref="linear-dependent-some-in-span"/> above is:
+        it must be true that <m>x_1=x_2=\cdots=x_n=0.</m>
+      </p>
+
+      <p>
+        Since a matrix has no free variables if and only if there is a pivot in every column, the negation of the <xref ref="linear-dependent-means-free-variable"/> above becomes:
+      </p>
+
+      <bluebox xml:id="linindep-criterion-pivot-every-col">
+        <p>
+          <me>
+            \begin{split}
+            \{v_1,v_2,\ldots,v_n\} &amp;\text{ is linearly independent} \\
+            &amp;\quad\iff\quad
+            \mat[c]{| | {} |; v_1 v_2 \cdots, v_n; | | {} |} \text{ has a pivot in every column}
+            \end{split}
+          </me>
+        </p>
+      </bluebox>
+
+      <p>
+        Alternatively, the negation of the <xref ref="linear-dependent-some-in-span"/> above is:
       </p>
 
       <bluebox xml:id="linindep-criterion-inspan">
@@ -820,7 +837,7 @@ the license is included in gfdl.xml.
     </essential>
 
     <p>
-      In other words, a basis for a subspace <m>V</m> is set of vectors <m>\{v_1,v_2,\ldots,v_n\}</m> in <m>V</m> such that:
+      In other words, a basis of a subspace <m>V</m> is set of vectors <m>\{v_1,v_2,\ldots,v_n\}</m> in <m>V</m> such that:
       <ol>
         <li><m>V = \Span\{v_1,v_2,\ldots,v_n\}</m>, and</li>
         <li>the set <m>\{v_1,v_2,\ldots,v_n\}</m> is linearly independent.</li>
@@ -830,7 +847,7 @@ the license is included in gfdl.xml.
         \def\r{\textcolor{seq-red}}
         b = \r{x_1}v_1 + \r{x_2}v_2 + \cdots + \r{x_n}v_n
       </me>
-      for some weights, or parameters, <m>x_1,x_2,\ldots,x_n</m>.  The second condition says that such a parameterization is <xref ref="linindep-unique-weights">unique</xref>.
+      for some weights, or parameters, <m>\def\r{\textcolor{seq-red}}\r{x_1},\r{x_2},\ldots,\r{x_n}</m>.  The second condition says that such a parameterization is <xref ref="linindep-unique-weights">unique</xref>.
     </p>
 
     <p>
@@ -845,10 +862,10 @@ the license is included in gfdl.xml.
 
       <solution>
         <p>
-          We need to find two vectors in <m>\R^2</m> that span <m>\R^2</m> and are linearly independent.  One such basis is <m>\bigl\{{1\choose 0},{0\choose 1}\bigr\}</m>.
+          We need to find two vectors in <m>\R^2</m> that span <m>\R^2</m> and are linearly independent.  One such basis is <m>\bigl\{\smallvec{1}{ 0},\smallvec{0}{ 1}\bigr\}</m>.
           <ol>
             <li>
-              They span because any vector <m>a\choose b</m> can be written as a linear combination of <m>{1\choose 0},{0\choose 1}</m>:
+              They span because any vector <m>\smallvec a b</m> can be written as a linear combination of <m>\smallvec{1}{ 0},\smallvec{0}{ 1}</m>:
               <me>\vec{a b} = a\vec{1 0} + b\vec{0 1}.</me>
             </li>
             <li>
@@ -860,8 +877,8 @@ the license is included in gfdl.xml.
           <latex-code>
 \begin{tikzpicture}
   \draw[grid lines] (-2,-2) grid (2,2);
-  \draw[thick vector] (0,0) -- (1,0) node[right,whitebg] {$1\choose 0$};
-  \draw[thick vector] (0,0) -- (0,1) node[above,whitebg] {$0\choose 1$};
+  \draw[thick vector] (0,0) -- (1,0) node[right,whitebg] {$\smallvec10$};
+  \draw[thick vector] (0,0) -- (0,1) node[above,whitebg] {$\smallvec01$};
   \point at (0,0);
 \end{tikzpicture}
           </latex-code>
@@ -877,7 +894,7 @@ the license is included in gfdl.xml.
         e_2=\vec[c]{0 1 \vdots, 0 0}, \quad\ldots,\quad
         e_n=\vec[c]{0 0 \vdots, 0 1}
       </me>
-      form a basis for <m>\R^n</m>.  This is sometimes known as the <term>standard basis</term>.
+      form a basis of <m>\R^n</m>.  This is sometimes known as the <term>standard basis</term>.
     </p>
 
     <p>
@@ -886,24 +903,109 @@ the license is included in gfdl.xml.
 
     <bluebox>
       <p>
-        Any two noncollinear vectors in a plane form a basis for that plane.
+        Any two noncollinear vectors in a plane form a basis of that plane.
       </p>
     </bluebox>
+
+    <example>
+      <title>Finding a Basis of a Plane</title>
+      <statement>
+        <p>
+          Find a basis of the plane
+          <me> V = \left\{\vec{x_1 x_2 x_3}~:~ x_1 + x_2 = x_3\right\}</me>
+          without performing elimination.
+        </p>
+      </statement>
+      <solution>
+        <p>
+          First note that <m>V</m> is the null space of the matrix <m>\mat{1 1 -1}</m>; this matrix is in reduced row echelon form and has two free variables, so <m>V</m> is indeed a plane.  We write down two vectors satisfying <m>x_1 + x_2 = x_3</m>:
+          <me>
+            v_1 = \vec{1 0 1} \qquad v_2 = \vec{0 1 1}.
+          </me>
+          Since <m>v_1</m> and <m>v_2</m> are not collinear, they form a basis of <m>V</m>.
+        </p>
+      </solution>
+    </example>
 
     <p>
       Since there are infinitely many pairs of noncollinear vectors in <m>\R^2</m>, it follows that <m>\R^2</m> has <em>infinitely many bases.</em>  In fact, any nonzero subspace has infinitely many bases.
     </p>
 
-    <bluebox>
+    <bluebox xml:id="infinitely-many-bases">
       <idx><h>Basis</h><h>infinitely many</h></idx>
       <p>
-        A nonzero subspace has <em>infinitely many</em> different bases, but they all contain the same number of vectors.
+        A nonzero subspace has <em>infinitely many</em> different bases.
       </p>
     </bluebox>
 
     <p>
-      We leave it as an exercise to prove that any two bases have the same number of vectors; one might want to wait until after learning about full-rank matrices in <xref provisional="invertible-matrix-thm"/>.
+      This says that there are infinitely many ways to parameterize a nonzero subspace as a span.  However, the following theorem shows that the <em>number of parameters</em> is determined.
     </p>
+
+    <theorem xml:id="bases-have-same-size">
+      <statement>
+        <p>
+          Any two bases of a subspace contain the same number of vectors.
+        </p>
+      </statement>
+      <proof>
+        <p>
+          Let <m>V</m> be a subspace, and let <m>\{v_1,v_2,\ldots,v_d\}</m> and <m>\{w_1,w_2,\ldots,w_k\}</m> be bases for <m>V</m>.  Suppose that these bases do not have the same number of vectors; after potentially renaming the vectors, we may assume <m>k \lt d</m>.  Since <m>\{w_1,w_2,\ldots,w_k\}</m> spans <m>V</m> and since <m>v_1,v_2,\ldots,v_d\in V</m>, for each <m>i=1,2,\ldots,d</m> we can find scalars <m>a_{i1},a_{i2},\ldots,a_{ik}</m> such that
+          <me>
+            \begin{split}
+              v_1 &amp;= a_{11}w_1 + a_{12}w_2 + \cdots + a_{1k}w_k \\
+              v_2 &amp;= a_{21}w_1 + a_{22}w_2 + \cdots + a_{2k}w_k \\
+              &amp;\phantom{=}\llap\vdots \\
+              v_d &amp;= a_{d1}w_1 + a_{d2}w_2 + \cdots + a_{dk}w_k.
+            \end{split}
+          </me>
+          We can express the <m>i</m>th equality <m>v_i = a_{i1}w_1 + a_{i2}w_2 + \cdots + a_{ik}w_k</m> by the equation
+          <me>
+            v_i = \mat[c]{| | {} |; w_1 w_2 \cdots, w_k; | | {} |}
+            \vec[c]{a_{i1} a_{i2} \vdots, a_{ik}}.
+          </me>
+          By the way matrix multiplication <xref ref="matrix-product-col-form" text="title">is defined,</xref> we therefore have
+          <me>
+            \mat[c]{| | {} |; v_1 v_2 \cdots, v_d; | | {} |}
+            = \mat[c]{| | {} |; w_1 w_2 \cdots, w_k; | | {} |}
+            \mat[c]{
+              a_{11} a_{21} \cdots, a_{d1};
+              a_{12} a_{22} \cdots, a_{d2};
+              \vdots, \vdots, \ddots, \vdots;
+              a_{1k} a_{2k} \cdots, a_{dk};
+            }.
+          </me>
+          Since <m>k \lt d</m>, the matrix
+          <me>
+            A = \mat[c]{
+              a_{11} a_{21} \cdots, a_{d1};
+              a_{12} a_{22} \cdots, a_{d2};
+              \vdots, \vdots, \ddots, \vdots;
+              a_{1k} a_{2k} \cdots, a_{dk};
+            }
+          </me>
+          has more columns than rows, it has a free variable.  Choose a <xref ref="free-var-nontrivial-soln" text="title">nontrivial solution</xref> <m>x = (x_1,x_2,\ldots,x_d)</m> of <m>Ax=0</m>.  Then
+          <me>
+            \begin{split}
+              &amp;x_1v_1 + x_2v_2 + \cdots + x_dv_d \\
+              &amp;\qquad\qquad=
+              \mat[c]{| | {} |; v_1 v_2 \cdots, v_d; | | {} |}
+              \vec[c]{x_1 x_2 \vdots, x_d} \\
+              &amp;\qquad\qquad=
+              \mat[c]{| | {} |; w_1 w_2 \cdots, w_k; | | {} |}
+              \mat[c]{
+                a_{11} a_{21} \cdots, a_{d1};
+                a_{12} a_{22} \cdots, a_{d2};
+                \vdots, \vdots, \ddots, \vdots;
+                a_{1k} a_{2k} \cdots, a_{dk};
+              }\vec[c]{x_1 x_2 \vdots, x_d}
+              = 0.
+            \end{split}
+          </me>
+          This is a linear relation among <m>\{v_1,v_2,\ldots,v_d\}</m>.  But we are assuming that <m>\{v_1,v_2,\ldots,v_d\}</m> forms a basis, which must be linearly independent, so <m>k\lt d</m> is impossible.
+        </p>
+      </proof>
+    </theorem>
 
     <essential xml:id="dimension-defn-dimension">
       <idx><h>Dimension</h><h>definition of</h></idx>
@@ -916,15 +1018,15 @@ the license is included in gfdl.xml.
     </essential>
 
     <p>
-      Since <m>\{e_1,e_2,\ldots,e_n\}</m> is a basis for <m>\R^n</m>, it follows that
+      Since <m>\{e_1,e_2,\ldots,e_n\}</m> is a basis of <m>\R^n</m>, it follows that
       <me> \dim\R^n = n. </me>
       This is what one should expect from any reasonable definition of dimension.
     </p>
 
     <specialcase>
-      <title>A Basis for <m>\{0\}</m></title>
+      <title>A Basis of <m>\{0\}</m></title>
       <p>
-        The only basis for the subspace <m>\{0\}</m> is the <em>empty set</em> <m>\{\}</m>. (See this <xref ref="empty-set-versus-zero-set"/>.)
+        The only basis of the subspace <m>\{0\}</m> is the <em>empty set</em> <m>\{\}</m>. (See this <xref ref="empty-set-versus-zero-set"/>.)
         <ol>
           <li>
             It spans by <xref ref="span-empty-set" text="title">convention</xref>.
@@ -938,38 +1040,38 @@ the license is included in gfdl.xml.
     </specialcase>
 
     <specialcase>
-      <title>A Basis for a Line</title>
+      <title>A Basis of a Line</title>
       <p>
-        A line is spanned by any nonzero vector in it.  A set containing one nonzero vector is <xref ref="linindep-1-vec">linearly independent,</xref> so <em>any nonzero vector in a line is a basis for that line.</em>  It follows that a line has dimension 1.
+        A line is spanned by any nonzero vector in it.  A set containing one nonzero vector is <xref ref="linindep-1-vec">linearly independent,</xref> so <em>any nonzero vector in a line is a basis of that line.</em>  It follows that a line has dimension 1.
       </p>
     </specialcase>
 
     <p>
-      Since any two noncollinear vectors in a plane form a basis for that plane, we see that planes have dimension two.  To summarize:
+      Since any two noncollinear vectors in a plane form a basis of that plane, we see that planes have dimension two.  To summarize:
       <ul>
         <li>A <em>point</em> has dimension 0.</li>
         <li>A <em>line</em> has dimension 1.</li>
         <li>A <em>plane</em> has dimension 2.</li>
       </ul>
-      The subspace <m>\R^3</m> has dimension 3; we will sometimes refer to it as <term>space</term>.  In higher dimensions, we will not use any special vocabulary word for a subspace of a particular dimension; for instance, a subspace of dimension 4 does not have a special name.
+      The subspace <m>\R^3</m> has dimension 3; we will sometimes refer to it as <term>space</term>.  We will not use any special vocabulary word for a subspace of a particular dimension greater than 3; for instance, a subspace of dimension 4 does not have a special name.
     </p>
 
     <p>
-      As in this <xref ref="subspace-vs-spanning-set"/>, be careful to distinguish between a subspace and a basis for that subspace.  A nonzero subspace has infinitely many bases, so a subspace is by no means <q>the same</q> as a basis for the subspace: a basis merely provides one non-redundant way to parameterize the subspace as a span.
+      As in this <xref ref="subspace-vs-spanning-set"/>, be careful to distinguish between a subspace and a basis of that subspace.  A nonzero subspace has infinitely many bases, so a subspace is by no means <q>the same</q> as a basis of the subspace: a basis merely provides one non-redundant way to parameterize the subspace as a span.
     </p>
 
     <paragraphs>
-      <title>A Basis for the Column Space</title>
+      <title>A Basis of the Column Space</title>
 
       <p>
-        Now we turn to systematic methods for computing a basis of a subspace.  When performing calculations on subspaces, <xref ref="step-0" text="title">step 0</xref> is to express that subspace as a column space or a null space, so we present methods for computing bases of these.  We begin with the column space.
+        Now we turn to systematic methods to compute a basis of a subspace.  When performing calculations on subspaces, <xref ref="step-0" text="title">step 0</xref> is to express that subspace as a column space or a null space, so we present methods for computing bases of these.  We begin with the column space.
       </p>
 
       <theorem xml:id="dimension-basis-colspace">
         <idx><h>Basis</h><h>of a column space</h></idx>
         <idx><h>Column space</h><h>basis of</h><see>Basis</see></idx>
         <statement>
-          <p>The pivot columns of a matrix <m>A</m> form a basis for <m>\Col(A)</m>.</p>
+          <p>The pivot columns of a matrix form a basis of its column space.</p>
         </statement>
         <proof>
           <p>
@@ -991,7 +1093,7 @@ the license is included in gfdl.xml.
               \RREF
               \quad\mat{1 0 2 0; 0 1 3 0; 0 0 0 1}.
             </me>
-            The following two vector equations have the same solution set, as they come from row-equivalent matrices:
+            The following two vector equations have the same solution set, as they come from <xref ref="def-row-equivalence" text="title">row-equivalent</xref> matrices:
             <me>
               \spalignsysdelims..\syseq{
               x_1\vec{1 2 -1} + x_2\vec{7 4 -2} + x_3\vec{23 16 -8} + x_4\vec{3 0 4} = 0;
@@ -1001,7 +1103,7 @@ the license is included in gfdl.xml.
             </me>
             We conclude that
             <me>\vec{23 16 -8} = 2\vec{1 2 -1} + 3\vec{7 4 -2} + 0\vec{3 0 4},</me>
-            which shows that the free columns are in the span of the pivot columns, so the pivot columns span <m>\Col(A)</m>, and that
+            which shows that the free columns are in the span of the pivot columns.  Hence the pivot columns span <m>\Col(A)</m>.  Likewise,
             <me>x_1\vec{1 2 -1} + x_2\vec{7 4 -2} + x_4\vec{3 0 4} = 0</me>
             has only the trivial solution, which means that the pivot columns are linearly independent.
           </p>
@@ -1011,7 +1113,7 @@ the license is included in gfdl.xml.
       <example>
         <statement>
           <p>
-            Find a basis for the column space of the matrix
+            Find a basis of the column space of the matrix
             <me> A = \mat{1 2 0 -1; -2 -3 4 5; 2 4 0 -2}. </me>
           </p>
         </statement>
@@ -1023,7 +1125,7 @@ the license is included in gfdl.xml.
               \REF
               \mat{1 2 0 -1; 0 1 4 3; 0 0 0 0}.
             </me>
-            The pivot columns are the first two columns, so a basis for <m>\Col(A)</m> is
+            The pivot columns are the first two columns, so a basis of <m>\Col(A)</m> is
             <me>\left\{\vec{1 -2 2},\;\vec{2 -3 4}\right\}.</me>
           </p>
         </answer>
@@ -1032,7 +1134,7 @@ the license is included in gfdl.xml.
       <p>
         In the above example, the column space of the matrix
         <me> A = \mat{1 2 0 -1; -2 -3 4 5; 2 4 0 -2} </me>
-        has a basis with two vectors in it, so <m>\Col(A)</m> is a plane.  Any two noncollinear vectors form a basis for a plane, and no two columns of <m>A</m> are collinear, so any pair of columns of <m>A</m> forms a basis for <m>\Col(A)</m>.
+        has a basis with two vectors in it, so <m>\Col(A)</m> is a plane.  Any two noncollinear vectors form a basis of a plane, and no two columns of <m>A</m> are collinear, so any pair of columns of <m>A</m> forms a basis of <m>\Col(A)</m>.
       </p>
 
       <bluebox>
@@ -1058,7 +1160,7 @@ the license is included in gfdl.xml.
 
       <bluebox>
         <p>
-          The pivot columns <em>of the original matrix</em> form a basis for its column space.
+          The pivot columns <em>of the original matrix</em> form a basis of its column space.
           <latex-code>
             <![CDATA[
 \begin{tikzpicture}
@@ -1104,11 +1206,13 @@ the license is included in gfdl.xml.
         The number of pivots of a matrix is by <xref ref="defn-pivot" text="title">definition</xref> its <em>rank</em>, so we get the following fact as a consequence of the above <xref ref="dimension-basis-colspace"/>.
       </p>
 
-      <corollary>
+      <corollary xml:id="dim-of-col-space">
+        <idx><h>Dimension</h><h>of a column space</h></idx>
+        <idx><h>Column space</h><h>dimension of</h><see>Dimension</see></idx>
         <statement>
           <p>
             For any matrix <m>A</m>,
-            <me> \dim\Col(A) = \rank A. </me>
+            <me> \dim\Col(A) = \rank(A). </me>
           </p>
         </statement>
       </corollary>
@@ -1125,7 +1229,7 @@ the license is included in gfdl.xml.
         <title>A Basis of a Span</title>
         <statement>
           <p>
-            Find a basis for
+            Find a basis of
             <me> V = \Span\left\{\vec{2 -4 6},\;\vec{2 -5 1},\;\vec{-1 5 12}\right\}. </me>
             What is the dimension of <m>V</m>?
           </p>
@@ -1141,7 +1245,7 @@ the license is included in gfdl.xml.
             </me>
             The first two columns are the pivot columns, so
             <me> \left\{\vec{2 -4 6}\;\vec{2 -5 1}\right\} </me>
-            is a basis for <m>V</m>.  It follows that <m>V</m> has dimension 2, i.e., that <m>V</m> is a <em>plane</em>.
+            is a basis of <m>V</m>.  It follows that <m>V</m> has dimension 2, i.e., that <m>V</m> is a <em>plane</em>.
           </p>
           <figure>
             <caption>A picture of the plane <m>V</m> and basis <m>\{v_1,v_2\}</m>.</caption>
@@ -1153,10 +1257,10 @@ the license is included in gfdl.xml.
     </paragraphs>
 
     <paragraphs>
-      <title>A Basis for the Null Space</title>
+      <title>A Basis of the Null Space</title>
 
       <p>
-        In order to compute a basis for the null space of a matrix, one has to find the parametric vector form of the solutions of the homogeneous equation <m>Ax=0</m>.
+        In order to compute a basis of the null space of a matrix, one has to find the parametric vector form of the solutions of the homogeneous equation <m>Ax=0</m>.
       </p>
 
       <theorem xml:id="dimension-basis-nulspace">
@@ -1193,7 +1297,7 @@ the license is included in gfdl.xml.
       <example>
         <statement>
           <p>
-            Find a basis for the null space of
+            Find a basis of the null space of
             <me> A = \mat{1 2 2 1; 2 4 1 -1}. </me>
             What is the dimension of <m>\Nul(A)</m>?
           </p>
@@ -1214,7 +1318,7 @@ the license is included in gfdl.xml.
             <me>
               \left\{\vec{-2 1 0 0},\;\vec{1 0 -1 1}\right\}
             </me>
-            is a basis for <m>\Nul(A)</m>.  The dimension of <m>\Nul(A)</m> is 2, so <m>\Nul(A)</m> is a <em>plane</em>.
+            is a basis of <m>\Nul(A)</m>.  The dimension of <m>\Nul(A)</m> is 2, so <m>\Nul(A)</m> is a <em>plane</em>.
           </p>
         </answer>
       </example>
@@ -1223,11 +1327,13 @@ the license is included in gfdl.xml.
         There is one vector attached to each <xref ref="free-variable-defn" text="title">free variable</xref> in the parametric vector form for the solutions of <m>Ax=0</m>.  Each column of a matrix either has a pivot or is free, so the <xref ref="dimension-basis-nulspace"/> above has the following consequence.
       </p>
 
-      <corollary>
+      <corollary xml:id="dim-of-null-space">
+        <idx><h>Dimension</h><h>of a null space</h></idx>
+        <idx><h>Null space</h><h>dimension of</h><see>Dimension</see></idx>
         <statement>
           <p>
-            For a matrix <m>A</m> with <m>n</m> columns,
-            <me> \dim\Nul(A) = n - \rank A = \text{the number of free variables}. </me>
+            If <m>A</m> is a matrix with <m>n</m> columns, then
+            <me> \dim\Nul(A) = n - \rank(A) = \text{the number of free variables}. </me>
           </p>
         </statement>
       </corollary>
@@ -1237,6 +1343,71 @@ the license is included in gfdl.xml.
       </p>
 
     </paragraphs>
+
+  </subsection>
+
+  <subsection>
+    <title>The Basis Theorem</title>
+
+    <p>
+      In the previous subsection, we noted that two vectors <xref ref="span-2-vecs" text="title">span a plane</xref> if and only if they are not collinear, and moreover that two vectors are <xref ref="linindep-2-vecs">linearly independent</xref> if and only if they are not collinear.  This means that, in order to check that <em>two</em> vectors form a basis of a plane, it suffices to verify <em>either</em> that they are linearly independent, <em>or</em> that they span the plane.  This is a special case of the following theorem.
+    </p>
+
+    <theorem type-name="Basis Theorem" xml:id="basis-theorem">
+      <idx><h>Basis</h><h>basis theorem</h></idx>
+      <statement>
+        <p>
+          Let <m>V</m> be a subspace of dimension <m>\textcolor{seq-red}d</m>.  Then:
+          <ul>
+            <li>Any <m>\textcolor{seq-red}d</m> linearly independent vectors in <m>V</m> form a basis of <m>V</m>.</li>
+            <li>Any <m>\textcolor{seq-red}d</m> vectors that span <m>V</m> form a basis of <m>V</m>.</li>
+          </ul>
+        </p>
+      </statement>
+      <proof>
+        <p>
+          Suppose that <m>\{v_1,v_2,\ldots,v_d\}</m> is a set of linearly independent vectors in <m>V</m>.  In order to show that this is a basis of <m>V</m>, we must prove that <m>V = \Span\{v_1,v_2,\ldots,v_d\}.</m>  If not, then there exists some vector <m>v_{d+1}</m> in <m>V</m> that is not contained in <m>\Span\{v_1,v_2,\ldots,v_d\}.</m>  By the <xref ref="linindep-increasing-span">increasing span criterion</xref>, the set <m>\{v_1,v_2,\ldots,v_d,v_{d+1}\}</m> is also linearly independent.  Continuing in this way, we keep choosing vectors until we eventually do have a linearly independent spanning set: say <m>V = \Span\{v_1,v_2,\ldots,v_d,\ldots,v_{d+k}\}</m>.  Then <m>\{v_1,v_2,\ldots,v_{d+k}\}</m> is a basis of <m>V</m>, which implies that <m>\dim(V) = d+k > d</m>.  But we were assuming that <m>V</m> has dimension <m>d</m>, so <m>\{v_1,v_2,\ldots,v_d\}</m> must have already been a basis.
+        </p>
+
+        <p>
+          Now suppose that <m>\{v_1,v_2,\ldots,v_d\}</m> spans <m>V</m>.  If this set is  linearly dependent, then by this <xref ref="linear-dependent-some-in-span"/>, we can remove some number of vectors from it without shrinking its span.  After reordering, we can assume that we removed the last <m>k</m> vectors without shrinking the span, and that we cannot remove any more. Now <m>V = \Span\{v_1,v_2,\ldots,v_{d-k}\}</m>, and <m>\{v_1,v_2,\ldots,v_{d-k}\}</m> is a basis of <m>V</m> because it is linearly independent.  This implies that <m>\dim V=d-k &lt; d</m>.  But we were assuming that <m>\dim V = d</m>, so <m>\{v_1,v_2,\ldots,v_d\}</m> must have already been a basis.
+        </p>
+      </proof>
+    </theorem>
+
+    <p>
+      In other words, if you <em>already</em> know that <m>\dim V = d</m>, and if you have a set of <m>d</m> vectors <m>\{v_1,v_2,\ldots,v_d\}</m> in <m>V</m>, then you only have to check <em>one</em> of:
+      <ol>
+        <li><m>\{v_1,v_2,\ldots,v_d\}</m> is linearly independent, <em>or</em></li>
+        <li><m>\{v_1,v_2,\ldots,v_d\}</m> spans <m>V</m>,</li>
+      </ol>
+      in order for <m>\{v_1,v_2,\ldots,v_d\}</m> to be a basis of <m>V</m>.  If you did not already know that <m>\dim V = d</m>, then you would have to check <em>both</em> properties.
+    </p>
+    <p>
+      To put it yet another way, suppose we have a set of vectors <m>\{v_1,v_2,\ldots,v_d\}</m> in a subspace <m>V</m>.  Then if any two of the following statements is true, the third must also be true:
+       <ol>
+        <li><m>\{v_1,v_2,\ldots,v_d\}</m> is linearly independent,</li>
+        <li><m>\{v_1,v_2,\ldots,v_d\}</m> spans <m>V</m>, and</li>
+	<li><m>\dim V = d.</m></li>
+      </ol>
+    </p>
+
+    <p>
+      As a consequence, we can prove the intuitive fact that an <m>n</m>-dimensional subspace of <m>\R^n</m> must <q>fill up</q> all of <m>\R^n</m>, which itself has dimension <m>n</m>.  For instance, the only plane in <m>\R^2</m> is all of <m>\R^2</m>, and the only space in <m>\R^3</m> is all of <m>\R^3</m>.
+    </p>
+
+    <corollary xml:id="all-of-Rn">
+      <statement>
+        <p>
+          The only <m>n</m>-dimensional subspace of <m>\R^n</m> is all of <m>\R^n</m>.
+        </p>
+      </statement>
+      <proof visible="true">
+        <p>
+          Let <m>V</m> be an <m>n</m>-dimensional subspace of <m>\R^n</m> and let <m>\{v_1,v_2,\ldots,v_n\}</m> be a basis for <m>V</m>.  Then <m>\{v_1,v_2,\ldots,v_n\}</m> is linearly independent, so by the <xref ref="basis-theorem"/>, since <m>\dim(\R^n)=n</m>, we know that <m>\{v_1,v_2,\ldots,v_n\}</m> must span all of <m>\R^n</m>.  Hence <m>V = \Span\{v_1,v_2,\ldots,v_n\} = \R^n</m>.
+        </p>
+      </proof>
+    </corollary>
 
   </subsection>
 

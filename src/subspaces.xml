@@ -136,10 +136,10 @@ the license is included in gfdl.xml.
               The unit circle fails all three criteria.
               <ol label="1">
                 <li>
-                  It is not closed under addition: for instance, <m>{1\choose0}</m> and <m>{0\choose 1}</m> are on the unit circle, but their sum <m>{1\choose 1}</m> is not.
+                  It is not closed under addition: for instance, <m>\smallvec{1}{0}</m> and <m>\smallvec{0}{ 1}</m> are on the unit circle, but their sum <m>\smallvec{1}{ 1}</m> is not.
                 </li>
                 <li>
-                  It is not closed under scalar multiplication: for instance, <m>{1\choose 0}</m> is on the unit circle, but <m>2{1\choose 0}</m> is not.
+                  It is not closed under scalar multiplication: for instance, <m>\smallvec{1}{ 0}</m> is on the unit circle, but <m>2\smallvec{1}{ 0}</m> is not.
                 </li>
                 <li>
                   It does not contain the zero vector.
@@ -165,10 +165,10 @@ the license is included in gfdl.xml.
               The first quadrant satisfies criteria 1 and 3.
               <ol label="1">
                 <li>
-                  It is closed under addition: if <m>{x_1\choose y_1}</m> and <m>{x_2\choose y_2}</m> are contained in the first quadrant, then <m>x_1,y_1,x_2,</m> and <m>y_2</m> are all nonnegative, so <m>x_1+x_2\geq0</m> and <m>y_1+y_2\geq0</m>, and thus <m>{x_1+y_1\choose x_2+y_2}</m> is again in the first quadrant.
+                  It is closed under addition: if <m>\smallvec{x_1}{ y_1}</m> and <m>\smallvec{x_2}{ y_2}</m> are contained in the first quadrant, then <m>x_1,y_1,x_2,</m> and <m>y_2</m> are all nonnegative, so <m>x_1+x_2\geq0</m> and <m>y_1+y_2\geq0</m>, and thus <m>\smallvec{x_1+y_1}{ x_2+y_2}</m> is again in the first quadrant.
                 </li>
                 <li>
-                  It is not closed under scalar multiplication: for instance, <m>{1\choose1}</m> is in the first quadrant, but <m>-{1\choose1}</m> is not.
+                  It is not closed under scalar multiplication: for instance, <m>\smallvec{1}{1}</m> is in the first quadrant, but <m>-\smallvec{1}{1}</m> is not.
                 </li>
                 <li>
                   It does contain the zero vector.
@@ -191,10 +191,10 @@ the license is included in gfdl.xml.
               The union of the coordinate axes satisfies criteria 2 and 3.
               <ol label="1">
                 <li>
-                  It is not closed under addition: for instance, <m>{1\choose0}</m> and <m>{0\choose 1}</m> lie on the coordinate axes, but their sum <m>{1\choose 1}</m> does not.
+                  It is not closed under addition: for instance, <m>\smallvec{1}{0}</m> and <m>\smallvec{0}{ 1}</m> lie on the coordinate axes, but their sum <m>\smallvec{1}{ 1}</m> does not.
                 </li>
                 <li>
-                  It is closed under scalar multiplication: if <m>{x\choose y}</m> satisfies <m>xy=0</m>, and if <m>c\in\R</m> is a scalar, then <m>(cx)(cy)=c^2(xy)=0</m>, so <m>c{x\choose y}={cx\choose cy}</m> again satisfies the defining condition.
+                  It is closed under scalar multiplication: if <m>\smallvec{x}{ y}</m> satisfies <m>xy=0</m>, and if <m>c\in\R</m> is a scalar, then <m>(cx)(cy)=c^2(xy)=0</m>, so <m>c\smallvec{x}{ y}=\smallvec{cx}{ cy}</m> again satisfies the defining condition.
                 </li>
                 <li>
                   It does contain the zero vector.
@@ -218,7 +218,7 @@ the license is included in gfdl.xml.
     </example>
 
     <p>
-      In the one of the non-examples above, we showed that the first quadrant is not a subspace by noting that <m>{1\choose1}</m> is in the first quadrant but <m>-{1\choose1}</m> is not.  More generally:
+      In the one of the non-examples above, we showed that the first quadrant is not a subspace by noting that <m>\smallvec{1}{1}</m> is in the first quadrant but <m>-\smallvec{1}{1}</m> is not.  More generally:
     </p>
 
     <note hide-type="true" xml:id="not-subspace-by-counterexample">
@@ -547,6 +547,37 @@ the license is included in gfdl.xml.
         </p>
       </bluebox>
 
+      <p>
+        It is tempting to simplify a matrix using row operations when computing its column space, but this is a mistake.  For example, the column space of the matrix <m>A = \smallmat1{-1}{-1}1</m> is <m>\Span\bigl\{\smallvec{1}{-1},\smallvec{-1}{1}\bigr\} = \Span\bigl\{\smallvec{1}{-1}\bigr\}</m>.  Performing the row operation <m>R_2\pluseq R_1</m> yields the row-equivalent matrix <m>\smallmat1{-1}00</m>, whose column space is <m>\Span\bigl\{\smallvec{1}{0},\smallvec{-1}{0}\bigr\} = \Span\bigl\{\smallvec{1}{0}\bigr\}</m>.  Both column spaces are drawn below.
+        <latex-code>
+\begin{tikzpicture}
+
+  \draw (-2,-2) rectangle (2,2);
+  \draw[seq-green, thick] (-2,2) -- (2,-2);
+  \draw[vector, seq-green] (0,0) -- (1,-1);
+  \draw[vector, seq-green] (0,0) -- (-1,1);
+  \point at (0,0);
+  \node[seq-green, above] at (0,2) {$\Col\mat{1 -1; -1 1}$};
+
+\begin{scope}[xshift=5cm]
+  \draw (-2,-2) rectangle (2,2);
+  \draw[seq-blue, thick] (-2,0) -- (2,0);
+  \draw[vector, seq-blue] (0,0) -- (1,0);
+  \draw[vector, seq-blue] (0,0) -- (-1,0);
+  \point at (0,0);
+  \node[seq-blue, above] at (0,2) {$\Col\mat{1 -1; 0 0}$};
+\end{scope}
+
+\end{tikzpicture}
+        </latex-code>
+      </p>
+
+      <bluebox xml:id="row-ops-change-column-space">
+        <p>
+          Row operations change the column space of a matrix.
+        </p>
+      </bluebox>
+
     </paragraphs>
 
     <paragraphs>
@@ -589,6 +620,16 @@ the license is included in gfdl.xml.
           <me>
             \Nul(A) \sptxt{is the solution set of } Ax=0.
           </me>
+        </p>
+      </bluebox>
+
+      <p>
+        As we saw in this <xref ref="row-ops-same-soln-set"/>, row operations do not change the solution set of a system of equations.  Indeed, the point of doing row operations was to find a simpler system of equations with the same solution set.
+      </p>
+
+      <bluebox>
+        <p>
+          Row operations do not change the null space of a matrix.
         </p>
       </bluebox>
 
@@ -657,7 +698,7 @@ the license is included in gfdl.xml.
             \quad\xrightarrow[\text{vector form}]{\text{parametric}}\quad
             \vec{x y} = y\vec{2 1}.
             </me>
-            Hence the null space is <m>\Span\bigl\{{2\choose 1}\bigr\}</m>, which is a line in <m>\R^2</m>.
+            Hence the null space is <m>\Span\bigl\{\smallvec{2}{ 1}\bigr\}</m>, which is a line in <m>\R^2</m>.
             <latex-code>
 \begin{tikzpicture}
   \draw[grid lines] (-3,-3) grid (3,3);

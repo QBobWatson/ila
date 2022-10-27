@@ -174,6 +174,13 @@ the license is included in gfdl.xml.
       </proof>
     </fact>
 
+    <p>
+      More generally, a product <m>A_1A_2\cdots A_r</m> of invertible matrices is invertible, and
+      <men xml:id="inverse-of-big-product">
+        (A_1A_2\cdots A_r)\inv = A_r\inv\cdots A_2\inv A_1\inv.
+      </men>
+    </p>
+
     <remark>
       <p>
         It is rarely true that <m>(AB)\inv = A\inv B\inv</m>.  If we try to multiply <m>AB</m> by <m>A\inv B\inv</m> as in the proof of the second <xref ref="matrix-inv-facts"/> above, we get:
@@ -262,9 +269,9 @@ the license is included in gfdl.xml.
       In terms of systems of equations, it is important to think of the matrix <m>A</m> in this theorem as the <em>coefficient matrix</em>: after all, we are trying to solve <m>Ax=b</m> by <q>dividing by <m>A</m></q>.
     </p>
 
-    <bluebox>
+    <bluebox xml:id="what-is-tfae">
       <p>
-        The phrase <q>the following are equivalent</q> means that, for a given matrix <m>A</m>, either all of the properties are true, or all of them are false: it is not possible for one to be true and the others to be false.
+        The phrase <q>the following are equivalent</q> means that, for a given matrix, either all of the properties are true, or all of them are false: it is not possible for one to be true and the others to be false.
       </p>
     </bluebox>
 
@@ -608,7 +615,7 @@ the license is included in gfdl.xml.
       Elementary matrices are important examples of invertible matrices.  Recall from this <xref ref="row-ops-are-reversible">fact</xref> that row operations are <em>reversible</em>: every row operation can be undone by an opposite row operation.
     </p>
 
-    <fact>
+    <fact xml:id="elem-matrix-is-invertible">
       <idx><h>Elementary matrix</h><h>inverse of</h></idx>
       <statement>
         <p>
