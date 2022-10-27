@@ -199,6 +199,7 @@ for src in Split('''
                  dynamics
                  dynamics2
                  eigenspace
+                 fund_subspaces
                  leastsquares
                  parametric1
                  parametric1h
