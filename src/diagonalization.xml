@@ -1286,7 +1286,7 @@ The eigenvectors <m>v_1,v_2,v_3</m> are linearly independent: <m>v_1,v_2</m> for
           Now suppose that the sum of the geometric multiplicities equals <m>n</m>.  As above, this forces the sum of the algebraic multiplicities to equal <m>n</m> as well.  As the algebraic multiplicities are all greater than or equal to the geometric multiplicities in any case, this implies that they are in fact equal.
         </p>
         <p>
-          Finally, suppose that the third condition is satisfied.  Then the sum of the geometric multiplicities equals <m>n</m>.  Suppose that the distinct eigenvectors are <m>\lambda_1,\lambda_2,\ldots,\lambda_k</m>, and that <m>\cB_i</m> is a basis for the <m>\lambda_i</m>-eigenspace, which we call <m>V_i</m>.  We claim that the collection <m>\cB = \{v_1,v_2,\ldots,v_n\}</m> of all vectors in all of the eigenspace bases <m>\cB_i</m> is linearly independent.  Consider the vector equation
+          Finally, suppose that the third condition is satisfied.  Then the sum of the geometric multiplicities equals <m>n</m>.  Suppose that the distinct eigenvalues are <m>\lambda_1,\lambda_2,\ldots,\lambda_k</m>, and that <m>\cB_i</m> is a basis for the <m>\lambda_i</m>-eigenspace, which we call <m>V_i</m>.  We claim that the collection <m>\cB = \{v_1,v_2,\ldots,v_n\}</m> of all vectors in all of the eigenspace bases <m>\cB_i</m> is linearly independent.  Consider the vector equation
           <me>
             0 = c_1v_1 + c_2v_2 + \cdots + c_nv_n.
           </me>
