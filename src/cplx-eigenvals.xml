@@ -1340,7 +1340,7 @@ A-\frac{4+3i}5I_3 =
           <ul>
             <li>
               The matrix <m>B</m> is <term>block diagonal</term>, where the blocks are <m>1\times 1</m> blocks containing the real eigenvalues (with their multiplicities), or <m>2\times 2</m> blocks containing the matrices
-              <me>\mat{\Re(\lambda) \Im(\lambda); -\Im(\lambda) \Re(\Lambda)}</me>
+              <me>\mat{\Re(\lambda) \Im(\lambda); -\Im(\lambda) \Re(\lambda)}</me>
               for each non-real eigenvalue <m>\lambda</m> (with multiplicity).
             </li>
             <li>
