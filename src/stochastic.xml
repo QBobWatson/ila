@@ -882,7 +882,7 @@ Page <m>\color{seq4}D</m> has <m>2</m> links, so it passes <m>\frac 12</m> of it
   \end{scope}
 \end{tikzpicture}
           ]]></latex-code>
-          Page <m>C</m> is the most important, with a rank of <m>0.558</m>, and page <m>B</m> is the least important, with a rank of <m>0.1752.</m>
+          Page <m>C</m> is the most important, with a rank of <m>0.3558</m>, and page <m>B</m> is the least important, with a rank of <m>0.1752.</m>
         </p>
       </solution>
     </example>
