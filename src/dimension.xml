@@ -27,7 +27,7 @@ the license is included in gfdl.xml.
     <title>Basis of a Subspace</title>
 
     <p>
-      As we discussed in <xref ref="subspaces"/>, a subspace is the same as a span, except we do not have a set of spanning vectors in mind.  There are infinitely many choices of spanning sets for a nonzero subspace; to avoid reduncancy, usually it is most convenient to choose a spanning set with the <em>minimal</em> number of vectors in it.  This is the idea behind the notion of a basis.
+      As we discussed in <xref ref="subspaces"/>, a subspace is the same as a span, except we do not have a set of spanning vectors in mind.  There are infinitely many choices of spanning sets for a nonzero subspace; to avoid redundancy, usually it is most convenient to choose a spanning set with the <em>minimal</em> number of vectors in it.  This is the idea behind the notion of a basis.
     </p>
 
     <essential xml:id="dimension-defn-basis">
