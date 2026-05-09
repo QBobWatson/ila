@@ -520,9 +520,9 @@ $\hmat{\r1 0 3 0 1 0; 2 3 2 1 0 0; 2 2 3 0 0 1}$} \\[2mm]
         In other words, taking the cube root undoes the transformation that takes a number to its cube.
       </p>
       <p>
-        Define <m>f\colon\R\to\R</m> by <m>f(x) = x^2</m>.  This is <em>not</em> an invertible function.  Indeed, we have <m>f(2) = 2 = f(-2)</m>, so there is no way to undo <m>f</m>: the inverse transformation would not know if it should send <m>2</m> to <m>2</m> or <m>-2</m>.  More formally, if <m>g\colon\R\to\R</m> satisfies <m>g(f(x)) = x</m>, then
-        <me>2 = g(f(2)) = g(2) \sptxt{and} -2 = g(f(-2)) = g(2),</me>
-        which is impossible: <m>g(2)</m> is a number, so it cannot be equal to <m>2</m> and <m>-2</m> at the same time.
+        Define <m>f\colon\R\to\R</m> by <m>f(x) = x^2</m>.  This is <em>not</em> an invertible function.  Indeed, we have <m>f(2) = 4 = f(-2)</m>, so there is no way to undo <m>f</m>: the inverse transformation would not know if it should send <m>4</m> to <m>2</m> or <m>-2</m>.  More formally, if <m>g\colon\R\to\R</m> satisfies <m>g(f(x)) = x</m>, then
+        <me>2 = g(f(2)) = g(4) \sptxt{and} -2 = g(f(-2)) = g(4),</me>
+        which is impossible: <m>g(4)</m> is a number, so it cannot be equal to <m>2</m> and <m>-2</m> at the same time.
       </p>
       <p>
         Define <m>f\colon\R\to\R</m> by <m>f(x) = e^x</m>.  This is <em>not</em> an invertible function.  Indeed, if there were a function <m>g\colon\R\to\R</m> such that <m>f\circ g = \Id_\R</m>, then we would have

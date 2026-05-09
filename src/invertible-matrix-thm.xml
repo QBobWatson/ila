@@ -201,7 +201,7 @@ the license is included in gfdl.xml.
    <example>
      <statement>
        <p>
-         Suppose that <m>A</m> is an <m>n\times n</m> matrix such that <m>Ax=b</m> is inconsistent some vector <m>b</m>.  Show that <m>Ax=b</m> has infinitely many solutions for some (other) vector <m>b</m>.
+         Suppose that <m>A</m> is an <m>n\times n</m> matrix such that <m>Ax=b</m> is inconsistent for some vector <m>b</m>.  Show that <m>Ax=b</m> has infinitely many solutions for some (other) vector <m>b</m>.
        </p>
      </statement>
      <solution>

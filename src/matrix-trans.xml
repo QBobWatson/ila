@@ -902,7 +902,7 @@ the license is included in gfdl.xml.
   </example>
 
   <example xml:id="matrix-trans-questions">
-    <title>Questions about a [matrix] transformation</title>
+    <title>Questions about a matrix transformation</title>
     <statement>
       <p>
         Let
@@ -979,7 +979,7 @@ the license is included in gfdl.xml.
   </example>
 
   <example xml:id="matrix-trans-questions-nonlinear">
-    <title>Questions about a [non-matrix] transformation</title>
+    <title>Questions about a non-matrix transformation</title>
     <statement>
       <p>
         Define a transformation <m>T\colon\R^2\to\R^3</m> by the formula
